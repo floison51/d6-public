@@ -1,0 +1,106 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  
+  <parent>
+	<groupId>org.xlm.jxlm.pub.d6</groupId>
+	<artifactId>pd6-pom</artifactId>
+	<version>1.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>pubd6-light</artifactId>
+  
+  <name>Public light D6</name>
+
+  <packaging>jar</packaging>
+  
+   <build>
+
+      <plugins>
+
+      		<!--  generate JAXB stubs for schemas --> 
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>jaxb2-maven-plugin</artifactId>
+                <version>${pd6-jaxb2-maven-plugin-version}</version>
+                <executions>
+
+            		<!-- Systemizer-data : configuration -->
+                    <execution>
+                        <id>sys-data-config</id>
+                        <goals>
+                            <goal>xjc</goal>
+                        </goals>
+		                <configuration>
+		                	<!--  XSD schema -->
+		                	<sources>
+			                	<source>src/main/resources/org/xlm/jxlm/pub/d6/light/conf/d6l-conf.xsd</source>
+			                </sources>
+			                
+			                <packageName>org.xlm.jxlm.pub.d6.light.conf</packageName> 
+		                    <outputDirectory>${project.build.directory}/generated-sources/xjcConf</outputDirectory>
+		                </configuration>
+                    </execution>
+          
+                </executions>
+            </plugin>
+            
+      </plugins>
+    </build>
+
+  
+  <dependencies>
+  
+    <!-- log4j -->
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-api</artifactId>
+      <version>${pd6-log4j2.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <version>${pd6-log4j2.version}</version>
+    </dependency>
+    
+	<dependency>
+	    <groupId>org.apache.commons</groupId>
+	    <artifactId>commons-lang3</artifactId>
+	    <version>${pd6-commons-lang3.version}</version>
+	</dependency>
+	
+	<dependency>
+		<groupId>commons-io</groupId>
+		<artifactId>commons-io</artifactId>
+		<version>${pd6-commons-io.version}</version>
+	</dependency>
+	
+	<!-- for properties parsing -->
+	<dependency>
+		<groupId>org.apache.ant</groupId>
+		<artifactId>ant</artifactId>
+		<version>${pd6-ant.version}</version>
+	</dependency>
+    
+    <!-- For XML binding, removed from java 11 -->
+	<dependency>
+		<groupId>javax.xml.bind</groupId>
+		<artifactId>jaxb-api</artifactId>
+		<version>${pd6-jaxb-runtime.version}</version>
+	</dependency>
+	<dependency>
+		<groupId>org.glassfish.jaxb</groupId>
+		<artifactId>jaxb-runtime</artifactId>
+		<version>${pd6-jaxb-runtime.version}</version>
+	</dependency>
+	
+    <dependency>
+	  <groupId>junit</groupId>
+	  <artifactId>junit</artifactId>
+	  <version>${pd6-JUnit4.version}</version>
+	  <scope>test</scope>
+    </dependency>
+    
+  </dependencies>
+
+</project>

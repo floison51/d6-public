@@ -1,0 +1,1213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema 
+	xmlns="http://www.w3.org/2001/XMLSchema" 
+	targetNamespace="http://systemizer/data/conf"
+	xmlns:tns="http://systemizer/data/conf" 
+    elementFormDefault="qualified"
+    attributeFormDefault="unqualified"
+>
+
+<!-- 
+ 	*****************************************************************
+ 	Root element
+ 	*****************************************************************
+ -->
+     
+    <element name="SysDataConf">
+    	<complexType>
+    		<sequence>
+
+    			<element name="Global" maxOccurs="1" minOccurs="1">
+    				<complexType>
+    					<sequence>
+    						<element name="ProjectName" type="string"
+    							maxOccurs="1" minOccurs="1">
+    						</element>
+    						<element name="ProjectVersion" type="string"
+    							maxOccurs="1" minOccurs="1">
+    						</element>
+    						<element name="ServerUrl" type="string"
+    							maxOccurs="1" minOccurs="0">
+    						</element>
+    						<element name="HomeFolder" type="string"
+    							maxOccurs="1" minOccurs="1" />
+
+    						<element name="StagingFolder" type="string"
+    							maxOccurs="1" minOccurs="1">
+    						</element>
+    						<element name="BackupHomeFolder"
+    							type="string" maxOccurs="1" minOccurs="0">
+    						</element>
+    						<element name="DataIn"
+    							type="tns:GlobalDataInType" maxOccurs="1" minOccurs="1" />
+
+    						<element name="DataPackages"
+    							type="tns:GlobalDataPackagesType" maxOccurs="1"
+    							minOccurs="0">
+    						</element>
+    						<element name="DataOutFolder" type="string"
+    							maxOccurs="1" minOccurs="1" />
+
+    						<element name="Encoding" type="string"
+    							maxOccurs="1" minOccurs="1">
+    						</element>
+    						<element name="DefaultCsvFormat"
+    							type="tns:DataCsvFormatType" maxOccurs="1" minOccurs="1">
+    						</element>
+
+    						<element name="Model" minOccurs="0"
+    							maxOccurs="1">
+    							<complexType>
+    								<sequence>
+    									<element
+    										name="DataLineFullSupport" type="boolean" maxOccurs="1"
+    										minOccurs="0" />
+    								</sequence>
+    							</complexType>
+    						</element>
+
+    						<element name="Tuning" minOccurs="0"
+    							maxOccurs="1">
+    							<complexType>
+    								<sequence>
+    									<element name="NbThreads"
+    										type="int" maxOccurs="1" minOccurs="0">
+    									</element>
+    									<element name="DbCachePercent"
+    										type="int" maxOccurs="1" minOccurs="0">
+    									</element>
+    									<element
+    										name="DbLowCachePercent" type="int" maxOccurs="1"
+    										minOccurs="0">
+    									</element>
+    									<element name="DbLockTimeoutMs"
+    										type="int" maxOccurs="1" minOccurs="0">
+    									</element>
+    									<element
+    										name="DataLineCodeGenerated" type="boolean" maxOccurs="1"
+    										minOccurs="0">
+    									</element>
+    								</sequence>
+    							</complexType>
+    						</element>
+    						<element name="Display" maxOccurs="1"
+    							minOccurs="0">
+    							<complexType>
+    								<sequence>
+    									<element name="ImageMaxWidth"
+    										type="int" maxOccurs="1" minOccurs="0">
+    									</element>
+    									<element name="LabelFontSize"
+    										type="int" maxOccurs="1" minOccurs="0">
+    									</element>
+    									<element name="LabelMaxWidth"
+    										type="int" maxOccurs="1" minOccurs="0">
+    									</element>
+    									<element name="LotsDisplayMode"
+    										type="string" maxOccurs="1" minOccurs="0">
+    									</element>
+    									<element name="UnstackLots"
+    										type="boolean" maxOccurs="1" minOccurs="0">
+                                            <annotation>
+                                            	<documentation>False by default.
+When true, lots containing only one lot are hidden, only most inner lot is shown.
+This simplifies graph by removing stacks of lots containing one lot.</documentation>
+                                            </annotation>
+    									</element>
+    								</sequence>
+    							</complexType>
+    						</element>
+    					</sequence>
+    				</complexType>
+    			</element>
+
+    			<element name="Ontology" type="tns:OntologyType"
+    				maxOccurs="1" minOccurs="1">
+    			</element>
+    			<element name="DataIn" type="tns:DataInType"
+    				maxOccurs="1" minOccurs="1">
+    			</element>
+    			<element name="Algos" type="tns:AlgosType" maxOccurs="1"
+    				minOccurs="1">
+    			</element>
+    			<element name="Runs" type="tns:RunsType" maxOccurs="1"
+    				minOccurs="1">
+    			</element>
+    			<element name="DataJobs" type="tns:DataJobsType"
+    				maxOccurs="1" minOccurs="1">
+    			</element>
+    			<element name="MeasureProviders" type="tns:MeasureProvidersType"
+    				maxOccurs="1" minOccurs="0">
+    			</element>
+    			<element name="Decorators" type="tns:DecoratorsType"
+    				maxOccurs="1" minOccurs="1">
+    			</element>
+    			<element name="DataOut" type="tns:DataOutType"
+    				maxOccurs="1" minOccurs="1">
+    			</element>
+    		</sequence>
+    	</complexType>
+    </element>
+    
+<!-- 
+ 	*****************************************************************
+ 	Re-usable definitions
+ 	*****************************************************************
+ -->
+     
+    <simpleType name="CharType">
+		<restriction base="string">
+			<length value="1"></length>
+		</restriction>
+    </simpleType>
+    
+    <complexType name="AbstractDoerType" abstract="true">
+    	<sequence>
+    		<element name="Class" type="string" maxOccurs="1"
+    			minOccurs="0" />
+    		<element name="Params" type="tns:ParamsType" maxOccurs="1"
+    			minOccurs="0" />
+    	</sequence>
+    	<attribute name="id" type="string" use="required" />
+    	<attribute name="verbose" type="boolean" use="optional" default="false"></attribute>
+    </complexType>
+
+    <!-- 
+ 	*****************************************************************
+ 	Data-In types
+ 	*****************************************************************
+ -->
+     
+    <complexType name="DataPumperType">
+    	<complexContent>
+    		<extension base="tns:AbstractDoerType">
+    			<sequence>
+                    <element name="DataStagerRefId" type="string" maxOccurs="1" minOccurs="0">
+    				</element>
+    			</sequence>
+    			<attribute name="key" type="tns:DataPumperKeyType"
+    				use="required" />
+     		</extension>
+    	</complexContent>
+    </complexType>
+
+    <simpleType name="DataPumperKeyType">
+		<restriction base="string">
+			<enumeration value="None"></enumeration>
+			<enumeration value="JDBC"></enumeration>
+			<enumeration value="DataStager"></enumeration>
+			<enumeration value="Custom"></enumeration>
+		</restriction>
+	</simpleType>
+	
+    <complexType name="DataStagerType">
+    	<complexContent>
+    		<extension base="tns:AbstractDoerType">
+    			<sequence>
+    				<element name="RegExpDataPackageStageTarget"
+    					type="tns:RegExpType" maxOccurs="1" minOccurs="0">
+    				</element>
+    				<element name="DataPumper" type="string"
+    					maxOccurs="1" minOccurs="0">
+    				</element>
+    				<element name="Includes" type="string" maxOccurs="1"
+    					minOccurs="1">
+    				</element>
+    				<element name="Excludes" type="string" maxOccurs="1"
+    					minOccurs="0">
+    				</element>
+    				<element name="DateFormatPattern" type="string"
+    					maxOccurs="1" minOccurs="1">
+    				</element>
+    				<element name="Locale" type="string" maxOccurs="1"
+    					minOccurs="1">
+    				</element>
+    				<element name="EntitySchemaFile" type="string"
+    					maxOccurs="1" minOccurs="0">
+    				</element>
+    				<element name="Validation" maxOccurs="1"
+    					minOccurs="0">
+    					<complexType>
+    						<sequence>
+    							<element name="CatalogFile"
+    								type="string" maxOccurs="1" minOccurs="0">
+    							</element>
+    						</sequence>
+    						<attribute name="failIfValidationFails"
+    							type="boolean" use="required">
+    						</attribute>
+    						<attribute name="checkColumnsCount"
+    							default="atLeast" type="tns:CheckColumnsCountType" />
+    						<attribute name="enabled" type="boolean"
+    							use="optional" default="true">
+    						</attribute>
+    					</complexType>
+    				</element>
+    				<element name="RegexpEntityTypeFilter"
+    					type="tns:RegExpType" maxOccurs="1" minOccurs="0">
+    				</element>
+    				<element name="RegexpDirectedLink"
+    					type="tns:RegExpType" maxOccurs="1" minOccurs="0">
+    				</element>
+    				<element name="CreateEntityWhenValidationError"
+    					type="boolean" maxOccurs="1" minOccurs="0">
+    				</element>
+    				<element name="ActualTypeLocator"
+    					type="tns:ActualTypeLocatorType" maxOccurs="1" minOccurs="0">
+    				</element>
+    				<element name="DropColumnsList" type="string"
+    					maxOccurs="1" minOccurs="0">
+    				</element>
+    				<element name="ExclusionFolder" type="string" maxOccurs="1" minOccurs="0"></element>
+    			</sequence>
+    			<attribute name="key" type="tns:DataStagerKeyType"
+    				use="required" />
+    			<attribute name="idDataFormat" type="string" use="optional"></attribute>
+    		</extension>
+    	</complexContent>
+    </complexType>
+
+    <simpleType name="CheckColumnsCountType">
+		<restriction base="string">
+			<enumeration value="equals"></enumeration>
+			<enumeration value="atLeast"></enumeration>
+		</restriction>
+	</simpleType>
+
+    <simpleType name="DataStagerKeyType">
+		<restriction base="string">
+			<enumeration value="Minimal"></enumeration>
+			<enumeration value="EntitySchema"></enumeration>
+			<enumeration value="InterfaceEngine-Csv"></enumeration>
+			<enumeration value="InterfaceEngine-Xml"></enumeration>
+			<enumeration value="Custom"></enumeration>
+			<enumeration value="Xml"></enumeration>
+			<enumeration value="Xml-XPath"></enumeration>
+			<enumeration value="Jdbc"></enumeration>
+			<enumeration value="Graphml"></enumeration>
+			<enumeration value="Lots"></enumeration>
+		</restriction>
+	</simpleType>
+
+	<complexType name="DataPreloaderType">
+		<complexContent>
+			<extension base="tns:AbstractDoerType">
+		    	<sequence>
+		    		<element name="RegexpEntityTypeFilter"
+		    			type="tns:RegExpType" maxOccurs="1" minOccurs="1">
+		    		</element>
+		    		<element name="CreatePhantomEntityForLinkError"
+		    			type="boolean" maxOccurs="1" minOccurs="0">
+		    		</element>
+		    		<element
+		    			name="AssignPhantomEntitiesToUnknownContainer"
+		    			type="boolean" maxOccurs="1" minOccurs="0">
+		    		</element>
+		    		<element name="Finalizer" maxOccurs="1"
+		    			minOccurs="0">
+		    			<complexType>
+		    				<sequence>
+		    					<element name="Class" type="string"
+		    						maxOccurs="1" minOccurs="0">
+		    					</element>
+		    				</sequence>
+		    				<attribute name="key" use="required"
+		    					type="tns:PreloadFinalizerKeyType" />
+		    			</complexType>
+		    		</element>
+		    		<element name="DataJobRun"
+		    			type="tns:DataJobAutoType" maxOccurs="1" minOccurs="0">
+		    		</element>
+		    	</sequence>
+			</extension>
+		</complexContent>
+	</complexType>
+
+    <simpleType name="PreloadFinalizerKeyType">
+		<restriction base="string">
+			<enumeration value="None"></enumeration>
+			<enumeration value="Custom"></enumeration>
+		</restriction>
+	</simpleType>
+
+    <complexType name="ParamDefinitionsType">
+    	<sequence>
+    		<sequence>
+    			<element name="ParamDefinition" type="tns:ParamDefinitionType"
+    				maxOccurs="unbounded" minOccurs="0">
+    			</element>
+    		</sequence>
+    	</sequence>
+    </complexType>
+    
+    <complexType name="ParamDefinitionType">
+    	<attribute name="name" type="string" use="required"></attribute>
+    </complexType>
+
+    <complexType name="ParamsType">
+    	<sequence>
+    		<sequence>
+    			<element name="Param" type="tns:ParamType"
+    				maxOccurs="unbounded" minOccurs="0">
+    			</element>
+    			<element name="RegexpParam"
+    				type="tns:RegexpParamType" maxOccurs="unbounded" minOccurs="0">
+    			</element>
+    		</sequence>
+    	</sequence>
+    </complexType>
+    
+    <complexType name="ParamType">
+		<sequence>
+			<element name="Value" type="string" maxOccurs="1"
+				minOccurs="1" />
+			<element name="Regexp" type="tns:RegExpType" maxOccurs="1"
+				minOccurs="0">
+			</element>
+			<element name="Extras" type="tns:ParamsType" maxOccurs="1"
+				minOccurs="0">
+				<annotation>
+					<documentation>
+						Optional extra parameter
+					</documentation>
+				</annotation>
+			</element>
+		</sequence>
+		<attribute name="name" type="string" use="required"></attribute>
+    </complexType>
+
+    <complexType name="LoaderType">
+    	<complexContent>
+    		<extension base="tns:AbstractDoerType">
+    			<sequence>
+    				<element name="NbThreads" maxOccurs="1"
+    					minOccurs="0">
+    					<simpleType>
+    						<restriction base="int">
+    							<minInclusive value="1"></minInclusive>
+    						</restriction>
+    					</simpleType>
+    				</element>
+    			</sequence>
+    			<attribute name="key" type="tns:LoaderKeyType"
+    				use="required" />
+    			<attribute name="synchronous" type="boolean" use="optional" default="false"></attribute>
+    		</extension>
+    	</complexContent>
+    </complexType>
+
+    <simpleType name="LoaderKeyType">
+		<restriction base="string">
+			<enumeration value="None"></enumeration>
+			<enumeration value="InterfaceEngine"></enumeration>
+			<enumeration value="Custom"></enumeration>
+		</restriction>
+	</simpleType>
+	    
+
+	<complexType name="RegexpBasedNumberType">
+		<sequence>
+			<element name="DefaultValue" type="long" maxOccurs="1" minOccurs="1" nillable="true"></element>
+			<element name="RegExpValue" type="tns:RegExpBasedType"
+				maxOccurs="unbounded" minOccurs="0">
+			</element>
+		</sequence>
+	</complexType>
+
+	<complexType name="RegExpBasedType">
+		<sequence>
+			<element name="RegExp" type="string" maxOccurs="1" minOccurs="1"></element>
+			<element name="Value" type="long" maxOccurs="1" minOccurs="1"></element>
+		</sequence>
+	</complexType>
+
+	<complexType name="OntologyType">
+		<sequence>
+			<element name="Business">
+				<complexType>
+					<sequence>
+						<element name="BusinessErrorCodes" maxOccurs="1" minOccurs="1">
+							<complexType>
+								<sequence>
+									<element name="BusinessErrorCode"
+										maxOccurs="unbounded" minOccurs="0">
+										<complexType mixed="true">
+											<attribute name="code"
+												type="int" use="required">
+											</attribute>
+										</complexType>
+									</element>
+								</sequence>
+							</complexType>
+						</element>
+						<element name="BusinessWarningCodes" maxOccurs="1" minOccurs="0">
+							<complexType>
+								<sequence>
+									<element name="BusinessWarningCode"
+										maxOccurs="unbounded" minOccurs="0">
+										<complexType mixed="true">
+											<attribute name="code"
+												type="int" use="required">
+											</attribute>
+										</complexType>
+									</element>
+								</sequence>
+							</complexType>
+						</element>
+					</sequence>
+				</complexType>
+			</element>
+		</sequence>
+	</complexType>
+
+
+
+	<complexType name="LotDecoratorType">
+		<choice>
+			<element name="IconLotDecorator">
+				<complexType></complexType>
+			</element>
+			<element name="ColorLotDecorator">
+				<complexType>
+					<sequence>
+						<element name="PropagateToChildren"
+							type="boolean" maxOccurs="1" minOccurs="1">
+						</element>
+						<element name="PropagateToChildrenRecursively"
+							type="boolean" maxOccurs="1" minOccurs="1">
+						</element>
+						<element name="RegexpName" type="string"
+							maxOccurs="1" minOccurs="0">
+						</element>
+						<element name="RegexpFctId" type="string"
+							maxOccurs="1" minOccurs="0">
+						</element>
+						<element name="RegexpSubType" type="string" maxOccurs="1" minOccurs="0"></element>
+						<element name="FillColor" type="string"
+							maxOccurs="1" minOccurs="0">
+						</element>
+						<element name="LineStyle" type="long"
+							maxOccurs="1" minOccurs="0">
+						</element>
+						<element name="LineColor" type="string"
+							maxOccurs="1" minOccurs="0">
+						</element>
+					</sequence>
+				</complexType>
+			</element>
+			<element name="ErrorLotDecorator">
+				<complexType></complexType>
+			</element>
+			<element name="CustomLotDecorator">
+				<complexType>
+					<sequence>
+						<element name="PropagateToChildren"
+							type="boolean" maxOccurs="1" minOccurs="1">
+						</element>
+						<element name="PropagateToChildrenRecursively"
+							type="boolean" maxOccurs="1" minOccurs="1">
+						</element>
+						<element name="Class" type="string"
+							maxOccurs="1" minOccurs="1">
+						</element>
+	                    <element name="Params" type="tns:ParamsType"
+	    					maxOccurs="1" minOccurs="0">
+	    				</element>
+					</sequence>
+				</complexType>
+			</element>
+
+		</choice>
+	</complexType>
+
+    <complexType name="DataInType">
+    	<sequence>
+            <element name="DataFormats" type="tns:DataFormatType" maxOccurs="1" minOccurs="1">
+    		</element>
+            <element name="DataPumper" type="tns:DataPumperType"
+    			maxOccurs="unbounded" minOccurs="0" />
+
+    		<element name="DataStager" type="tns:DataStagerType"
+    			maxOccurs="unbounded" minOccurs="1" />
+
+    		<element name="DataPreloader" type="tns:DataPreloaderType"
+    			maxOccurs="unbounded" minOccurs="1">
+    		</element>
+    		<element name="DataChecker" type="tns:DataCheckerType"
+    			maxOccurs="unbounded" minOccurs="0">
+    		</element>
+    	</sequence>
+    </complexType>
+
+    <complexType name="DecoratorsType">
+    	<sequence>
+    		<choice>
+	   			<element name="LotDecorator" type="tns:LotDecoratorType"
+	   				maxOccurs="unbounded" minOccurs="0">
+	   			</element>
+	   		</choice>
+    	</sequence>
+    </complexType>
+
+    <complexType name="DataOutType">
+    	<sequence>
+            <element name="SplitData" type="tns:SplitDataType"
+            	maxOccurs="1" minOccurs="0" />
+           	<element name="LotErrorTriggerPC" type="float"
+           		maxOccurs="1" minOccurs="0">
+                   <annotation>
+                   	<documentation>Lot Error Trigger percentage.
+During loading, if nbErrors/nbEntities is higher than this trigger, loading process is stopped for descendent lots.</documentation>
+                   </annotation>
+           	</element>
+           	<element name="Loaders" maxOccurs="1" minOccurs="0">
+				<complexType>
+		            <sequence>
+		            	<element name="Loader" type="tns:LoaderType"
+		            		maxOccurs="unbounded" minOccurs="0">
+		            	</element>
+		            </sequence>
+	            </complexType>
+            </element>
+    	</sequence>
+    </complexType>
+
+    <complexType name="SplitDataType">
+    	<sequence>
+    		<element name="OutputConfFile" type="string" maxOccurs="1"
+    			minOccurs="0" />
+    		<element name="Filters" maxOccurs="1" minOccurs="0">
+    			<complexType>
+    				<sequence>
+    					<element name="FilterByActualType"
+    						type="tns:FilterType" maxOccurs="1" minOccurs="0">
+    					</element>
+    					<element name="FilterBySysDataType"
+    						type="tns:FilterType" maxOccurs="1" minOccurs="0">
+    					</element>
+						
+    				</sequence>
+    			</complexType>
+    		</element>
+    		
+			<!-- Params -->    					
+    		<element name="Params" type="tns:ParamsType" maxOccurs="1"
+    			minOccurs="0" />
+    					
+    	</sequence>
+    </complexType>
+
+<!-- 
+****************************************************************
+  Data Checkers
+****************************************************************
+-->
+
+    <complexType name="DataCheckerType">
+    	<complexContent>
+    		<extension base="tns:AbstractDoerType">
+    			<sequence>
+    				<element name="ErrorCode" type="int" maxOccurs="1" minOccurs="0"></element>
+    			</sequence>
+    			<attribute name="key" type="tns:DataCheckerKeyType"
+    				use="required" />
+     		</extension>
+    	</complexContent>
+    </complexType>
+    
+    <simpleType name="DataCheckerKeyType">
+		<restriction base="string">
+			<enumeration value="CSV"></enumeration>
+			<enumeration value="JDBC"></enumeration>
+			<enumeration value="Jointure"></enumeration>
+			<enumeration value="Custom"></enumeration>
+		</restriction>
+	</simpleType>
+	
+    
+
+<!-- 
+****************************************************************
+  Algorithms
+****************************************************************
+-->
+
+    <complexType name="AbstractAlgoType" abstract="true">
+    	<complexContent>
+    		<extension base="tns:AbstractDoerType">
+		    	<sequence>
+		    		<element name="LaunchDecorateLots" type="boolean"
+		    			maxOccurs="1" minOccurs="0">
+		    		</element>
+		    		<element name="MaxLinksPerLot" type="long"
+		    			maxOccurs="1" minOccurs="0" nillable="true">
+		    			<annotation>
+		    				<documentation>
+		    					Max number of links by lot, typically
+		    					50000
+		    				</documentation>
+		    			</annotation>
+		    		</element>
+		    		<element name="MaxNbPartitionsPerBenchForLots"
+		    			type="tns:RegexpBasedNumberType" maxOccurs="1" minOccurs="0">
+		    		</element>
+		    		<element name="MaxLinksPerBenchForLots"
+		    			type="tns:RegexpBasedNumberType" maxOccurs="1" minOccurs="0">
+		    		</element>
+		    		<element name="DataJobRun" type="tns:DataJobAutoType"
+		    			maxOccurs="1" minOccurs="0">
+		    		</element>
+		    	</sequence>
+    		</extension>
+		</complexContent>
+    </complexType>
+	
+    <simpleType name="LotTypeType">
+		<restriction base="string">
+			<enumeration value="Business"></enumeration>
+			<enumeration value="Technical"></enumeration>
+		</restriction>
+	</simpleType>
+	
+	<complexType name="AnalyserType">
+    	<complexContent>
+    		<extension base="tns:AbstractAlgoType">
+		    	<sequence>
+		    	</sequence>
+    			<attribute name="key" type="tns:AnalyserKeyType"
+    				use="required" />
+    		</extension>
+    	</complexContent>
+    </complexType>
+
+    <simpleType name="AnalyserKeyType">
+		<restriction base="string">
+			<enumeration value="None"></enumeration>
+			<enumeration value="Cycles"></enumeration>
+			<enumeration value="Custom"></enumeration>
+		</restriction>
+	</simpleType>
+	
+	<complexType name="MetaDividerType">
+    	<complexContent>
+    		<extension base="tns:AbstractAlgoType">
+		    	<sequence>
+		    	</sequence>
+    			<attribute name="key" type="tns:MetaDividerKeyType"
+    				use="required" />
+    		</extension>
+    	</complexContent>
+    </complexType>
+
+    <simpleType name="MetaDividerKeyType">
+		<restriction base="string">
+			<enumeration value="RemoveFirstLevel"></enumeration>
+			<enumeration value="RemoveLevel"></enumeration>
+			<enumeration value="KeepFirstLevels"></enumeration>
+			<enumeration value="Custom"></enumeration>
+		</restriction>
+	</simpleType>
+	
+	<complexType name="AbstractDividerType" abstract="true">
+    	<complexContent>
+    		<extension base="tns:AbstractAlgoType">
+		    	<sequence>
+		    	</sequence>
+    			<attribute name="produces" type="tns:LotTypeType" use="optional"/>
+    		</extension>
+    	</complexContent>
+    </complexType>
+    
+	<complexType name="RuleBasedDividerType">
+    	<complexContent>
+    		<extension base="tns:AbstractDividerType">
+		    	<sequence>
+		    	</sequence>
+		    	<attribute name="key" type="tns:RuleBasedDividerKeyType"
+    				use="required" />
+    		</extension>
+    	</complexContent>
+    </complexType>
+
+    <simpleType name="RuleBasedDividerKeyType">
+		<restriction base="string">
+			<enumeration value="None"></enumeration>
+			<enumeration value="ByContainer"></enumeration>
+			<enumeration value="ByDataPackage"></enumeration>
+			<enumeration value="ByLinkType"></enumeration>
+			<enumeration value="ByObjectType"></enumeration>
+			<enumeration value="ByBusinessAffinity"></enumeration>
+			<enumeration value="ByMagnet"></enumeration>
+			<enumeration value="ByLastUpdateDate"></enumeration>
+			<enumeration value="Custom"></enumeration>
+		</restriction>
+	</simpleType>
+	
+    
+    <complexType name="TopologicalDividerType">
+    	<complexContent>
+    		<extension base="tns:AbstractDividerType">
+		    	<sequence>
+		    		<element name="Singles" maxOccurs="1"
+		    			minOccurs="0">
+		    			<complexType>
+		    				<sequence>
+		    					<element name="AllocateSingles"
+		    						type="boolean" maxOccurs="1" minOccurs="0">
+		    					</element>
+		    					<element
+		    						name="AllocateSinglesIfParentContainerRegEx"
+		    						type="tns:RegExpType" maxOccurs="1" minOccurs="0">
+		    					</element>
+		    				</sequence>
+		    			</complexType>
+		    		</element>
+		    		<element name="BomSimplifiers" maxOccurs="1" minOccurs="0">
+		    			<complexType>
+		    				<sequence minOccurs="0" maxOccurs="unbounded">
+		    					<choice>
+			    					<element name="Components"
+			    						type="tns:BomSimplifierType" maxOccurs="1" minOccurs="0" />
+			    					<element name="Kits"
+			    						type="tns:BomSimplifierType" maxOccurs="1" minOccurs="0" />
+			    					<element name="LotExtractor"
+			    						type="tns:LotExtractorType" maxOccurs="1" minOccurs="0">
+			    					</element>
+		    					</choice>
+		    				</sequence>
+		    			</complexType>
+		    		</element>
+		    	</sequence>
+		    	<attribute name="key" type="tns:TopologicalDividerKeyType"
+    				use="required" />
+    		</extension>
+    	</complexContent>
+    </complexType>
+
+    <simpleType name="TopologicalDividerKeyType">
+		<restriction base="string">
+			<enumeration value="Adherence"></enumeration>
+			<enumeration value="BillOfMaterial"></enumeration>
+			<enumeration value="ByDirectedLinkErrorNavigator"></enumeration>
+			<enumeration value="Metis"></enumeration>
+			<enumeration value="LouvainGenuine"></enumeration>
+			<enumeration value="LouvainJava"></enumeration>
+			<enumeration value="Magnet"></enumeration>
+			<enumeration value="Packetiser"></enumeration>
+			<enumeration value="NaturalOrder"></enumeration>
+			<enumeration value="Custom"></enumeration>
+		</restriction>
+	</simpleType>
+	
+    <complexType name="AlgosType">
+    	<sequence>
+    		<choice maxOccurs="unbounded" minOccurs="0">
+	   			<element name="Analyser"
+	   				type="tns:AnalyserType" maxOccurs="1"
+	   				minOccurs="0" />
+	   			<element name="MetaDivider"
+	   				type="tns:MetaDividerType" maxOccurs="1"
+	   				minOccurs="0" />
+	   			<element name="RuleBasedDivider"
+	   				type="tns:RuleBasedDividerType" maxOccurs="1"
+	   				minOccurs="0" />
+	   			<element name="TopologicalDivider"
+	   				type="tns:TopologicalDividerType" maxOccurs="1"
+	   				minOccurs="0" />
+			</choice>
+    	</sequence>
+    </complexType>
+    
+<!-- 
+****************************************************************
+  Run
+****************************************************************
+-->
+
+    <complexType name="RunsType">
+    	<sequence>
+   			<element name="Run"
+   				type="tns:RunType" maxOccurs="unbounded"
+   				minOccurs="1" />
+    	</sequence>
+    </complexType>
+    
+    <complexType name="RunType">
+    	<sequence>
+    		<element name="DataIn" maxOccurs="1" minOccurs="1">
+    			<complexType>
+    				<sequence>
+    					<element name="DataPumperRefId" type="string"
+    						maxOccurs="1" minOccurs="0" />
+
+    					<element name="DataStagerRefId" type="string"
+    						maxOccurs="unbounded" minOccurs="1" />
+
+    					<element name="DataPreloaderRefId" type="string"
+    						maxOccurs="1" minOccurs="1" />
+
+    					<element name="DataCheckerRefId" type="string"
+    						maxOccurs="unbounded" minOccurs="0">
+    					</element>
+    				</sequence>
+    			</complexType>
+    		</element>
+    		<element name="Algos" maxOccurs="1" minOccurs="1">
+    			<complexType>
+    				<sequence maxOccurs="unbounded" minOccurs="0">
+    					<element name="AlgoRefId"
+    						type="tns:AlgoRefIdType" />
+    				</sequence>
+    			</complexType>
+    		</element>
+    		<element name="Measures" maxOccurs="1" minOccurs="0">
+    			<complexType>
+    				<sequence maxOccurs="unbounded" minOccurs="1">
+    					<element name="MeasureProviderRef" maxOccurs="1"
+    						minOccurs="1">
+    						<complexType>
+    							<sequence maxOccurs="1" minOccurs="1">
+    								<element name="LotLevels"
+    									maxOccurs="1" minOccurs="0">
+    									<complexType>
+    										<sequence>
+    											<element
+    												name="FromLevel" type="unsignedInt" maxOccurs="1"
+    												minOccurs="1" />
+    											<element name="ToLevel"
+    												type="unsignedInt" maxOccurs="1" minOccurs="1" />
+    										</sequence>
+    									</complexType>
+    								</element>
+    							</sequence>
+    							<attribute name="id" type="string"
+    								use="required" />
+    						</complexType>
+    					</element>
+    				</sequence>
+    			</complexType>
+    		</element>
+    		<element name="Decorators" maxOccurs="1" minOccurs="0">
+    			<complexType>
+    				<sequence>
+    					<element name="DecoratorRefId" type="string"
+    						maxOccurs="unbounded" minOccurs="0" />
+    				</sequence>
+    			</complexType>
+    		</element>
+    	</sequence>
+    	<attribute name="scenario" type="string" use="required" />
+    	<attribute name="separateFromToLotLinks" type="boolean"
+    		use="optional" default="false">
+    		<annotation>
+    			<documentation>
+    				When true, bi-directed links are de-doubled :
+    				from/to and to/from links are shown
+    			</documentation>
+    		</annotation>
+    	</attribute>
+    	<attribute name="postAnalysisBusinessLotLevel" type="int"
+    		use="optional">
+    		<annotation>
+    			<documentation>
+    				When setup, post-analysis is activated. Lot beyond
+    				level provided (not included) are converted to
+    				Technical Lots
+    			</documentation>
+    		</annotation>
+    	</attribute>
+    	<attribute name="unstackLots" type="boolean" use="optional" default="false">
+    		<annotation>
+    			<documentation>False by default.
+When true, lots containing only one lot are hidden, only most inner lot is shown.
+This simplifies graph by removing stacks of lots containing one lot.</documentation></annotation></attribute>
+    </complexType>
+
+    <complexType name="AlgoRefIdType">
+    	<simpleContent>
+    		<extension base="string">
+				<attribute name="preDataJobRunId" type="string"></attribute>
+				<attribute name="postAlgoDataJobRunId" type="string"></attribute>
+				<attribute name="endDataJobRunId" type="string"></attribute>
+    		</extension>
+    	</simpleContent>
+    </complexType>
+
+    <complexType name="RegExpType">
+    	<simpleContent>
+    		<extension base="string">
+    			<attribute name="negate" type="boolean" use="optional"
+    				default="false">
+    			</attribute>
+    		</extension>
+    	</simpleContent>
+    </complexType>
+
+
+    <complexType name="GlobalDataInType">
+    	<simpleContent>
+    		<extension base="string">
+    			<attribute name="kind" use="required" type="tns:GlobalDataInKindType"/>
+    		</extension>
+    	</simpleContent>
+    </complexType>
+    
+    <simpleType name="GlobalDataInKindType">
+		<restriction base="string">
+			<enumeration value="directory"></enumeration>
+			<enumeration value="file"></enumeration>
+		</restriction>
+	</simpleType>
+    
+
+    <complexType name="GlobalDataPackagesType">
+    	<sequence>
+    		<element name="includes" type="string" maxOccurs="1"
+    			minOccurs="1">
+    		</element>
+    		<element name="excludes" type="string" maxOccurs="1"
+    			minOccurs="0">
+    		</element>
+    		<element name="DataPackageIdRegexp" type="string"
+    			maxOccurs="1" minOccurs="1">
+    		</element>
+    	</sequence>
+    	<attribute name="enabled" type="boolean" use="required"></attribute>
+    	<attribute name="kind" type="tns:GlobalDataInKindType"
+    		use="required">
+    	</attribute>
+    	<attribute name="checkMode" type="tns:CheckModeType" use="required"/>
+    </complexType>
+
+    <complexType name="RegexpParamType">
+		<sequence>
+			<element name="Regexp" type="tns:RegExpType" maxOccurs="1" minOccurs="1"></element>
+		</sequence>
+    	<attribute name="name" type="string" use="required"></attribute>
+    	<attribute name="value" type="string" use="required"></attribute>
+    </complexType>
+
+
+
+    <complexType name="FilterType">
+    	<sequence>
+    		<element name="regExpExcludes" type="tns:RegExpType"
+    			maxOccurs="1" minOccurs="0">
+    		</element>
+    	</sequence>
+    </complexType>
+
+    <complexType name="ActualTypeLocatorType">
+    	<sequence>
+    		<element name="Class" type="string" maxOccurs="1" minOccurs="1"></element>
+    	</sequence>
+    </complexType>
+
+    <complexType name="DataCsvFormatType">
+    	<sequence>
+    		<element name="Norm" maxOccurs="1" minOccurs="1" type="tns:DataCsvFormatNormEnum"/>
+    		
+    		<element name="Separator" type="tns:CharType" maxOccurs="1"
+    			minOccurs="1">
+    		</element>
+    		<element name="Delimiter" type="tns:CharType" maxOccurs="1"
+    			minOccurs="0">
+    		</element>
+    		<element name="QuoteMode" maxOccurs="1" minOccurs="1" type="tns:DataCsvFormatQuoteModeEnum"/>
+
+    		<element name="Escape" type="tns:CharType" maxOccurs="1"
+    			minOccurs="0">
+    		</element>
+    		
+    		<element name="CommentMarker" type="tns:CharType"
+    			maxOccurs="1" minOccurs="0">
+    		</element>
+    		<element name="CommentRegexp" type="string" maxOccurs="1"
+    			minOccurs="0">
+    		</element>
+    		<element name="HasHeader" type="boolean" maxOccurs="1" minOccurs="0"></element>
+    	</sequence>
+    	<attribute name="id" type="string" use="required"></attribute>
+    	<attribute name="parser" type="string" use="optional" default="apache-commons-csv"></attribute>
+    </complexType>
+
+	<simpleType name="DataCsvFormatNormEnum">
+		<restriction base="string">
+			<enumeration value="DEFAULT"></enumeration>
+			<enumeration value="EXCEL"></enumeration>
+			<enumeration value="INFORMIX_UNLOAD"></enumeration>
+			<enumeration value="INFORMIX_UNLOAD_CSV"></enumeration>
+			<enumeration value="MY_SQL"></enumeration>
+			<enumeration value="POSTGRESQL_CSV"></enumeration>
+			<enumeration value="POSTGRESQL_TEXT"></enumeration>
+			<enumeration value="RFC4180"></enumeration>
+			<enumeration value="TDF"></enumeration>
+		</restriction>
+	</simpleType>
+
+	<simpleType name="DataCsvFormatQuoteModeEnum">
+		<restriction base="string">
+			<enumeration value="ALL"></enumeration>
+			<enumeration value="ALL_NON_NULL"></enumeration>
+			<enumeration value="MINIMAL"></enumeration>
+			<enumeration value="NON_NUMERIC"></enumeration>
+			<enumeration value="NONE"></enumeration>
+		</restriction>
+	</simpleType>
+
+    <complexType name="DataFormatType">
+    	<sequence minOccurs="0" maxOccurs="unbounded">
+  		   <element name="DataCsvFormat" type="tns:DataCsvFormatType"/>
+    	</sequence>
+    </complexType>
+
+    <complexType name="DataJobsType">
+        <sequence>
+        	<element name="Definitions" maxOccurs="1" minOccurs="0">
+        		<complexType>
+        			<sequence>
+        		   		<element name="DataJobDef" type="tns:DataJobDefType" maxOccurs="unbounded" minOccurs="0" />
+        		   	</sequence>
+        		</complexType>
+        	</element>
+        	<element name="Runs" maxOccurs="1" minOccurs="0">
+        		<complexType>
+        			<sequence>
+        		   		<element name="DataJobRun" type="tns:DataJobRunType" maxOccurs="unbounded" minOccurs="0" />
+        		   	</sequence>
+        		</complexType>
+        	</element>
+        </sequence>
+    </complexType>
+    
+    <complexType name="DataJobDefType">
+    	<sequence>
+    	    <element name="Class" type="string"  maxOccurs="1" minOccurs="1"/>
+    		<element name="ParamDefinitions" type="tns:ParamDefinitionsType" maxOccurs="1" minOccurs="0"></element>
+    	</sequence>
+    	<attribute name="key" type="string" use="required"></attribute>
+    </complexType>
+    
+    <complexType name="AnonymousDataJobRunType">
+    	<sequence>
+    		<element name="Params" type="tns:ParamsType" maxOccurs="1"
+    			minOccurs="0" />
+    	</sequence>
+    	<attribute name="key" type="string" use="required"></attribute>
+    </complexType>
+
+    <complexType name="DataJobRunType">
+    	<complexContent>
+    		<extension base="tns:AnonymousDataJobRunType">
+   				<attribute name="id" type="string" use="optional"/>
+    		</extension>
+    	</complexContent>
+    </complexType>
+
+    <complexType name="DataJobRunRefIdOrRunType">
+    	<choice minOccurs="1" maxOccurs="1">
+    		<element name="RunId" type="tns:DataJobRunRefIdType"/>
+    		<element name="Run" type="tns:AnonymousDataJobRunType"/>
+    	</choice>
+    </complexType>
+
+    <complexType name="DataJobRunRefIdType">
+    	<attribute name="refId" type="string" use="required"></attribute>
+    </complexType>
+
+    <complexType name="DataJobAutoType">
+    	<sequence>
+    		<element name="Pre" type="tns:DataJobRunRefIdOrRunType" maxOccurs="1" minOccurs="0" />
+    		<element name="PostAlgo" type="tns:DataJobRunRefIdOrRunType" maxOccurs="1" minOccurs="0" />
+    		<element name="End" type="tns:DataJobRunRefIdOrRunType" maxOccurs="1" minOccurs="0" />
+    	</sequence>
+    </complexType>
+
+    <complexType name="AbstractBomSimplifierType" abstract="true">
+    	<sequence>
+    		<element name="Class" type="string" maxOccurs="1" minOccurs="0"></element>
+    		<element minOccurs="1" maxOccurs="1"
+    			name="SpecificBusinessLot" type="boolean">
+    			<annotation>
+    				<documentation>
+    					If true move components lot in a business
+    					component lot belong to parent lot
+    				</documentation>
+    			</annotation>
+    		</element>
+    		<element name="SingleExtractorLot" type="boolean"
+    			maxOccurs="1" minOccurs="0">
+    		</element>
+    	</sequence>
+    </complexType>
+    
+    <complexType name="BomSimplifierType">
+    	<complexContent>
+    		<extension base="tns:AbstractBomSimplifierType">
+		    	<sequence>
+                    <element minOccurs="1" maxOccurs="1"
+		    			name="LinksTrigger" type="int">
+		    		</element>
+		    	</sequence>
+    		</extension>
+    	</complexContent>
+    </complexType>
+    
+    <complexType name="LotExtractorType">
+    	<complexContent>
+    		<extension base="tns:AbstractBomSimplifierType">
+		    	<sequence>
+		    		<element name="BomHeadRegexp"
+		    			type="tns:RegExpType" maxOccurs="1" minOccurs="1">
+		    		</element>
+		    	</sequence>
+    		</extension>
+		</complexContent>
+    </complexType>
+    
+
+    <complexType name="MeasuresType">
+    	<sequence>
+    		<element name="MeasureProviderResource" type="string" maxOccurs="1" minOccurs="1"></element>
+    	</sequence>
+    </complexType>
+
+    <complexType name="MeasureProvidersType">
+    	<sequence maxOccurs="unbounded" minOccurs="0">
+    		<element name="MeasureProvider">
+    			<complexType>
+    				<sequence>
+    					<element name="MeasureProviderResource"
+    						type="string">
+    					</element>
+    				</sequence>
+    				<attribute name="id" type="string" use="required"></attribute>
+    			</complexType>
+    		</element>
+    	</sequence>
+    </complexType>
+
+	<simpleType name="LouvainGenuineQualityFunction">
+		<!-- Order is important : see louvain - -help -->
+		<restriction base="string">
+			<enumeration value="Modularity"></enumeration>
+			<enumeration value="Zahn_Condorcet"></enumeration>
+			<enumeration value="Owsinski_Zadrozny"></enumeration>
+			<enumeration value="Goldberg_Density"></enumeration>
+			<enumeration value="A_weighted_Condorcet"></enumeration>
+			<enumeration value="DeviationToIndetermination"></enumeration>
+			<enumeration value="DeviationToUniformity"></enumeration>
+			<enumeration value="ProfileDifference"></enumeration>
+			<enumeration value="Shi_Malik"></enumeration>
+			<enumeration value="BalancedModularity"></enumeration>
+		</restriction>
+	</simpleType>
+	
+
+	<simpleType name="CheckModeType">
+		<restriction base="string">
+			<enumeration value="strict"></enumeration>
+			<enumeration value="lax"></enumeration>
+		</restriction>
+	</simpleType>
+</schema>

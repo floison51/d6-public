@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="UTF-8"?><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.xlm.jxlm.pub.d6</groupId>
+	<artifactId>pd6-pom</artifactId>
+
+    <!-- Main version -->
+	<version>1.0-SNAPSHOT</version>
+	
+	<packaging>pom</packaging>
+	<name>Public Data Systemizer Global Maven Project</name>
+	
+	<licenses>
+	  <license>
+	    <name>GPL-3.0</name>	    
+	  </license>
+	</licenses>
+
+	<!-- Maven 3.9.6 is required for build stability -->
+	<prerequisites>
+		<maven>3.9.6</maven>
+	</prerequisites>
+
+  <properties>
+
+	<java.version>21</java.version>
+	<maven.compiler.source>${java.version}</maven.compiler.source>
+	<maven.compiler.target>${java.version}</maven.compiler.target>
+	
+    <!-- Force UTF-8 for java files -->
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	
+	<!-- Shared dependencies versions -->
+	<pd6-jaxb2-maven-plugin-version>2.5.0</pd6-jaxb2-maven-plugin-version>
+	<pd6-jaxb-runtime.version>2.3.1</pd6-jaxb-runtime.version>
+	
+	<pd6-log4j2.version>3.0.0-beta2</pd6-log4j2.version>
+	
+	<pd6-commons-lang3.version>3.17.0</pd6-commons-lang3.version>
+	<!-- Warning: version 2.11.0 is KO, FileWriterWithEncoding corrupts output buffer -->
+	<pd6-commons-io.version>2.17.0</pd6-commons-io.version>
+	
+	<!-- CLI -->
+	<pd6-commons-cli.version>1.9.0</pd6-commons-cli.version>
+	
+	<pd6-JUnit4.version>4.13.2</pd6-JUnit4.version>
+	
+	<pd6-XmlUnit.version>1.6</pd6-XmlUnit.version>
+	
+	<pd6-ant.version>1.10.15</pd6-ant.version>
+	
+	<!-- JGrapht -->
+	<pd6-jgrapht.version>1.5.2</pd6-jgrapht.version>
+
+  </properties>
+  
+	<modules>
+	
+		<module>d6-light</module>
+				
+	</modules>
+
+	<build>
+	
+	  <resources>
+  	    <!-- 
+	  	  Following tells maven to parse some resource files and replace ${...} by actual maven props
+		  ( for example version )
+		  Only files info.properties are processed
+	    -->
+	  
+        <resource>
+          <directory>src/main/resources</directory>
+          <filtering>true</filtering>
+          <includes>
+            <include>**/info.properties</include>
+          </includes>
+        </resource>
+        <resource>
+          <directory>src/main/resources</directory>
+          <filtering>false</filtering>
+          <excludes>
+            <exclude>**/info.properties</exclude>
+          </excludes>
+        </resource>
+      </resources>
+
+	<plugins>
+	
+	  <!-- To show plugin updates : mvn versions:display-plugin-updates -->
+	  <!-- Artefacts : mvn versions:display-dependency-updates -->
+	  <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+          <artifactId>versions-maven-plugin</artifactId>
+          <version>2.7</version>
+          <configuration>
+            <generateBackupPoms>false</generateBackupPoms>
+          </configuration>
+      </plugin>
+	  
+	  <!-- Verify important pre-requisites -->
+	  <plugin>
+		<groupId>org.apache.maven.plugins</groupId>
+		<artifactId>maven-enforcer-plugin</artifactId>
+		<version>3.0.0</version>
+		<executions>
+		  <execution>
+			<id>enforce-versions</id>
+			<goals>
+			  <goal>enforce</goal>
+			</goals>
+			<configuration>
+			  <rules>
+			  
+				<requireJavaVersion>
+				  <version>${java.version}</version>
+				</requireJavaVersion>
+			  </rules>
+			  
+			</configuration>
+		  </execution>
+		  
+		  <execution>
+			<id>display-info</id>
+			<goals>
+			  <goal>display-info</goal>
+			</goals>
+			<configuration>
+
+			  <!-- Check dependency convergence -->
+			  <rules>
+				<dependencyConvergence/>
+			  </rules>
+			  
+			</configuration>
+		  </execution>
+		</executions>
+	  </plugin>
+		
+	  <!-- Switch to target JDK -->
+	  <plugin>
+		<groupId>org.apache.maven.plugins</groupId>
+		<artifactId>maven-compiler-plugin</artifactId>
+		<version>3.11.0</version>
+		<configuration>
+		  <release>${java.version}</release>
+		  <testRelease>${java.version}</testRelease>
+		</configuration>
+	  </plugin>
+		
+	  <plugin>
+		<!-- Test configuration -->
+		<groupId>org.apache.maven.plugins</groupId>
+		<artifactId>maven-surefire-plugin</artifactId>
+		<configuration>
+          <!-- don't fail if no tests specified -->
+          <failIfNoTests>false</failIfNoTests>
+		  <failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
+      	  <argLine>--illegal-access=permit</argLine>
+		  <!-- force JVM version -->
+		  <source>${java.version}</source>
+		  <target>${java.version}</target>
+		  <verbose>true</verbose>
+		  <!-- system properties added to test JVM -->
+		  <systemProperties>
+			<!-- For server-side automated test: no graphic environement (avoid errors on graphers) -->
+			<property><name>java.awt.headless</name><value>true</value></property>
+		    <!-- enable this section to debug test goal -->
+		    <!-- <argLine>-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8002</argLine> -->
+
+		  </systemProperties>
+		</configuration>
+	  </plugin>
+	  
+	  <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+		<version>3.2.3</version>
+        <configuration>
+          <argLine>--illegal-access=permit</argLine>
+        </configuration>
+      </plugin>
+
+		<!-- force maven plugins versions for stability -->
+    
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-clean-plugin</artifactId>
+			<version>3.3.2</version>
+	    </plugin>
+
+   		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-deploy-plugin</artifactId>
+			<version>3.1.1</version>
+	    </plugin>
+
+   		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-install-plugin</artifactId>
+			<version>3.1.1</version>
+	    </plugin>
+
+	    <plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-resources-plugin</artifactId>
+			<version>3.3.1</version>
+	    </plugin>
+
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-site-plugin</artifactId>
+			<version>4.0.0-M12</version>
+		</plugin>
+
+	    <plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-verifier-plugin</artifactId>
+			<version>1.1</version>
+	    </plugin>
+
+	    <plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-jar-plugin</artifactId>
+			<version>3.3.0</version>
+	    </plugin>
+
+	    <plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-war-plugin</artifactId>
+			<version>3.4.0</version>
+	    </plugin>
+		
+	    <plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-shade-plugin</artifactId>
+			<version>3.5.1</version>
+	    </plugin>
+
+	    <plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-source-plugin</artifactId>
+			<version>3.3.0</version>
+	    </plugin>
+		
+<!-- Site plugins -->
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-jxr-plugin</artifactId>
+			<version>3.3.1</version>
+		</plugin>
+
+	    <plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-changelog-plugin</artifactId>
+			<version>2.3</version>
+	    </plugin>
+	    
+	    <plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-changes-plugin</artifactId>
+			<version>2.12.1</version>
+	    </plugin>
+
+	    <plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-javadoc-plugin</artifactId>
+			<version>3.6.3</version>
+	    </plugin>
+
+	    <plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-project-info-reports-plugin</artifactId>
+			<version>3.5.0</version>
+	    </plugin>
+
+    </plugins>
+
+  </build>
+
+</project>
