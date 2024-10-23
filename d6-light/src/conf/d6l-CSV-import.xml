@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<D6LightDataConf 
+    xmlns="http://d6light.data/conf"
+>
+  <DataIn>
+  
+    <DataCsvFormat>
+      <Norm>DEFAULT</Norm>
+      <Separator>;</Separator>
+      <Delimiter>"</Delimiter>
+      <QuoteMode>MINIMAL</QuoteMode>
+    </DataCsvFormat>
+    
+  </DataIn>
+	
+  <Algos>
+  </Algos>
+	
+</D6LightDataConf>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+
+  <Appenders>
+    <RollingFile
+      name="FILE" fileName="d6-light-data.log" append="true"
+      filePattern="d6-light-data.log.%i.zip"
+    >
+      <PatternLayout>
+        <Pattern>%d;%c;%t;%-5p;%m%n</Pattern>
+      </PatternLayout>
+      <Policies>
+        <SizeBasedTriggeringPolicy size="4MB" />
+      </Policies>
+      <DefaultRolloverStrategy max="10" />
+    </RollingFile>
+
+    <Console name="STDOUT" target="SYSTEM_OUT">
+      <PatternLayout pattern="%t-%-5p - %m%n" charset="IBM850"/>
+    </Console>
+    
+  </Appenders>
+  
+  <Loggers>
+    <Root level="info">
+      <AppenderRef ref="STDOUT"/>
+      <AppenderRef ref="FILE"/>
+    </Root>
+    
+  </Loggers>
+  
+</Configuration>

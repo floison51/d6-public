@@ -1,0 +1,7 @@
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">
+  
+  <group  prefer="public" >  
+    <uri name="http://d6light.data/conf" uri="org/xlm/jxlm/pub/d6light/data/conf/d6l-conf.xsd"/>
+  </group>
+  
+</catalog>
