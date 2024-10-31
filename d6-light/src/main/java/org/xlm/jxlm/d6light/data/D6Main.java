@@ -1,3 +1,21 @@
+/**
+ *  Public Data Systemizer, see https://doi.org/10.1016/j.compind.2023.104053
+ *  Copyright (C) 2025 Francois LOISON
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html
+**/
+
 package org.xlm.jxlm.d6light.data;
 
 import java.io.File;
@@ -16,7 +34,14 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.appender.FileAppender;
-import org.xlm.jxlm.d6light.data.imp.D6ImportFormatEnum;
+import org.jgrapht.Graph;
+import org.jgrapht.graph.AsUnmodifiableGraph;
+import org.jgrapht.graph.SimpleGraph;
+import org.jgrapht.nio.GraphImporter;
+import org.xlm.jxlm.d6light.data.imp.D6GraphFormatEnum;
+import org.xlm.jxlm.d6light.data.imp.D6ImporterWrapper;
+import org.xlm.jxlm.d6light.data.model.D6Edge;
+import org.xlm.jxlm.d6light.data.model.D6Vertex;
 
 /**
  * Main class for D6-light
@@ -34,6 +59,12 @@ public class D6Main {
 	
 	/** Option graph format **/
 	public static final String OPTION_GRAPH_FORMAT = "graphFormat";
+
+	private File graphInFile;
+
+	private D6GraphFormatEnum graphFormat;
+
+	private Graph<D6Vertex, D6Edge> sourceGraph;
 	
     /**
      * Default constructor
@@ -57,7 +88,7 @@ public class D6Main {
 
 	public void doJob( String... args ) throws D6Exception {
 		
-        LOGGER.info( "TT Data Systemizer version " + getVersion() );
+        LOGGER.info( "D6 Data Systemizer version " + getVersion() );
         
         org.apache.logging.log4j.core.Logger coreLogger = (org.apache.logging.log4j.core.Logger) LOGGER;
         
@@ -100,13 +131,42 @@ public class D6Main {
     	File confFile = getFileFromOption( cmd, OPTION_CONF );
     	
     	// Get graph file
-    	File graphInFile = getFileFromOption( cmd, OPTION_GRAPH_IN );
+    	this.graphInFile = getFileFromOption( cmd, OPTION_GRAPH_IN );
 
     	// Get graph format
     	String strGraphFormat = cmd.getOptionValue( OPTION_GRAPH_FORMAT );
     	
     	// Parse it
-    	D6ImportFormatEnum graphFormat = D6ImportFormatEnum.valueOf( strGraphFormat );
+    	this.graphFormat = D6GraphFormatEnum.valueOf( strGraphFormat );
+    	
+    	// Read conf
+    	
+    	// Initialize empty graph
+    	this.sourceGraph = new SimpleGraph<>( 
+    		D6Edge.class
+    	);
+    	
+    	// Import graph
+    	importGraph( this.sourceGraph );
+    	
+    	// Freeze source graph
+    	this.sourceGraph = new AsUnmodifiableGraph<>( this.sourceGraph );
+    	
+    	System.out.println( sourceGraph );
+    	
+	}
+
+	protected void importGraph( Graph<D6Vertex, D6Edge> graph ) throws D6Exception {
+		
+		// Importer wrapper
+    	D6ImporterWrapper importerWrapper = new D6ImporterWrapper();
+    	
+    	// Get graph importer according to format
+    	GraphImporter<D6Vertex, D6Edge> importer =  
+    		importerWrapper.getGraphImporterInstance( graphFormat );
+    	
+    	// Import graph
+    	importer.importGraph( graph, graphInFile );
     	
 	}
 
