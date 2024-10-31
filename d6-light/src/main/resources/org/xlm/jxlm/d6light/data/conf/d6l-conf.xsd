@@ -17,7 +17,6 @@
     	<complexType>
     		<sequence>
 
-
     			<element name="DataIn" type="tns:DataInType"
     				maxOccurs="1" minOccurs="1">
     			</element>
@@ -122,7 +121,6 @@
 
     <complexType name="DataInType">
     	<sequence>
-  		   <element name="DataCsvFormat" type="tns:DataCsvFormatType"/>
     	</sequence>
     </complexType>
 
@@ -209,6 +207,7 @@
     <simpleType name="TopologicalDividerKeyType">
 		<restriction base="string">
 			<enumeration value="BillOfMaterial"></enumeration>
+			<enumeration value="Louvain"></enumeration>
 		</restriction>
 	</simpleType>
 	
@@ -254,57 +253,6 @@
     		<element name="Class" type="string" maxOccurs="1" minOccurs="1"></element>
     	</sequence>
     </complexType>
-
-    <complexType name="DataCsvFormatType">
-    	<sequence>
-    		<element name="Norm" maxOccurs="1" minOccurs="1" type="tns:DataCsvFormatNormEnum"/>
-    		
-    		<element name="Separator" type="tns:CharType" maxOccurs="1"
-    			minOccurs="1">
-    		</element>
-    		<element name="Delimiter" type="tns:CharType" maxOccurs="1"
-    			minOccurs="0">
-    		</element>
-    		<element name="QuoteMode" maxOccurs="1" minOccurs="1" type="tns:DataCsvFormatQuoteModeEnum"/>
-
-    		<element name="Escape" type="tns:CharType" maxOccurs="1"
-    			minOccurs="0">
-    		</element>
-    		
-    		<element name="CommentMarker" type="tns:CharType"
-    			maxOccurs="1" minOccurs="0">
-    		</element>
-    		<element name="CommentRegexp" type="string" maxOccurs="1"
-    			minOccurs="0">
-    		</element>
-    		<element name="HasHeader" type="boolean" maxOccurs="1" minOccurs="0"></element>
-    	</sequence>
-    </complexType>
-
-	<simpleType name="DataCsvFormatNormEnum">
-		<restriction base="string">
-			<enumeration value="DEFAULT"></enumeration>
-			<enumeration value="EXCEL"></enumeration>
-			<enumeration value="INFORMIX_UNLOAD"></enumeration>
-			<enumeration value="INFORMIX_UNLOAD_CSV"></enumeration>
-			<enumeration value="MY_SQL"></enumeration>
-			<enumeration value="POSTGRESQL_CSV"></enumeration>
-			<enumeration value="POSTGRESQL_TEXT"></enumeration>
-			<enumeration value="RFC4180"></enumeration>
-			<enumeration value="TDF"></enumeration>
-		</restriction>
-	</simpleType>
-
-	<simpleType name="DataCsvFormatQuoteModeEnum">
-		<restriction base="string">
-			<enumeration value="ALL"></enumeration>
-			<enumeration value="ALL_NON_NULL"></enumeration>
-			<enumeration value="MINIMAL"></enumeration>
-			<enumeration value="NON_NUMERIC"></enumeration>
-			<enumeration value="NONE"></enumeration>
-		</restriction>
-	</simpleType>
-	
 
     <complexType name="AbstractBomSimplifierType" abstract="true">
     	<sequence>

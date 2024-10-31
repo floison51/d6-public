@@ -22,7 +22,6 @@ import java.text.MessageFormat;
 
 import org.jgrapht.nio.BaseEventDrivenImporter;
 import org.jgrapht.nio.GraphImporter;
-import org.jgrapht.nio.csv.CSVImporter;
 import org.jgrapht.nio.gml.GmlImporter;
 import org.xlm.jxlm.d6light.data.D6Exception;
 import org.xlm.jxlm.d6light.data.model.D6Edge;
@@ -32,28 +31,17 @@ import org.xlm.jxlm.d6light.data.model.D6Vertex;
 /**
  * Graph file importer
  */
-public class D6ImporterWrapper {
+public class D6LImporterWrapper {
 
-	public GraphImporter<D6Vertex, D6Edge> getGraphImporterInstance( D6GraphFormatEnum format ) throws D6Exception {
+	public GraphImporter<D6Vertex, D6Edge> getGraphImporterInstance( 
+		D6LGraphFormatEnum format
+	) throws D6Exception {
 
 		GraphImporter<D6Vertex, D6Edge> result = null;
 		BaseEventDrivenImporter<D6Vertex, D6Edge> intermediate = null;
 
 		switch ( format ) {
 
-			case CSV: {
-				CSVImporter<D6Vertex, D6Edge> csvImp = new CSVImporter<>();
-				intermediate = csvImp;
-				result = csvImp;
-				
-				// Set vertex factory
-				csvImp.setVertexFactory(
-					id -> D6EntityRegistry.newVertex( Integer.getInteger( id ) )
-				);
-				
-				break;
-			}
-	
 			case GML: {
 				
 				GmlImporter<D6Vertex, D6Edge> gmlImp = new GmlImporter<>();

@@ -19,6 +19,7 @@
 package org.xlm.jxlm.d6light.data;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.MessageFormat;
@@ -38,15 +39,17 @@ import org.jgrapht.Graph;
 import org.jgrapht.graph.AsUnmodifiableGraph;
 import org.jgrapht.graph.SimpleGraph;
 import org.jgrapht.nio.GraphImporter;
-import org.xlm.jxlm.d6light.data.imp.D6GraphFormatEnum;
-import org.xlm.jxlm.d6light.data.imp.D6ImporterWrapper;
+import org.xlm.jxlm.d6light.data.conf.D6LConfHelper;
+import org.xlm.jxlm.d6light.data.conf.D6LightDataConf;
+import org.xlm.jxlm.d6light.data.imp.D6LGraphFormatEnum;
+import org.xlm.jxlm.d6light.data.imp.D6LImporterWrapper;
 import org.xlm.jxlm.d6light.data.model.D6Edge;
 import org.xlm.jxlm.d6light.data.model.D6Vertex;
 
 /**
  * Main class for D6-light
  */
-public class D6Main {
+public class D6LMain {
 
 	/** Logger **/
 	public static final Logger LOGGER = LogManager.getLogger( "D6-light" );
@@ -62,14 +65,16 @@ public class D6Main {
 
 	private File graphInFile;
 
-	private D6GraphFormatEnum graphFormat;
+	private D6LGraphFormatEnum graphFormat;
 
 	private Graph<D6Vertex, D6Edge> sourceGraph;
+
+	private D6LightDataConf d6lConf;
 	
     /**
      * Default constructor
      */
-    public D6Main() {
+    public D6LMain() {
         super();
     }
     
@@ -80,7 +85,7 @@ public class D6Main {
 	 */
 	public static void main( String... args ) throws D6Exception {
 		
-		D6Main me = new D6Main();
+		D6LMain me = new D6LMain();
         
         me.doJob( args );
 
@@ -88,7 +93,7 @@ public class D6Main {
 
 	public void doJob( String... args ) throws D6Exception {
 		
-        LOGGER.info( "D6 Data Systemizer version " + getVersion() );
+        LOGGER.info( "Data Systemizer Light version " + getVersion() );
         
         org.apache.logging.log4j.core.Logger coreLogger = (org.apache.logging.log4j.core.Logger) LOGGER;
         
@@ -130,6 +135,16 @@ public class D6Main {
     	// Get conf file
     	File confFile = getFileFromOption( cmd, OPTION_CONF );
     	
+    	// Read conf
+    	// Get JAXB config
+    	try ( 
+    		InputStream isConf = new FileInputStream ( confFile ); 
+    	) {
+    		this.d6lConf = D6LConfHelper.getConf( isConf, null );
+    	} catch ( IOException ioe ) {
+    		D6Exception.handleException( ioe );
+    	}
+    	
     	// Get graph file
     	this.graphInFile = getFileFromOption( cmd, OPTION_GRAPH_IN );
 
@@ -137,9 +152,7 @@ public class D6Main {
     	String strGraphFormat = cmd.getOptionValue( OPTION_GRAPH_FORMAT );
     	
     	// Parse it
-    	this.graphFormat = D6GraphFormatEnum.valueOf( strGraphFormat );
-    	
-    	// Read conf
+    	this.graphFormat = D6LGraphFormatEnum.valueOf( strGraphFormat );
     	
     	// Initialize empty graph
     	this.sourceGraph = new SimpleGraph<>( 
@@ -152,14 +165,12 @@ public class D6Main {
     	// Freeze source graph
     	this.sourceGraph = new AsUnmodifiableGraph<>( this.sourceGraph );
     	
-    	System.out.println( sourceGraph );
-    	
 	}
 
 	protected void importGraph( Graph<D6Vertex, D6Edge> graph ) throws D6Exception {
 		
 		// Importer wrapper
-    	D6ImporterWrapper importerWrapper = new D6ImporterWrapper();
+    	D6LImporterWrapper importerWrapper = new D6LImporterWrapper();
     	
     	// Get graph importer according to format
     	GraphImporter<D6Vertex, D6Edge> importer =  
@@ -249,7 +260,7 @@ public class D6Main {
 	private void help( Options options ) throws D6Exception {
 		// automatically generate the help statement
 		HelpFormatter formatter = new HelpFormatter();
-		formatter.printHelp( "java " + D6Main.class.getName() , options );
+		formatter.printHelp( "java " + D6LMain.class.getName() , options );
 		throw new D6Exception( "Syntax error" );
 	}
 	
@@ -259,8 +270,7 @@ public class D6Main {
 	 */
 	public static String getVersion() {
 
-		String version;
-		version = getX6LibVersion( D6Main.class.getPackage().getName() );
+		String version = getX6LibVersion( D6LMain.class.getPackage().getName() );
 		return version;
 		
 	}
@@ -275,7 +285,7 @@ public class D6Main {
 		
 		// X6 Libs contains file called "info.properties"
 		String cpPath = "/" + packkage.replace( '.', '/' ) + "/info.properties";
-		InputStream isInfo = D6Main.class.getResourceAsStream( cpPath );
+		InputStream isInfo = D6LMain.class.getResourceAsStream( cpPath );
 		if ( isInfo==null ) {
 			// Old lib: no version available
 			return null;

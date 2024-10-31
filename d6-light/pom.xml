@@ -33,10 +33,10 @@
 		                <configuration>
 		                	<!--  XSD schema -->
 		                	<sources>
-			                	<source>src/main/resources/org/xlm/jxlm/pub/d6light/data/conf/d6l-conf.xsd</source>
+			                	<source>src/main/resources/org/xlm/jxlm/d6light/data/conf/d6l-conf.xsd</source>
 			                </sources>
 			                
-			                <packageName>org.xlm.jxlm.pub.d6.light.conf</packageName> 
+			                <packageName>org.xlm.jxlm.d6light.data.conf</packageName> 
 		                    <outputDirectory>${project.build.directory}/generated-sources/xjcConf</outputDirectory>
 		                </configuration>
                     </execution>
@@ -114,13 +114,13 @@
 	  <version>1.5.2</version>
 	</dependency>
 	
-    <dependency>
-	  <groupId>junit</groupId>
-	  <artifactId>junit</artifactId>
-	  <version>${pd6-JUnit4.version}</version>
-	  <scope>test</scope>
-    </dependency>
-    
+	<dependency>
+	    <groupId>org.junit.jupiter</groupId>
+	    <artifactId>junit-jupiter</artifactId>
+	    <version>${pd6-JUnit5.version}</version>
+	    <scope>test</scope>
+	</dependency>
+
   </dependencies>
 
 </project>

@@ -2,16 +2,7 @@
 <D6LightDataConf 
     xmlns="http://d6light.data/conf"
 >
-  <DataIn>
-  
-    <DataCsvFormat>
-      <Norm>DEFAULT</Norm>
-      <Separator>;</Separator>
-      <Delimiter>"</Delimiter>
-      <QuoteMode>MINIMAL</QuoteMode>
-    </DataCsvFormat>
-    
-  </DataIn>
+  <DataIn/>
 	
   <Algos>
   </Algos>

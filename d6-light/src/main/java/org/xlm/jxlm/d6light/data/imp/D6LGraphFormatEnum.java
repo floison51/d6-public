@@ -16,29 +16,13 @@
  *  along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html
 **/
 
-package org.xlm.jxlm.d6light.data.bom;
+package org.xlm.jxlm.d6light.data.imp;
 
-import java.util.Arrays;
-import java.util.List;
+/**
+ * Supported graph import formats
+ */
+public enum D6LGraphFormatEnum {
 
-import org.junit.jupiter.api.Test;
-import org.xlm.jxlm.d6light.data.D6Exception;
-import org.xlm.jxlm.d6light.data.D6LMain;
-import org.xlm.jxlm.d6light.data.imp.D6LGraphFormatEnum;
-
-class TestD6LBomPackager {
-
-	@Test
-	void testBomPackager() throws D6Exception {
-		
-		List<String> opts = Arrays.asList(
-			"-" + D6LMain.OPTION_CONF, "src/conf/d6l-testBOM-CSV-import.xml",
-			"-" + D6LMain.OPTION_GRAPH_IN, "src/test/resources/org/xlm/jxlm/d6light/data/bom/t01/testBom-t01.gml",
-			"-" + D6LMain.OPTION_GRAPH_FORMAT, D6LGraphFormatEnum.GML.name()
-		);
-		
-				
-		D6LMain.main( opts.toArray( new String[] {} ) ) ;
-	}
-
+	GML,
+	
 }

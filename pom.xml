@@ -43,7 +43,7 @@
 	<!-- CLI -->
 	<pd6-commons-cli.version>1.9.0</pd6-commons-cli.version>
 	
-	<pd6-JUnit4.version>4.13.2</pd6-JUnit4.version>
+	<pd6-JUnit5.version>5.11.3</pd6-JUnit5.version>
 	
 	<pd6-XmlUnit.version>1.6</pd6-XmlUnit.version>
 	

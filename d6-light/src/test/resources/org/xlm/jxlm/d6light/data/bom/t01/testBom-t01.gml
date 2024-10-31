@@ -8,7 +8,7 @@ graph
 	node
 	[
 		id	0
-		label	"1"
+		label	"A"
 		graphics
 		[
 			x	20.67421564980159
@@ -34,7 +34,7 @@ graph
 	node
 	[
 		id	1
-		label	"2"
+		label	"B"
 		graphics
 		[
 			x	15.50556485615079
@@ -60,7 +60,7 @@ graph
 	node
 	[
 		id	2
-		label	"3"
+		label	"C"
 		graphics
 		[
 			x	10.3369140625
@@ -83,7 +83,7 @@ graph
 	node
 	[
 		id	3
-		label	"4"
+		label	"D"
 		graphics
 		[
 			x	61.01112041170635
@@ -106,7 +106,7 @@ graph
 	node
 	[
 		id	4
-		label	"5"
+		label	"E"
 		graphics
 		[
 			x	66.17977120535713
