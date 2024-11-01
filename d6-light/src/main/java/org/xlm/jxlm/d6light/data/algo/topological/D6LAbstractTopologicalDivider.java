@@ -30,11 +30,11 @@ import javax.xml.bind.JAXBElement;
 import org.xlm.jxlm.d6light.data.algo.D6LAbstractDividerAlgo;
 import org.xlm.jxlm.d6light.data.algo.D6LAlgoCommandIF;
 import org.xlm.jxlm.d6light.data.algo.topological.bom.D6LByDirectedLinkBomDivider;
-import org.xlm.jxlm.d6light.data.algo.topological.bom.D6TopologicalDividerIF;
 import org.xlm.jxlm.d6light.data.algo.topological.bomsimplifier.D6LAbstractBomSimplifier;
 import org.xlm.jxlm.d6light.data.algo.topological.bomsimplifier.D6LAbstractBomSimplifier.BomSimplifierKindEnum;
 import org.xlm.jxlm.d6light.data.algo.topological.bomsimplifier.D6LComponentsBomSimplifier;
 import org.xlm.jxlm.d6light.data.algo.topological.bomsimplifier.D6LKitsBomSimplifier;
+import org.xlm.jxlm.d6light.data.algo.topological.louvain.java.D6LLouvainJavaDivider;
 import org.xlm.jxlm.d6light.data.conf.AbstractAlgoType;
 import org.xlm.jxlm.d6light.data.conf.AbstractBomSimplifierType;
 import org.xlm.jxlm.d6light.data.conf.BomSimplifierType;
@@ -74,7 +74,7 @@ public abstract class D6LAbstractTopologicalDivider
 	 * @return Instance of algo
 	 * @throws D6LException
 	 */
-	public static D6TopologicalDividerIF getInstance( 
+	public static D6LTopologicalDividerIF getInstance( 
 	    AbstractAlgoType confAlgo, D6LightDataConf conf
 	) throws D6LException {
 
@@ -82,11 +82,11 @@ public abstract class D6LAbstractTopologicalDivider
 		TopologicalDividerType config = (TopologicalDividerType) confAlgo;
 		
 		// instance depends on key
-		D6TopologicalDividerIF instance = null;
+		D6LTopologicalDividerIF instance = null;
 		
 		switch ( config.getKey() ) {
 			case LOUVAIN: {
-				instance = new D6LouvainJavaDivider();
+				instance = new D6LLouvainJavaDivider();
 				break;
 			}
 			case BILL_OF_MATERIAL: {
@@ -130,7 +130,7 @@ public abstract class D6LAbstractTopologicalDivider
         	// Check for duplicates
             Set<BomSimplifierKindEnum> setBomSimplifierKinds = new HashSet<>();
             
-            for ( JAXBElement<? extends AbstractBomSimplifierType> bomSimplifierConfElt : bomSimplifiersConf.getComponentsOrKitsOrLotExtractor() ) {
+            for ( JAXBElement<? extends AbstractBomSimplifierType> bomSimplifierConfElt : bomSimplifiersConf.getComponentsOrKits() ) {
             	
             	// Get kind
             	BomSimplifierKindEnum kind = BomSimplifierKindEnum.valueOf( bomSimplifierConfElt.getName().getLocalPart() );

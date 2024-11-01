@@ -18,44 +18,21 @@
 
 package org.xlm.jxlm.d6light.data.algo.topological.bom;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.tools.ant.taskdefs.SQLExec.Transaction;
-import org.xlm.jxlm.audit.d6.data.D6Util.D6Progress;
-import org.xlm.jxlm.audit.d6.data.algo.D6AlgoCommandIF;
-import org.xlm.jxlm.audit.d6.data.bench.D6Bench;
-import org.xlm.jxlm.audit.d6.data.command.D6AbstractCommand.TransactionNeeds;
-import org.xlm.jxlm.audit.d6.data.command.Stats;
-import org.xlm.jxlm.audit.d6.data.conf.D6DataConf;
-import org.xlm.jxlm.audit.d6.data.db.D6SystemizerDataDb;
-import org.xlm.jxlm.audit.d6.data.lot.D6Lot;
-import org.xlm.jxlm.audit.d6.data.meta.D6EntityAccessorIF;
-import org.xlm.jxlm.audit.d6.data.meta.D6EntityInfoIF;
-import org.xlm.jxlm.audit.d6.data.meta.D6EntityLinkAccessorIF;
-import org.xlm.jxlm.audit.d6.data.meta.D6InfoManagedEntityIF;
-import org.xlm.jxlm.audit.d6.data.meta.D6LinkIF;
-import org.xlm.jxlm.audit.x6.common.X6Exception;
-import org.xlm.jxlm.audit.x6.common.thread.X6ThreadManager;
-import org.xlm.jxlm.audit.x6.core.beans.DependencyBeanDirectionEnum;
+import org.xlm.jxlm.d6light.data.algo.D6LAlgoCommandIF;
 import org.xlm.jxlm.d6light.data.algo.topological.D6LAbstractTopologicalDivider;
-import org.xlm.jxlm.d6light.data.algo.topological.D6LEntityDirectedLinkStats;
 import org.xlm.jxlm.d6light.data.conf.AbstractAlgoType;
+import org.xlm.jxlm.d6light.data.conf.D6LightDataConf;
 import org.xlm.jxlm.d6light.data.conf.ParamType;
+import org.xlm.jxlm.d6light.data.exception.D6LError;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
 import org.xlm.jxlm.d6light.data.model.D6LEntityIF;
-import org.xlm.jxlm.d6light.data.packkage.D6LPackageSubtypeEnum;
+import org.xlm.jxlm.d6light.data.model.D6LPackageVertex;
 import org.xlm.jxlm.d6light.data.packkage.D6LPackageTypeEnum;
-import org.xlm.jxlm.d6light.data.util.D6LUtil;
-
-import com.sleepycat.je.CursorConfig;
-import com.sleepycat.je.DatabaseException;
-import com.sleepycat.persist.EntityCursor;
-import com.sleepycat.persist.EntityJoin;
-import com.sleepycat.persist.ForwardCursor;
 
 /**
  * Build Bill Of Material lots by directed link types
@@ -67,34 +44,25 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
     /** If true, handle diamond topologies to reduce to one bom **/
     public static final String PARAM_HANDLE_DIAMONDS = "handleDiamonds";
 
-    private int nbConcurrentThreads = 0;
-    
     private boolean isHandleDiamonds = true;
-    
-    private D6EntityAccessorIF<? extends D6LEntityIF> daoEntities = null;
-    private D6EntityLinkAccessorIF<? extends D6LinkIF> daoEntityLinks = null;
-    
     
     /**
      * Constructor
      * @param db D6 DB
      */
-	public D6LByDirectedLinkBomDivider(D6SystemizerDataDb db) {
-		super( db );
+	public D6LByDirectedLinkBomDivider() {
+		super();
 	}
 
 	@Override
-	public void setConf( D6DataConf conf, AbstractAlgoType confAlgo ) throws X6Exception {
+	public void setConf( D6LightDataConf conf, AbstractAlgoType confAlgo ) throws D6LException {
 		
 	    super.setConf( conf, confAlgo );
 
-	    // nb of threads
-		nbConcurrentThreads = conf.getNbThreads();
-		
 	}
 	
 	@Override
-	protected void recordAndValidateConfigParameters( List<String> paramNames, Map<String, String> propsParams, Map<String, ParamType> mapParams ) throws X6Exception {
+	protected void recordAndValidateConfigParameters( List<String> paramNames, Map<String, String> propsParams, Map<String, ParamType> mapParams ) throws D6LException {
 
 		// get our parameter
 	    ParamType paramHandleDiamonds = mapParams.get( PARAM_HANDLE_DIAMONDS );
@@ -106,14 +74,10 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 	
 
 	@Override
-	protected Stats doAlgoRun( Transaction txn, D6AlgoCommandIF algoCommand ) throws X6Exception {
+	protected void doAlgoRun( D6LAlgoCommandIF algoCommand ) throws D6LException {
 		
-		Stats stats = new Stats();
-		
-		// init daos
-		daoEntities 	= algoCommand.getDaoEntities();
-		daoEntityLinks 	= algoCommand.getDaoEntityLinks();
-		
+		throw new D6LError( "TODO" );
+		/*
 		// browse benches
 		try (
 		    EntityCursor<D6Bench> benches = db.daoBenches.byId.entities( txn, null );
@@ -135,17 +99,18 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 		// Fix this
         allocateCircuitsToErrorLot( txn );
         
-		return stats;
-		
+		*/
 	}
 
 	/**
 	 * Process Boms given a bench
 	 * @param txn Transaction
 	 * @param bench Banch
-	 * @throws X6Exception
+	 * @throws D6LException
 	 */
-	protected void processBomsForBench( Transaction txn, D6Bench bench ) throws X6Exception {
+	protected void processBomsForBench() throws D6LException {
+		throw new D6LError( "TODO" );
+		/*
 		// find BOMs top objects
 		LOGGER.info( "Get Bill Of Material top objects for bench " + bench.getId() );
 		
@@ -221,7 +186,7 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
     		List<Throwable> throables = threadManager.getThroables();
     		if ( !throables.isEmpty() ) {
     			// show first one
-    			throw new X6Exception( throables.get( 0 ) );
+    			throw new D6LException( throables.get( 0 ) );
     		}
     		
 		} catch ( Throwable t ) {
@@ -232,13 +197,16 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 		if ( isHandleDiamonds ) {
 			finalizeBoms( txn, bench, bomHeadEntities );
 		}
-		
+		*/
 	}
 
 	private void lotizeBomHeads( 
-	    Transaction txn, D6Bench bench, List<D6LEntityIF> bomHeadEntities, int iPass
-	) throws X6Exception {
+	    List<D6LEntityIF> bomHeadEntities, int iPass
+	) throws D6LException {
 		
+		throw new D6LError( "TODO" );
+		/*
+
 	    try (
 	        // Progress
 		    D6Progress progress = new D6LUtil.D6Progress( db, bomHeadEntities.size(), "", "BOM Heads" );
@@ -276,17 +244,21 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
     			
     		}
 	    }
+	    */
 	}
 
-	private D6Lot getNewBom( D6Bench bench, int iPass ) throws X6Exception {
+	private D6LPackageVertex getNewBom() throws D6LException {
 	    
-		D6Lot bom = new D6Lot( producesLotType, D6Lot.DISPLAY_TYPE_BOM, iPass );
+		throw new D6LError( "TODO" );
+		/*
+		D6LPackageVertex bom = new D6LPackageVertex( producesLotType, D6LPackage.DISPLAY_TYPE_BOM );
 		// set bench
 		bom.setIdBench( bench.getId() );
 		// set business parent lot
 		bom.setIdLotParent( bench.getIdLot() );
 		
 		return bom;
+		*/
 	}
 
 	/**
@@ -297,9 +269,11 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 	 * @throws Exception 
 	 */
 	private void finalizeBoms( 
-	    Transaction txn, D6Bench bench, List<D6LEntityIF> bomHeadEntities
-	) throws X6Exception {
+	    List<D6LEntityIF> bomHeadEntities
+	) throws D6LException {
 		
+		throw new D6LError( "TODO" );
+		/*
 		// finalization loop
 		boolean goOn = true;
 		while ( goOn ) {
@@ -321,14 +295,16 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 			// end on loop
 			goOn = aFixHasBeenDone;	// this loop fixed nothing
 		}
-		
+		*/
 	}
 
-    private boolean finalizeBomsForBomHead( Transaction txn, D6Bench bench, boolean aFixHasBeenDone,
+    private boolean finalizeBomsForBomHead( boolean aFixHasBeenDone,
                                             Set<Long> setParentBomIds, D6LEntityIF bomHead )
-        throws X6Exception
+        throws D6LException
     {
         
+		throw new D6LError( "TODO" );
+		/*
         boolean new_aFixHasBeenDone = aFixHasBeenDone;
         
         // clear set of parent objects BOM ID
@@ -373,13 +349,16 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
         }
         
         return new_aFixHasBeenDone;
+        */
     }
 
 
 	private void replaceBomId( 
-	    Transaction txn, D6Bench bench, D6LEntityIF currentBomHead, long toBomId
-	) throws X6Exception {
+	    D6LEntityIF currentBomHead, long toBomId
+	) throws D6LException {
 		
+		throw new D6LError( "TODO" );
+		/*
 		// select entities allocated to currentBomId for bench
 		
 		// Entities
@@ -413,18 +392,20 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 		// change bom head
 		currentBomHead.setIdLot( toBomId );
 		currentBomHead.save( db, txn );
-		
+		*/
 	}
 
     /**
      * Allocate circuit to error lot
      * @param txn
-     * @throws X6Exception 
+     * @throws D6LException 
      * @throws DatabaseException 
      */
-    private void allocateCircuitsToErrorLot( Transaction txn ) throws DatabaseException, X6Exception
+    private void allocateCircuitsToErrorLot( Transaction txn ) throws D6LException
     {
         
+		throw new D6LError( "TODO" );
+		/*
         // browse benches
         try (
             EntityCursor<D6Bench> benches = db.daoBenches.byId.entities( txn, null );
@@ -459,7 +440,7 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
             }
             
         }
-        
+        */
     }
 
 
@@ -468,10 +449,12 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
      * @param txn
      * @param bench
      * @return
-	 * @throws X6Exception 
+	 * @throws D6LException 
      */
-    private D6Lot createErrorLot( Transaction txn, D6Bench bench ) throws X6Exception
+    private D6LPackageVertex createErrorLot() throws D6LException
     {
+		throw new D6LError( "TODO" );
+		/*
         D6Lot errorLot = new D6Lot( getProducesLotType(), "Unallocated", iPass );
         errorLot.setLotSubtype( D6LPackageSubtypeEnum.DEFAULT_LOT );
         
@@ -482,6 +465,7 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
         errorLot.save( db, txn );
         
         return errorLot;
+        */
     }
 
 
@@ -489,7 +473,13 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 	 * Recurse BOM runnable
 	 */
 	private class RecurseBomRunnable implements Runnable {
-		
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+			
+		}
+		/*
 		private D6LEntityIF bomHeadEntity;
 		private D6Bench bench;
 		private long bomId;
@@ -616,35 +606,12 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 			}
 			
 		}
-	
+		*/
 	}
 	
 	@Override
-	public Stats doPrepare( Integer idParentMilestone, Transaction txn, D6AlgoCommandIF algoCommand ) throws X6Exception {
+	public void doPrepare( D6LAlgoCommandIF algoCommand ) throws D6LException {
 		// No preparation
-		return null;
-	}
-
-	@Override
-	public void clean( Integer idParentMilestone, Transaction txn, D6AlgoCommandIF algoCommand ) throws X6Exception {
-		// done by preparation
-	}
-
-	@Override
-	public boolean isNeedLocalIdsInBench() {
-		return false;
-	}
-
-	@Override
-	public Stats doReadExecutionResult( Integer idParentMilestone, Transaction txn, D6AlgoCommandIF algoCommand, int iPass ) throws X6Exception {
-		
-		return null;
-	}
-
-    @Override
-	public TransactionNeeds getTransactionNeeds() {
-		// None for perf reason
-		return null;
 	}
 
 	@Override
@@ -673,7 +640,7 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 	@Override
 	public D6LPackageTypeEnum getDefaultProducesLotType() {
 		
-		return D6LPackageTypeEnum.TECHNICAL_LOT;
+		return D6LPackageTypeEnum.TECHNICAL_PKG;
 	}
 
 

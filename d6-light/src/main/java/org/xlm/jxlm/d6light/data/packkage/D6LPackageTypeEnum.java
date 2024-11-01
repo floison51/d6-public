@@ -18,7 +18,7 @@
 
 package org.xlm.jxlm.d6light.data.packkage;
 
-import org.xlm.jxlm.audit.x6.common.data.lot.resources.D6LotOntologyHelper;
+import org.xlm.jxlm.d6light.data.resources.D6LPackageOntologyHelper;
 
 /**
  * Lots enumeration
@@ -27,12 +27,9 @@ import org.xlm.jxlm.audit.x6.common.data.lot.resources.D6LotOntologyHelper;
  */
 public enum D6LPackageTypeEnum {
 	
-	TECHNICAL_LOT( "Technical" ),
-	TECHNICAL_LOT_DEPENDENCY( "TechnicalDep" ), 
-	BUSINESS_LOT( "Business" ),
-	BUSINESS_LOT_DEPENDENCY( "BusinessDep" ),
-	DEPENDENCY_LOT( "Dependency" ),
-	DEPENDENCY_LOT_DEPENDENCY(  "DependencyDep" )
+	TECHNICAL_PKG( "Technical" ),
+	TECHNICAL_PKG_DEPENDENCY( "TechnicalDep" ), 
+	BUSINESS_PKG( "Business" ),
 	;
 
 	private final String kind;
@@ -42,7 +39,7 @@ public enum D6LPackageTypeEnum {
 	}
 
 	public boolean isBusiness() {
-		return ( this == BUSINESS_LOT ) || ( this == BUSINESS_LOT_DEPENDENCY ) ;
+		return ( this == BUSINESS_PKG ) ;
 	}
 	
     public String getDisplayName() {

@@ -18,6 +18,7 @@
 
 package org.xlm.jxlm.d6light.data.command;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jgrapht.Graph;
 import org.xlm.jxlm.d6light.data.conf.D6LightDataConf;
@@ -32,7 +33,7 @@ import org.xlm.jxlm.d6light.data.model.D6LVertex;
  */
 public abstract class D6LAbstractCommand implements D6LCommandIF {
 
-    protected static final Logger LOGGER = D6LAbstractCommand.LOGGER;
+    protected static final Logger LOGGER = LogManager.getLogger( D6LAbstractCommand.class );
 	
     /** Index of pass **/
     protected int iPass = -1;

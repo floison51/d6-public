@@ -114,6 +114,13 @@
 	  <version>1.5.2</version>
 	</dependency>
 	
+	<!--  GNU collections, for Louvain -->
+	<dependency>
+      <groupId>net.sf.trove4j</groupId>
+      <artifactId>trove4j</artifactId>
+      <version>3.0.3</version>
+    </dependency>
+      
 	<dependency>
 	    <groupId>org.junit.jupiter</groupId>
 	    <artifactId>junit-jupiter</artifactId>

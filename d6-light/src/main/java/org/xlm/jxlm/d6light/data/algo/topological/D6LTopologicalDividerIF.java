@@ -20,6 +20,7 @@ package org.xlm.jxlm.d6light.data.algo.topological;
 
 import java.util.List;
 
+import org.xlm.jxlm.d6light.data.algo.D6LDividerAlgoIF;
 import org.xlm.jxlm.d6light.data.algo.topological.bomsimplifier.D6LAbstractBomSimplifier;
 
 /**

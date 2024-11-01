@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.xlm.jxlm.d6light.data.conf.D6LightDataConf;
 import org.xlm.jxlm.d6light.data.conf.ParamType;
@@ -23,7 +24,7 @@ import org.xlm.jxlm.d6light.data.util.D6LUtil;
 public abstract class D6LAbstractPlugin implements D6LPluginIF {
 	
 	/** Logger **/
-	public static final Logger LOGGER = D6LAbstractPlugin.LOGGER;
+	public static final Logger LOGGER = LogManager.getLogger( D6LAbstractPlugin.class );
 
 	/** Verbose **/
 	protected boolean isVerbose = true;

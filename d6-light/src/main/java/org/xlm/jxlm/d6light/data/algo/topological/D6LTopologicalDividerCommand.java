@@ -18,41 +18,16 @@
 
 package org.xlm.jxlm.d6light.data.algo.topological;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.tools.ant.taskdefs.SQLExec.Transaction;
-import org.xlm.jxlm.audit.d6.data.D6Util.D6Progress;
-import org.xlm.jxlm.audit.d6.data.algo.D6DividerAlgoIF;
-import org.xlm.jxlm.audit.d6.data.bench.D6Bench;
-import org.xlm.jxlm.audit.d6.data.conf.D6RegExpParamHelper;
-import org.xlm.jxlm.audit.d6.data.db.D6UnionForwardCursor;
-import org.xlm.jxlm.audit.d6.data.lot.D6AbstractLot;
-import org.xlm.jxlm.audit.d6.data.lot.D6Lot;
-import org.xlm.jxlm.audit.d6.data.meta.D6LinkIF;
-import org.xlm.jxlm.audit.x6.common.X6Error;
-import org.xlm.jxlm.audit.x6.common.thread.X6JobIF;
-import org.xlm.jxlm.audit.x6.core.beans.DependencyBeanDirectionEnum;
 import org.xlm.jxlm.d6light.data.algo.D6LAbstractDividerAlgoCommand;
 import org.xlm.jxlm.d6light.data.algo.topological.bomsimplifier.D6LAbstractBomSimplifier;
-import org.xlm.jxlm.d6light.data.algo.topological.bomsimplifier.D6LAbstractBomSimplifier.BomSimplifierKindEnum;
-import org.xlm.jxlm.d6light.data.conf.AbstractAlgoType;
 import org.xlm.jxlm.d6light.data.conf.RegExpType;
-import org.xlm.jxlm.d6light.data.conf.TopologicalDividerType;
+import org.xlm.jxlm.d6light.data.exception.D6LError;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
 import org.xlm.jxlm.d6light.data.model.D6LEntityIF;
-import org.xlm.jxlm.d6light.data.packkage.D6LPackageSubtypeEnum;
-import org.xlm.jxlm.d6light.data.packkage.D6LPackageTypeEnum;
-
-import com.sleepycat.je.CursorConfig;
-import com.sleepycat.persist.EntityCursor;
-import com.sleepycat.persist.ForwardCursor;
+import org.xlm.jxlm.d6light.data.model.D6LPackageVertex;
 
 /**
  * Topological divider command
@@ -71,6 +46,8 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 		
 	    LOGGER.info( "Start Prepare benches" );
 
+	    throw new D6LError( "TODO" );
+	    /*
 	    // Ancestor creates benches
 	    // don't call algo because we do after
 		super.doPrepare( false );
@@ -150,10 +127,10 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
     	}
 
         LOGGER.info( "End Prepare benches" );
-            
+        */
 	}
 
-
+/*
 	private class PrepareForBenchRunnable implements Runnable {
 	    
 	    private final Transaction txn;
@@ -202,15 +179,15 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
             }
         }
 	}
-
+*/
 
 	private void allocateSinglesAndBomSimplification( 
-		Transaction txn, D6Bench bench,
-		int iPass,
 		boolean allocateSingles, RegExpType allocateSinglesIfParentContainerRegEx, 
 		boolean isNeedBomSimplification, boolean isNeedBomSimplifiedEntitiesRemovedFromBench 
 	) throws D6LException {
 		
+	    throw new D6LError( "TODO" );
+	    /*
 	    LOGGER.info( "Allocate singles and do bom simplification for bench '" + bench.getId() + "'" );
 	    
 	    List<X6JobIF<D6LEntityIF>> postActions = new ArrayList<>();
@@ -403,7 +380,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
             flushQueues();
             
 		}
-		
+		*/
 	}
 
 	/**
@@ -418,6 +395,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 	 * @return
 	 * @throws D6LException
 	 */
+	/*
 	private D6Lot createBomSimplificationLot(
 		Transaction txn, D6Bench bench, int iPass,
 		D6LPackageTypeEnum defaultLotType, D6LAbstractBomSimplifier bomSimplifier
@@ -442,15 +420,18 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 		return bomSimplificationLot;
 		
 	}
-
-	private void setParameters(D6LAbstractBomSimplifier bomSimplifier, D6Lot bomSimplificationLot)
+	*/
+	
+	private void setParameters(D6LAbstractBomSimplifier bomSimplifier, D6LPackageVertex bomSimplificationLot)
 			throws D6LException {
+	    throw new D6LError( "TODO" );
+	    /*
 		switch ( bomSimplifier.getKind() ) {
 		    
 		    case Components: {
 				
 		        // sub-type to identify component lot later on
-				bomSimplificationLot.setLotSubtype( D6LPackageSubtypeEnum.COMPONENT_LOT );
+				bomSimplificationLot.setPackageSubtype( D6LPackageSubtypeEnum.COMPONENT_LOT );
 				// name
 				bomSimplificationLot.setName( D6LPackageSubtypeEnum.COMPONENT_LOT.getLotName() );
 				break;
@@ -484,6 +465,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 		    }
 		    
 		}
+		*/
 	}
 
 	/**
@@ -492,10 +474,12 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 	 * @throws D6LException 
      */
     private void reworkStatsAndSingleLotForDirectedLinkToComponent( 
-        Transaction txn, D6Lot singleLot, D6Bench bench, D6LEntityIF roleA, D6LEntityIF roleB 
+        Transaction txn, D6LPackageVertex singleLot, D6LEntityIF roleA, D6LEntityIF roleB 
     ) throws D6LException
     {
 
+	    throw new D6LError( "TODO" );
+	    /*
         // Get existing stats
         
         // role A
@@ -572,9 +556,10 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
                 
             }
         }
-        
+        */
     }
 
+    /*
     private List<X6JobIF<D6LEntityIF>> allocateSingleAndBomSimplificationAndTopOfBom( 
 		Transaction txn, 
 		D6LEntityIF entity, Map<BomSimplifierKindEnum,D6Lot> mapBomSimplifierLots, D6Lot singleLot, 
@@ -815,10 +800,12 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 		return postActions;
 		
 	}
-
+	*/
+    
     /**
      * Job removing a component from bench 
      */
+    /*
     private class RemoveComponentsFromBenchJob implements X6JobIF<D6LEntityIF> {
 
     	private final Transaction txn;
@@ -868,11 +855,17 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 		}
     	
     }
+    */
     
 	@Override
     protected String getShortName()
     {
         return "cmd-topdiv";
     }
+
+	@Override
+	protected void doExecute( boolean callAlgo ) throws D6LException {
+		throw new D6LError( "TODO" );
+	}
 
 }

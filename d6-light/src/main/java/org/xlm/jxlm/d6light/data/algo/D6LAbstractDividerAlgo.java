@@ -60,11 +60,11 @@ public abstract class D6LAbstractDividerAlgo extends D6LAbstractAlgo implements 
 			if ( dividerConf.getProduces() != null ) {
 				switch ( dividerConf.getProduces() ) {
 					case BUSINESS: {
-						producesLotType = D6LPackageTypeEnum.BUSINESS_LOT;
+						producesLotType = D6LPackageTypeEnum.BUSINESS_PKG;
 						break;
 					}
 					case TECHNICAL: {
-						producesLotType = D6LPackageTypeEnum.TECHNICAL_LOT;
+						producesLotType = D6LPackageTypeEnum.TECHNICAL_PKG;
 						break;
 					}
 					default: {
@@ -82,8 +82,8 @@ public abstract class D6LAbstractDividerAlgo extends D6LAbstractAlgo implements 
 		
 		// check
 		switch ( producesLotType ) {
-			case BUSINESS_LOT:
-			case TECHNICAL_LOT: {
+			case BUSINESS_PKG:
+			case TECHNICAL_PKG: {
 				// ok
 				break;
 			}
