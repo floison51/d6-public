@@ -18,10 +18,25 @@
 
 package org.xlm.jxlm.d6light.data.model;
 
-public interface D6EntityIF {
-	
-	int getId();
-	
-	String getLabel();
+import java.text.MessageFormat;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.xlm.jxlm.d6light.data.exception.D6LError;
+
+public class D6LEntityRegistry {
+
+	private static Map<Integer,D6LEntityIF> registry = new HashMap<>();
+	
+	public static D6LVertex newVertex( int id ) throws D6LError {
+		
+		if ( registry.containsKey( id ) ) {
+			throw new D6LError( MessageFormat.format( "Duplicate id ${0}", id ) );
+		}
+		
+		D6LVertex vertex = new D6LVertex( id );
+		
+		return vertex;
+		
+	}
 }

@@ -115,7 +115,7 @@ public abstract class D6LAbstractAlgoCommand
 	 * @throws D6LException
 	 */
 	@Override
-	protected void doPrepare() throws D6LException {
+	protected void doPrepare( final boolean callAlgo ) throws D6LException {
 		
 		// Delegate to algo
         getAlgo().doPrepare( this );

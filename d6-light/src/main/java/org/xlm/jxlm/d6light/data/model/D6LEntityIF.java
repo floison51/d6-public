@@ -18,16 +18,10 @@
 
 package org.xlm.jxlm.d6light.data.model;
 
-public class D6LVertex extends D6LAbstractEntity {
-
-	public D6LVertex( int id ) {
-		super( id );
-	}
-
-	@Override
-	public String toString() {
-		return "D6Vertex [id=" + id + ", label=" + label + "]";
-	}
-
+public interface D6LEntityIF {
 	
+	int getId();
+	
+	String getLabel();
+
 }

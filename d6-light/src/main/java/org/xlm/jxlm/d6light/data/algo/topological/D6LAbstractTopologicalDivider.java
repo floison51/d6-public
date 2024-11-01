@@ -27,35 +27,23 @@ import java.util.Set;
 
 import javax.xml.bind.JAXBElement;
 
-import org.apache.tools.ant.taskdefs.SQLExec.Transaction;
-import org.xlm.jxlm.audit.d6.data.algo.D6AlgoCommandIF;
-import org.xlm.jxlm.audit.d6.data.algo.topological.adherence.D6ByDirectedLinkAdherenceDivider;
-import org.xlm.jxlm.audit.d6.data.algo.topological.errordirectednavigator.D6ByDirectedLinkErrorNavigatorDivider;
-import org.xlm.jxlm.audit.d6.data.algo.topological.louvain.genuine.D6LouvainGenuineDivider;
-import org.xlm.jxlm.audit.d6.data.algo.topological.louvain.java.D6LouvainJavaDivider;
-import org.xlm.jxlm.audit.d6.data.algo.topological.magnet.D6ByMagnetDivider;
-import org.xlm.jxlm.audit.d6.data.algo.topological.metis.D6MetisDivider;
-import org.xlm.jxlm.audit.d6.data.algo.topological.packetizer.D6PacketizerBomDivider;
-import org.xlm.jxlm.audit.d6.data.command.Stats;
-import org.xlm.jxlm.audit.d6.data.conf.D6DataConf;
-import org.xlm.jxlm.audit.d6.data.db.D6SystemizerDataDb;
-import org.xlm.jxlm.audit.d6.data.plugin.D6AbstractSystemizerDataPlugin;
-import org.xlm.jxlm.audit.d6.data.plugin.D6SystemizerDataPluginIF;
-import org.xlm.jxlm.audit.x6.common.X6Exception;
-import org.xlm.jxlm.audit.x6.common.data.conf.LotExtractorType;
-import org.xlm.jxlm.d6light.data.algo.topological.bom.D6ByDirectedLinkBomDivider;
+import org.xlm.jxlm.d6light.data.algo.D6LAbstractDividerAlgo;
+import org.xlm.jxlm.d6light.data.algo.D6LAlgoCommandIF;
+import org.xlm.jxlm.d6light.data.algo.topological.bom.D6LByDirectedLinkBomDivider;
 import org.xlm.jxlm.d6light.data.algo.topological.bom.D6TopologicalDividerIF;
 import org.xlm.jxlm.d6light.data.algo.topological.bomsimplifier.D6LAbstractBomSimplifier;
 import org.xlm.jxlm.d6light.data.algo.topological.bomsimplifier.D6LAbstractBomSimplifier.BomSimplifierKindEnum;
-import org.xlm.jxlm.d6light.data.algo.topological.bomsimplifier.D6ComponentsBomSimplifier;
-import org.xlm.jxlm.d6light.data.algo.topological.bomsimplifier.D6KitsBomSimplifier;
-import org.xlm.jxlm.d6light.data.algo.topological.bomsimplifier.D6LotExtractorBomSimplifier;
+import org.xlm.jxlm.d6light.data.algo.topological.bomsimplifier.D6LComponentsBomSimplifier;
+import org.xlm.jxlm.d6light.data.algo.topological.bomsimplifier.D6LKitsBomSimplifier;
 import org.xlm.jxlm.d6light.data.conf.AbstractAlgoType;
 import org.xlm.jxlm.d6light.data.conf.AbstractBomSimplifierType;
 import org.xlm.jxlm.d6light.data.conf.BomSimplifierType;
+import org.xlm.jxlm.d6light.data.conf.D6LightDataConf;
 import org.xlm.jxlm.d6light.data.conf.ParamType;
 import org.xlm.jxlm.d6light.data.conf.TopologicalDividerType;
 import org.xlm.jxlm.d6light.data.conf.TopologicalDividerType.BomSimplifiers;
+import org.xlm.jxlm.d6light.data.exception.D6LException;
+import org.xlm.jxlm.d6light.data.plugin.D6LPluginIF;
 
 /**
  * Base abstract class for topological dividers
@@ -63,7 +51,7 @@ import org.xlm.jxlm.d6light.data.conf.TopologicalDividerType.BomSimplifiers;
  *
  */
 public abstract class D6LAbstractTopologicalDivider 
-	extends D6AbstractDividerAlgo 
+	extends D6LAbstractDividerAlgo 
 	implements D6LTopologicalDividerIF 
 {
 
@@ -74,8 +62,8 @@ public abstract class D6LAbstractTopologicalDivider
      * Constructor
      * @param db D6 DB
      */
-	public D6LAbstractTopologicalDivider( D6SystemizerDataDb db ) {
-		super( db );
+	public D6LAbstractTopologicalDivider() {
+		super();
 	}
 
 	/**
@@ -84,11 +72,11 @@ public abstract class D6LAbstractTopologicalDivider
 	 * @param confAlgo algo config
 	 * @param conf Global D6 conf
 	 * @return Instance of algo
-	 * @throws X6Exception
+	 * @throws D6LException
 	 */
 	public static D6TopologicalDividerIF getInstance( 
-	    D6SystemizerDataDb db, AbstractAlgoType confAlgo, D6DataConf conf
-	) throws X6Exception {
+	    AbstractAlgoType confAlgo, D6LightDataConf conf
+	) throws D6LException {
 
 		// get actual algo conf
 		TopologicalDividerType config = (TopologicalDividerType) confAlgo;
@@ -97,50 +85,17 @@ public abstract class D6LAbstractTopologicalDivider
 		D6TopologicalDividerIF instance = null;
 		
 		switch ( config.getKey() ) {
-			case METIS: {
-				instance = new D6MetisDivider( db );
-				break;
-			}
-			case LOUVAIN_GENUINE: {
-				instance = new D6LouvainGenuineDivider( db );
-				break;
-			}
-			case LOUVAIN_JAVA: {
-				instance = new D6LouvainJavaDivider( db );
+			case LOUVAIN: {
+				instance = new D6LouvainJavaDivider();
 				break;
 			}
 			case BILL_OF_MATERIAL: {
-				instance = new D6ByDirectedLinkBomDivider( db );
-				break;
-			}
-			case MAGNET: {
-				instance = new D6ByMagnetDivider( db );
-				break;
-			}
-            case BY_DIRECTED_LINK_ERROR_NAVIGATOR: {
-                instance = new D6ByDirectedLinkErrorNavigatorDivider( db );
-                break;
-            }
-			case ADHERENCE: {
-				instance = new D6ByDirectedLinkAdherenceDivider( db );
-				break;
-			}
-			case NATURAL_ORDER: {
-				instance = new D6TrivialTopologicalDivider( db, D6TrivialTopologicalDivider.Kind.NaturalOrder );
-				break;
-			}
-            case PACKETISER: {
-                instance = new D6PacketizerBomDivider( db );
-                break;
-            }
-			case CUSTOM: {
-				// get class
-				instance =  ( D6TopologicalDividerIF) D6AbstractSystemizerDataPlugin.getPluginInstance( db, config.getClazz() );
+				instance = new D6LByDirectedLinkBomDivider();
 				break;
 			}
 			
 			default: {
-				throw new X6Exception( "Unsupported technical lotizer key " + config.getKey() );
+				throw new D6LException( "Unsupported technical packager key " + config.getKey() );
 			}
 			
 		}
@@ -152,13 +107,13 @@ public abstract class D6LAbstractTopologicalDivider
 		    params = config.getParams().getParam();
 		}
 		
-        ( (D6SystemizerDataPluginIF ) instance ).recordAndValidateConfigParameters( params );
+        ( (D6LPluginIF ) instance ).recordAndValidateConfigParameters( params );
 		
 		return instance;
 	}
 	
 	@Override
-	public void setConf( D6DataConf conf, AbstractAlgoType algoConf ) throws X6Exception {
+	public void setConf( D6LightDataConf conf, AbstractAlgoType algoConf ) throws D6LException {
 		
 		super.setConf( conf, algoConf );
 		
@@ -182,7 +137,7 @@ public abstract class D6LAbstractTopologicalDivider
             	
             	// Check unique
             	if ( setBomSimplifierKinds.contains( kind ) ) {
-            		throw new X6Exception( "Duplicate BOM Simplifier kind '" + kind + "'" );
+            		throw new D6LException( "Duplicate BOM Simplifier kind '" + kind + "'" );
             	}
             	
             	AbstractBomSimplifierType bomSimplifierConf = bomSimplifierConfElt.getValue();
@@ -200,24 +155,18 @@ public abstract class D6LAbstractTopologicalDivider
 	            	switch ( kind ) {
 		            	case Components : {
 		            		
-		            		bomSimplifier = new D6ComponentsBomSimplifier( db, (BomSimplifierType) bomSimplifierConf );
+		            		bomSimplifier = new D6LComponentsBomSimplifier( (BomSimplifierType) bomSimplifierConf );
 		                    break;
 		            		
 		            	}
 		            	case Kits : {
 		            		
-		            		bomSimplifier = new D6KitsBomSimplifier( db, (BomSimplifierType) bomSimplifierConf );
-		                    break;
-		            		
-		            	}
-		            	case LotExtractor : {
-		            		
-		            		bomSimplifier = new D6LotExtractorBomSimplifier( db, (LotExtractorType) bomSimplifierConf );
+		            		bomSimplifier = new D6LKitsBomSimplifier( (BomSimplifierType) bomSimplifierConf );
 		                    break;
 		            		
 		            	}
 		            	default: {
-		            		throw new X6Exception( "Not supported BOM Simplifier kind '" + kind + "'" );
+		            		throw new D6LException( "Not supported BOM Simplifier kind '" + kind + "'" );
 		            	}
 		            	
 	            	}
@@ -231,13 +180,13 @@ public abstract class D6LAbstractTopologicalDivider
             			// Get constructor
             			Constructor<? extends D6LAbstractBomSimplifier> constructor = 
             				customClazz.getConstructor( 
-            					D6SystemizerDataDb.class, BomSimplifierType.class
+            					BomSimplifierType.class
             				);
             			// Get instance
-            			bomSimplifier = constructor.newInstance( db, bomSimplifierConf );
+            			bomSimplifier = constructor.newInstance( bomSimplifierConf );
             			
             		} catch ( Exception e ) {
-            			X6Exception.handleException( e );
+            			D6LException.handleException( e );
             		}
             		
             	} 
@@ -259,34 +208,25 @@ public abstract class D6LAbstractTopologicalDivider
 
     @Override
     public void checkOkForExecute()
-        throws X6Exception
+        throws D6LException
     {
         // No checks needed
     }
 
 	@Override
-	public final Stats doRun( Integer idParentMilestone, Transaction txn, D6AlgoCommandIF algoCommand ) throws X6Exception {
+	public final void doRun( D6LAlgoCommandIF algoCommand ) throws D6LException {
 		
 		// delegate to algo
-		Stats stats = doAlgoRun( txn, algoCommand );
+		doAlgoRun( algoCommand );
 		
-    	// Init bom simplifiers
-    	for ( D6LAbstractBomSimplifier bomSimplifier : listBomSimplifiers ) {
-    		
-        	// Set passes
-        	bomSimplifier.setPasses( iPass, iPassTechLot );
-        	
-    	}
-
 		// move component lot to upper level if needed
 		for ( D6LAbstractBomSimplifier bomSimplifier : listBomSimplifiers ) {
 			
 			// Move simplifier lot if needed
-			bomSimplifier.moveSimplifiedTechnicalLotsToBusinessLotIfNeeded( db, txn );
+			bomSimplifier.moveSimplifiedTechnicalLotsToBusinessLotIfNeeded();
 			
 		}
 		
-		return stats;
 	}
 	
 	/**
@@ -294,12 +234,6 @@ public abstract class D6LAbstractTopologicalDivider
 	 * @param txn
 	 * @param iPass
 	 */
-	protected abstract Stats doAlgoRun( Transaction txn, D6AlgoCommandIF algoCommand ) throws X6Exception;
-
-	@Override
-	public boolean isBenchNeeded() {
-		// Bench needed
-		return true;
-	}
+	protected abstract void doAlgoRun( D6LAlgoCommandIF algoCommand ) throws D6LException;
 
 }

@@ -1,4 +1,20 @@
-
+/**
+ *  Public Data Systemizer, see https://doi.org/10.1016/j.compind.2023.104053
+ *  Copyright (C) 2025 Francois LOISON
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html
+**/
 
 package org.xlm.jxlm.d6light.data.algo.topological;
 
@@ -9,158 +25,132 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.tools.ant.taskdefs.SQLExec.Transaction;
 import org.xlm.jxlm.audit.d6.data.D6Util.D6Progress;
-import org.xlm.jxlm.audit.d6.data.algo.D6AbstractDividerAlgoCommand;
 import org.xlm.jxlm.audit.d6.data.algo.D6DividerAlgoIF;
-import org.xlm.jxlm.audit.d6.data.algo.topological.bom.D6EntityDirectedLinkStats;
-import org.xlm.jxlm.audit.d6.data.algo.topological.bomsimplifiers.D6AbstractBomSimplifier;
-import org.xlm.jxlm.audit.d6.data.algo.topological.bomsimplifiers.D6AbstractBomSimplifier.BomSimplifierKindEnum;
-import org.xlm.jxlm.audit.d6.data.algo.topological.bomsimplifiers.D6AbstractBomSimplifier.MatchResult;
 import org.xlm.jxlm.audit.d6.data.bench.D6Bench;
-import org.xlm.jxlm.audit.d6.data.command.Stats;
 import org.xlm.jxlm.audit.d6.data.conf.D6RegExpParamHelper;
 import org.xlm.jxlm.audit.d6.data.db.D6UnionForwardCursor;
 import org.xlm.jxlm.audit.d6.data.lot.D6AbstractLot;
 import org.xlm.jxlm.audit.d6.data.lot.D6Lot;
-import org.xlm.jxlm.audit.d6.data.meta.D6EntityIF;
 import org.xlm.jxlm.audit.d6.data.meta.D6LinkIF;
-
-import com.sleepycat.je.CursorConfig;
-import com.sleepycat.je.Transaction;
-import com.sleepycat.persist.EntityCursor;
-import com.sleepycat.persist.ForwardCursor;
-
 import org.xlm.jxlm.audit.x6.common.X6Error;
-import org.xlm.jxlm.audit.x6.common.X6Exception;
-import org.xlm.jxlm.audit.x6.common.data.conf.AbstractAlgoType;
-import org.xlm.jxlm.audit.x6.common.data.conf.RegExpType;
-import org.xlm.jxlm.audit.x6.common.data.conf.TopologicalDividerType;
-import org.xlm.jxlm.audit.x6.common.data.lot.D6LotSubtypeEnum;
-import org.xlm.jxlm.audit.x6.common.data.lot.D6LotTypeEnum;
 import org.xlm.jxlm.audit.x6.common.thread.X6JobIF;
 import org.xlm.jxlm.audit.x6.core.beans.DependencyBeanDirectionEnum;
+import org.xlm.jxlm.d6light.data.algo.D6LAbstractDividerAlgoCommand;
+import org.xlm.jxlm.d6light.data.algo.topological.bomsimplifier.D6LAbstractBomSimplifier;
+import org.xlm.jxlm.d6light.data.algo.topological.bomsimplifier.D6LAbstractBomSimplifier.BomSimplifierKindEnum;
+import org.xlm.jxlm.d6light.data.conf.AbstractAlgoType;
+import org.xlm.jxlm.d6light.data.conf.RegExpType;
+import org.xlm.jxlm.d6light.data.conf.TopologicalDividerType;
+import org.xlm.jxlm.d6light.data.exception.D6LException;
+import org.xlm.jxlm.d6light.data.model.D6LEntityIF;
+import org.xlm.jxlm.d6light.data.packkage.D6LPackageSubtypeEnum;
+import org.xlm.jxlm.d6light.data.packkage.D6LPackageTypeEnum;
+
+import com.sleepycat.je.CursorConfig;
+import com.sleepycat.persist.EntityCursor;
+import com.sleepycat.persist.ForwardCursor;
 
 /**
  * Topological divider command
  * @author Loison
  *
  */
-public class D6TopologicalDividerCommand extends D6AbstractDividerAlgoCommand {
+public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand {
 
-	private static final long NB_BIG_PROCESSED_TICK = 100000;
-	
 	/** For debug, activate/desactivate logic controlling parent lots of bom simplifier lots **/
 	public static final boolean REWORK_BOM_SIMPLIFIER_LOTS_PARENTS = true;
 	
+	private static final Logger LOGGER = LogManager.getLogger( D6LTopologicalDividerCommand.class ); 
+	
 	@Override
-	public Stats doPrepare( Integer idParentMilestone, Transaction txn, final boolean callAlgo ) throws X6Exception {
+	public void doPrepare( final boolean callAlgo ) throws D6LException {
 		
-	    int idPrepare = cmdStats.startMilestone( idParentMilestone, "Prepare benches and directed link stats" );
-	    
-	    try {
-	        
-    	    LOGGER.info( "Start Prepare benches" );
-    
-    	    // Ancestor creates benches
-    	    // don't call algo because we do after
-    		Stats stats = super.doPrepare( idParentMilestone, txn, false );
-    		
-    		// Existing objects are allocated to Business lot, move them to Technical lot
-    		moveLotEntities( txn, daoEntities, daoEntityLinks, D6Lot.BUSINESS_ID_EXISTING, D6Lot.TECH_ID_EXISTING );
-    		
-    		// Bad objects are allocated to Bad Business lot, move them to Bad Technical lot
-    		moveLotEntities( txn, daoEntities, daoEntityLinks, D6Lot.BUSINESS_ID_BAD, D6Lot.TECH_ID_BAD );
-    		
-    		D6AbstractTopologicalDivider topologicalDividerAlgo = (D6AbstractTopologicalDivider) getAlgo();
-    		
-    		// Allocate single and components, if needed
-    		
-    		// Ask conf if we need to allocate singles in a special lot
-    		
-    		// Use algo value
-    		boolean isSinglesAllocation = topologicalDividerAlgo.isAllowsSinglesAllocation();
-            // Regexp can also override allocation dependencing on parent lot name
-    		RegExpType allocateSinglesIfParentContainerRegEx = null;
-    		
-            if ( !topologicalDividerAlgo.isAllowsSinglesAllocation() ) {
-                LOGGER.info( "Topological divider '" + topologicalDividerAlgo.getName() + "' doesn't single allocation, any <Single> parameters are ignored." );
-                // No regexp override : algo doesn't support it
-                allocateSinglesIfParentContainerRegEx = null;
-            }
+	    LOGGER.info( "Start Prepare benches" );
 
-    		AbstractAlgoType algoConf = topologicalDividerAlgo.getConf();
-    		if ( topologicalDividerAlgo.isAllowsSinglesAllocation() && ( algoConf instanceof TopologicalDividerType ) ) {
-    		    
-    		    TopologicalDividerType topoAlgoConf = ( TopologicalDividerType ) algoConf;
-    		    
-    		    // Get conf value
-    		    if ( topoAlgoConf.getSingles() != null ) {
-    		        
-    		        Boolean isSinglesAllocationFromConf = topoAlgoConf.getSingles().isAllocateSingles();
-    		        
-    		        // If defined, it overrides general setting
-    		        if ( isSinglesAllocationFromConf != null ) {
-    		            isSinglesAllocation = isSinglesAllocationFromConf;
-    		        }
-    		        
-    		        // Regexp can also override allocation dependencing on parent lot name
-    		        allocateSinglesIfParentContainerRegEx = topoAlgoConf.getSingles().getAllocateSinglesIfParentContainerRegEx();
-    		        
-    		    }
-    		    
-    		}
-    		
-    		if ( isSinglesAllocation || topologicalDividerAlgo.isNeedBomSimplification() ) {
-    			
-    		    // browse benches
-    			EntityCursor<D6Bench> benches = db.daoBenches.byId.entities( txn, null );
-    			try {
-    			    
-    				for ( D6Bench bench: benches ) {
-    				    
-    				    // launch a thread per bench
-    				    Runnable prepareForBenchRunnable = 
-    				       new PrepareForBenchRunnable( 
-    				           txn, topologicalDividerAlgo, 
-    				           isSinglesAllocation, allocateSinglesIfParentContainerRegEx,
-    				           bench 
-    				    );
-    				    
-    				    startThread( prepareForBenchRunnable );
-    				    
-    				}
-    				
-    			} catch ( Throwable t ) {
-    			    
-    			    throw new X6Exception( t );
-    			    
-    			} finally {
-    				benches.close();
-    			}
-    			
-                // Make sure queues are flushed
-                flushQueuesAndThreads();
-    			
-    		}
-    
-    		// Delegate to algo
-        	if ( callAlgo ) {
-    			Stats statsAlgo = getAlgo().doPrepare( idParentMilestone, txn, this );
-    			if ( statsAlgo != null ) {
-    				stats.accumulate( statsAlgo );
-    			}
-    			return stats;
-        	}
-    
-            LOGGER.info( "End Prepare benches" );
+	    // Ancestor creates benches
+	    // don't call algo because we do after
+		super.doPrepare( false );
+		
+		D6LAbstractTopologicalDivider topologicalDividerAlgo = (D6LAbstractTopologicalDivider) getAlgo();
+		
+		// Allocate single and components, if needed
+		
+		// Ask conf if we need to allocate singles in a special lot
+		
+		// Use algo value
+		boolean isSinglesAllocation = topologicalDividerAlgo.isAllowsSinglesAllocation();
+        // Regexp can also override allocation dependencing on parent lot name
+		RegExpType allocateSinglesIfParentContainerRegEx = null;
+		
+        if ( !topologicalDividerAlgo.isAllowsSinglesAllocation() ) {
+            LOGGER.info( "Topological divider '" + topologicalDividerAlgo.getName() + "' doesn't single allocation, any <Single> parameters are ignored." );
+            // No regexp override : algo doesn't support it
+            allocateSinglesIfParentContainerRegEx = null;
+        }
+
+		AbstractAlgoType algoConf = topologicalDividerAlgo.getConf();
+		if ( topologicalDividerAlgo.isAllowsSinglesAllocation() && ( algoConf instanceof TopologicalDividerType ) ) {
+		    
+		    TopologicalDividerType topoAlgoConf = ( TopologicalDividerType ) algoConf;
+		    
+		    // Get conf value
+		    if ( topoAlgoConf.getSingles() != null ) {
+		        
+		        Boolean isSinglesAllocationFromConf = topoAlgoConf.getSingles().isAllocateSingles();
+		        
+		        // If defined, it overrides general setting
+		        if ( isSinglesAllocationFromConf != null ) {
+		            isSinglesAllocation = isSinglesAllocationFromConf;
+		        }
+		        
+		        // Regexp can also override allocation dependencing on parent lot name
+		        allocateSinglesIfParentContainerRegEx = topoAlgoConf.getSingles().getAllocateSinglesIfParentContainerRegEx();
+		        
+		    }
+		    
+		}
+		
+		if ( isSinglesAllocation || topologicalDividerAlgo.isNeedBomSimplification() ) {
+			
+		    // browse benches
+			EntityCursor<D6Bench> benches = db.daoBenches.byId.entities( txn, null );
+			try {
+			    
+				for ( D6Bench bench: benches ) {
+				    
+				    // launch a thread per bench
+				    Runnable prepareForBenchRunnable = 
+				       new PrepareForBenchRunnable( 
+				           txn, topologicalDividerAlgo, 
+				           isSinglesAllocation, allocateSinglesIfParentContainerRegEx,
+				           bench 
+				    );
+				    
+				    prepareForBenchRunnable.run();
+				    
+				}
+				
+			} catch ( Throwable t ) {
+			    
+			    throw new D6LException( t );
+			    
+			} finally {
+				benches.close();
+			}
+			
+		}
+
+		// Delegate to algo
+    	if ( callAlgo ) {
+			getAlgo().doPrepare( this );
+    	}
+
+        LOGGER.info( "End Prepare benches" );
             
-            return stats;
-            
-	    } finally {
-	    
-	        cmdStats.endMilestone( idPrepare );
-	    }
-	    
 	}
 
 
@@ -207,7 +197,7 @@ public class D6TopologicalDividerCommand extends D6AbstractDividerAlgoCommand {
                 // save bench
                 bench.save( db, txn );
                 
-            } catch ( X6Exception e ) {
+            } catch ( D6LException e ) {
                 throw new X6Error( e );
             }
         }
@@ -219,11 +209,11 @@ public class D6TopologicalDividerCommand extends D6AbstractDividerAlgoCommand {
 		int iPass,
 		boolean allocateSingles, RegExpType allocateSinglesIfParentContainerRegEx, 
 		boolean isNeedBomSimplification, boolean isNeedBomSimplifiedEntitiesRemovedFromBench 
-	) throws X6Exception {
+	) throws D6LException {
 		
 	    LOGGER.info( "Allocate singles and do bom simplification for bench '" + bench.getId() + "'" );
 	    
-	    List<X6JobIF<D6EntityIF>> postActions = new ArrayList<>();
+	    List<X6JobIF<D6LEntityIF>> postActions = new ArrayList<>();
 	    
         D6DividerAlgoIF dividerAlgo = (D6DividerAlgoIF) getAlgo();
         
@@ -278,12 +268,12 @@ public class D6TopologicalDividerCommand extends D6AbstractDividerAlgoCommand {
 		// browse objects belonging to bench
         LOGGER.info( "  objects" );
 		try (
-		    EntityCursor<? extends D6EntityIF> entities = daoEntities.getByBench( bench ).entities( txn, CursorConfig.READ_UNCOMMITTED );
+		    EntityCursor<? extends D6LEntityIF> entities = daoEntities.getByBench( bench ).entities( txn, CursorConfig.READ_UNCOMMITTED );
 		    D6Progress progress = new D6Progress( db, -1, "    ", " bench entities" );
 		) 
 		{	
 			
-			for ( D6EntityIF entity: entities ) {
+			for ( D6LEntityIF entity: entities ) {
 				
 			    // Tick
 				if ( ( progress.iItem % NB_BIG_PROCESSED_TICK ) == 1 ) {
@@ -297,7 +287,7 @@ public class D6TopologicalDividerCommand extends D6AbstractDividerAlgoCommand {
 				}
 				
 				// Do allocation and get post actions
-				List<X6JobIF<D6EntityIF>> curPostActions = allocateSingleAndBomSimplificationAndTopOfBom( 
+				List<X6JobIF<D6LEntityIF>> curPostActions = allocateSingleAndBomSimplificationAndTopOfBom( 
 					txn,
 					entity, mapBomSimplificationLots, singleLot, bench, idEntitiesProcessed,
 					isNeedBomSimplifiedEntitiesRemovedFromBench
@@ -318,12 +308,12 @@ public class D6TopologicalDividerCommand extends D6AbstractDividerAlgoCommand {
 		
         try {
 
-            for ( X6JobIF<D6EntityIF> postAction : postActions ) {
+            for ( X6JobIF<D6LEntityIF> postAction : postActions ) {
                 postAction.doJob( null );
             }
             
         } catch ( Exception e ) {
-            X6Exception.handleException( e );
+            D6LException.handleException( e );
         } finally {
             flushQueues();
         }
@@ -331,11 +321,11 @@ public class D6TopologicalDividerCommand extends D6AbstractDividerAlgoCommand {
 		// allocate links to component lot, if both roles are in component lot
         LOGGER.info( "  links" );
 		try (
-		    EntityCursor<? extends D6EntityIF> links = daoEntityLinks.getByBench( bench ).entities( txn, CursorConfig.READ_UNCOMMITTED );
+		    EntityCursor<? extends D6LEntityIF> links = daoEntityLinks.getByBench( bench ).entities( txn, CursorConfig.READ_UNCOMMITTED );
 		    D6Progress progress = new D6Progress( db, -1, "  ", " bench entities" );
 		) {
 			
-			for ( D6EntityIF linkEntity: links ) {
+			for ( D6LEntityIF linkEntity: links ) {
 				
 			    D6LinkIF link = (D6LinkIF) linkEntity;
 				
@@ -350,8 +340,8 @@ public class D6TopologicalDividerCommand extends D6AbstractDividerAlgoCommand {
 					continue;
 				}
 				
-				D6EntityIF roleA_entity = db.daoMetaEntities.byIdGet( txn, iPass, iPassTechLot, link.getIdRoleA(), null );
-                D6EntityIF roleB_entity = db.daoMetaEntities.byIdGet( txn, iPass, iPassTechLot, link.getIdRoleB(), null );
+				D6LEntityIF roleA_entity = db.daoMetaEntities.byIdGet( txn, iPass, iPassTechLot, link.getIdRoleA(), null );
+                D6LEntityIF roleB_entity = db.daoMetaEntities.byIdGet( txn, iPass, iPassTechLot, link.getIdRoleB(), null );
 
                 // remove components from benches
                 for ( D6Lot bomSimplificationLot : mapBomSimplificationLots.values() ) {
@@ -364,7 +354,7 @@ public class D6TopologicalDividerCommand extends D6AbstractDividerAlgoCommand {
                         
                         // check
                         if ( ! ( link.getLinkDirection() == DependencyBeanDirectionEnum.DirectedFromTo ) ) {
-                            throw new X6Exception( "Expected a directed link when removing link from bench, idLink = " + link.getId() );
+                            throw new D6LException( "Expected a directed link when removing link from bench, idLink = " + link.getId() );
                         }
                         // link is in a lot dependency
                         
@@ -426,13 +416,13 @@ public class D6TopologicalDividerCommand extends D6AbstractDividerAlgoCommand {
 	 * @param defaultLotType
 	 * @param bomSimplifier
 	 * @return
-	 * @throws X6Exception
+	 * @throws D6LException
 	 */
 	private D6Lot createBomSimplificationLot(
 		Transaction txn, D6Bench bench, int iPass,
 		D6LPackageTypeEnum defaultLotType, D6LAbstractBomSimplifier bomSimplifier
 	)
-		throws X6Exception 
+		throws D6LException 
 	{
 		
 		// Lot type
@@ -454,7 +444,7 @@ public class D6TopologicalDividerCommand extends D6AbstractDividerAlgoCommand {
 	}
 
 	private void setParameters(D6LAbstractBomSimplifier bomSimplifier, D6Lot bomSimplificationLot)
-			throws X6Exception {
+			throws D6LException {
 		switch ( bomSimplifier.getKind() ) {
 		    
 		    case Components: {
@@ -490,7 +480,7 @@ public class D6TopologicalDividerCommand extends D6AbstractDividerAlgoCommand {
 		    }
 
 		    default: {
-		        throw new X6Exception( "Unknown BOM Simplifier kind: " + bomSimplifier.getKind() );
+		        throw new D6LException( "Unknown BOM Simplifier kind: " + bomSimplifier.getKind() );
 		    }
 		    
 		}
@@ -499,17 +489,17 @@ public class D6TopologicalDividerCommand extends D6AbstractDividerAlgoCommand {
 	/**
      * We change stats for role A and role B, when applicable we move roleA and role B to single lot
      * @param link
-	 * @throws X6Exception 
+	 * @throws D6LException 
      */
     private void reworkStatsAndSingleLotForDirectedLinkToComponent( 
-        Transaction txn, D6Lot singleLot, D6Bench bench, D6EntityIF roleA, D6EntityIF roleB 
-    ) throws X6Exception
+        Transaction txn, D6Lot singleLot, D6Bench bench, D6LEntityIF roleA, D6LEntityIF roleB 
+    ) throws D6LException
     {
 
         // Get existing stats
         
         // role A
-        D6EntityDirectedLinkStats roleA_stats = db.daoEntityStats.getByEntityIdAndBenchId( txn, null, roleA.getIdBench(), roleA.getId() );
+        D6LEntityDirectedLinkStats roleA_stats = db.daoEntityStats.getByEntityIdAndBenchId( txn, null, roleA.getIdBench(), roleA.getId() );
         
         if ( roleA_stats != null ) {
             // we removed a link from role A
@@ -547,7 +537,7 @@ public class D6TopologicalDividerCommand extends D6AbstractDividerAlgoCommand {
         }
         
         // role B
-        D6EntityDirectedLinkStats roleB_stats = db.daoEntityStats.getByEntityIdAndBenchId( txn, null, roleB.getIdBench(), roleB.getId() );
+        D6LEntityDirectedLinkStats roleB_stats = db.daoEntityStats.getByEntityIdAndBenchId( txn, null, roleB.getIdBench(), roleB.getId() );
         
         if ( roleB_stats != null ) {
             // we removed a link to role B
@@ -585,12 +575,12 @@ public class D6TopologicalDividerCommand extends D6AbstractDividerAlgoCommand {
         
     }
 
-    private List<X6JobIF<D6EntityIF>> allocateSingleAndBomSimplificationAndTopOfBom( 
+    private List<X6JobIF<D6LEntityIF>> allocateSingleAndBomSimplificationAndTopOfBom( 
 		Transaction txn, 
-		D6EntityIF entity, Map<BomSimplifierKindEnum,D6Lot> mapBomSimplifierLots, D6Lot singleLot, 
+		D6LEntityIF entity, Map<BomSimplifierKindEnum,D6Lot> mapBomSimplifierLots, D6Lot singleLot, 
 		D6Bench bench, Set<Long> idObjectsProcessed,
 		boolean removeComponentsFromBench
-	) throws X6Exception {
+	) throws D6LException {
 		
     	// Init bom simplifiers
 		D6AbstractTopologicalDivider topologicalDividerAlgo = (D6AbstractTopologicalDivider) getAlgo();
@@ -602,7 +592,7 @@ public class D6TopologicalDividerCommand extends D6AbstractDividerAlgoCommand {
         	
     	}    	
 
-        List<X6JobIF<D6EntityIF>> postActions = new ArrayList<>();
+        List<X6JobIF<D6LEntityIF>> postActions = new ArrayList<>();
         
         // check only unallocated objects
 		if ( entity.getIdLot() != D6Lot.TECH_ID_UNALLOCATED ) {
@@ -703,7 +693,7 @@ public class D6TopologicalDividerCommand extends D6AbstractDividerAlgoCommand {
     	}
     	
     	// Save numbers is a stat object
-    	D6EntityDirectedLinkStats stat = new D6EntityDirectedLinkStats( entity.getId(), bench.getId() );
+    	D6LEntityDirectedLinkStats stat = new D6LEntityDirectedLinkStats( entity.getId(), bench.getId() );
     	stat.setNbDirectedLinksFromForBench( nbDirectedLinksFromEntity );
     	stat.setNbLinksFromForBench( nbLinksFromEntity );
     	stat.setNbDirectedLinksToForBench( nbDirectedLinksToEntity );
@@ -798,7 +788,7 @@ public class D6TopologicalDividerCommand extends D6AbstractDividerAlgoCommand {
 	    	            
 	    				// remove components from benches
 	    				if ( removeComponentsFromBench ) {
-	    					X6JobIF<D6EntityIF> removeComponentsFromBenchJob = 
+	    					X6JobIF<D6LEntityIF> removeComponentsFromBenchJob = 
 	    						new RemoveComponentsFromBenchJob( txn, bench, entity );
 	    					postActions.add( removeComponentsFromBenchJob );
 	    				}
@@ -829,13 +819,13 @@ public class D6TopologicalDividerCommand extends D6AbstractDividerAlgoCommand {
     /**
      * Job removing a component from bench 
      */
-    private class RemoveComponentsFromBenchJob implements X6JobIF<D6EntityIF> {
+    private class RemoveComponentsFromBenchJob implements X6JobIF<D6LEntityIF> {
 
     	private final Transaction txn;
     	private final D6Bench bench;
-        private final D6EntityIF targetEntity;
+        private final D6LEntityIF targetEntity;
     	
-    	public RemoveComponentsFromBenchJob( Transaction txn, D6Bench bench, D6EntityIF targetEntity ) {
+    	public RemoveComponentsFromBenchJob( Transaction txn, D6Bench bench, D6LEntityIF targetEntity ) {
     	
     		super();
     		this.txn = txn;
@@ -845,7 +835,7 @@ public class D6TopologicalDividerCommand extends D6AbstractDividerAlgoCommand {
     	}
     	
 		@Override
-		public void doJob( D6EntityIF _entity ) throws Exception {
+		public void doJob( D6LEntityIF _entity ) throws Exception {
 			
 			// entity is not used, targetEntity is used 
 	    	// For entity

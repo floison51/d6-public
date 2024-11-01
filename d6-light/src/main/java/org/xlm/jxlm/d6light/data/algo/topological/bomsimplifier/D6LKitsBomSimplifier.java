@@ -1,36 +1,41 @@
-
+/**
+ *  Public Data Systemizer, see https://doi.org/10.1016/j.compind.2023.104053
+ *  Copyright (C) 2025 Francois LOISON
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html
+**/
 
 package org.xlm.jxlm.d6light.data.algo.topological.bomsimplifier;
 
-import java.util.List;
+import org.xlm.jxlm.d6light.data.algo.D6LAlgoCommandIF;
+import org.xlm.jxlm.d6light.data.algo.topological.D6LEntityDirectedLinkStats;
+import org.xlm.jxlm.d6light.data.conf.BomSimplifierType;
+import org.xlm.jxlm.d6light.data.exception.D6LException;
+import org.xlm.jxlm.d6light.data.model.D6LEntityIF;
+import org.xlm.jxlm.d6light.data.model.D6LPackageVertex;
+import org.xlm.jxlm.d6light.data.packkage.D6LPackageSubtypeEnum;
 
-import org.xlm.jxlm.audit.d6.data.algo.D6AlgoCommandIF;
-import org.xlm.jxlm.audit.d6.data.algo.topological.bom.D6EntityDirectedLinkStats;
-import org.xlm.jxlm.audit.d6.data.bench.D6Bench;
-import org.xlm.jxlm.audit.d6.data.db.D6SystemizerDataDb;
-import org.xlm.jxlm.audit.d6.data.lot.D6Lot;
-import org.xlm.jxlm.audit.d6.data.measures.D6HistogramEntry;
-import org.xlm.jxlm.audit.d6.data.measures.D6HistogramEntry.HistoKeyEnum;
-import org.xlm.jxlm.audit.d6.data.meta.D6EntityIF;
-
-import com.sleepycat.je.Transaction;
-
-import org.xlm.jxlm.audit.x6.common.X6Exception;
-import org.xlm.jxlm.audit.x6.common.data.conf.BomSimplifierType;
-import org.xlm.jxlm.audit.x6.common.data.lot.D6LotSubtypeEnum;
-import org.xlm.jxlm.audit.x6.common.thread.X6JobIF;
-
-public class D6KitsBomSimplifier extends D6LAbstractBomSimplifier
+public class D6LKitsBomSimplifier extends D6LAbstractBomSimplifier
 {
 
     protected final int linksTrigger;
     
-    public D6KitsBomSimplifier( 
-        D6SystemizerDataDb db,
+    public D6LKitsBomSimplifier( 
         BomSimplifierType conf 
     )
     {
-        super( db, conf );
+        super( conf );
         this.linksTrigger = conf.getLinksTrigger();
     }
 
@@ -48,11 +53,10 @@ public class D6KitsBomSimplifier extends D6LAbstractBomSimplifier
     
 	@Override
 	public boolean matchWithoutNumbers(
-		Transaction txn, D6AlgoCommandIF algoCommand,
-    	D6Bench bench,
-		D6EntityIF entity, D6EntityDirectedLinkStats stat
+		D6LAlgoCommandIF algoCommand,
+		D6LEntityIF entity, D6LEntityDirectedLinkStats stat
 	)
-		throws X6Exception 
+		throws D6LException 
 	{
 		// Necessary conditions for being a kit : all links are directed and no directed links to entity
         boolean matches = 
@@ -70,14 +74,15 @@ public class D6KitsBomSimplifier extends D6LAbstractBomSimplifier
     
     @Override
     public MatchResult match( 
-        Transaction txn, D6AlgoCommandIF algoCommand,
-    	D6Bench bench,
-        D6EntityIF entity, boolean matchWithoutNumbersResult, D6EntityDirectedLinkStats stat, 
-        D6Lot singleLot, List<X6JobIF<D6EntityIF>> postActions 
+    	D6LAlgoCommandIF algoCommand, 
+    	D6LEntityIF entity, boolean matchWithoutNumbersResult, 
+    	D6LPackageVertex singlePackage /*, List<X6JobIF<D6LEntityIF>> postActions*/ 
     ) 
-    	throws X6Exception
+    	throws D6LException
     {
         
+    	throw new Error( "TODO" );
+    	/*
         boolean match = 
            matchWithoutNumbersResult && 
            ( stat.getNbDirectedLinksFromForBench() >= linksTrigger );
@@ -93,18 +98,20 @@ public class D6KitsBomSimplifier extends D6LAbstractBomSimplifier
         }
         
         return new MatchResult( match, null );
-        
+        */
     }
     
 	@Override
-	public void createAndSaveHistogramEntry( Transaction txn, int pass, D6EntityIF entity, long nbDirectedLinksFromEntity,
+	public void createAndSaveHistogramEntry( D6LEntityIF entity, long nbDirectedLinksFromEntity,
 			long nbDirectedLinksToEntity) {
 		
+    	throw new Error( "TODO" );
+    	/*
 		// Log component linksTo 
 		D6HistogramEntry he = new D6HistogramEntry( HistoKeyEnum.nbDirectedLinksFromKit, pass, nbDirectedLinksFromEntity );
 		// Save it
 		he.save( db, txn );
-		
+		*/
 	}
 
     

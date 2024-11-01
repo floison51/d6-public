@@ -20,6 +20,8 @@ package org.xlm.jxlm.d6light.data.algo.topological;
 
 import java.util.List;
 
+import org.xlm.jxlm.d6light.data.algo.topological.bomsimplifier.D6LAbstractBomSimplifier;
+
 /**
  * Technical Divider: split data in technical lots
  * @author Francois Loison

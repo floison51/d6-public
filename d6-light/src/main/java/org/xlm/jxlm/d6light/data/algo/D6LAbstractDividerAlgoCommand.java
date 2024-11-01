@@ -16,27 +16,13 @@
  *  along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html
 **/
 
-package org.xlm.jxlm.d6light.data.model;
+package org.xlm.jxlm.d6light.data.algo;
 
-import java.text.MessageFormat;
-import java.util.HashMap;
-import java.util.Map;
+/**
+ * Base abstract class for divider algo commands
+ * @author Loison
+ *
+ */
+public abstract class D6LAbstractDividerAlgoCommand extends D6LAbstractAlgoCommand {
 
-import org.xlm.jxlm.d6light.data.exception.D6LError;
-
-public class D6EntityRegistry {
-
-	private static Map<Integer,D6EntityIF> registry = new HashMap<>();
-	
-	public static D6LVertex newVertex( int id ) throws D6LError {
-		
-		if ( registry.containsKey( id ) ) {
-			throw new D6LError( MessageFormat.format( "Duplicate id ${0}", id ) );
-		}
-		
-		D6LVertex vertex = new D6LVertex( id );
-		
-		return vertex;
-		
-	}
 }

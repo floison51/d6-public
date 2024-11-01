@@ -25,7 +25,7 @@ import org.jgrapht.nio.GraphImporter;
 import org.jgrapht.nio.gml.GmlImporter;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
 import org.xlm.jxlm.d6light.data.model.D6LEdge;
-import org.xlm.jxlm.d6light.data.model.D6EntityRegistry;
+import org.xlm.jxlm.d6light.data.model.D6LEntityRegistry;
 import org.xlm.jxlm.d6light.data.model.D6LVertex;
 
 /**
@@ -50,7 +50,7 @@ public class D6LImporterWrapper {
 				
 				// Set vertex factory
 				gmlImp.setVertexFactory(
-					id -> D6EntityRegistry.newVertex( id )
+					id -> D6LEntityRegistry.newVertex( id )
 				);
 				
 				break;

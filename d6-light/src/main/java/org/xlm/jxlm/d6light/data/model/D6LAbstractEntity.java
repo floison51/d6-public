@@ -20,13 +20,13 @@ package org.xlm.jxlm.d6light.data.model;
 
 import java.util.Objects;
 
-public abstract class D6AbstractEntity implements D6EntityIF {
+public abstract class D6LAbstractEntity implements D6LEntityIF {
 
 	protected int id;
 	
 	protected String label;
 	
-	protected D6AbstractEntity( int id ) {
+	protected D6LAbstractEntity( int id ) {
 		super();
 		this.id = id;
 	}
@@ -60,7 +60,7 @@ public abstract class D6AbstractEntity implements D6EntityIF {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		D6AbstractEntity other = (D6AbstractEntity) obj;
+		D6LAbstractEntity other = (D6LAbstractEntity) obj;
 		return id == other.id;
 	}
 	

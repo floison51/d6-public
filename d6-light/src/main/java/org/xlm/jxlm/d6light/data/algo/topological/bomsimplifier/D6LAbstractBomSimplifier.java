@@ -18,29 +18,13 @@
 
 package org.xlm.jxlm.d6light.data.algo.topological.bomsimplifier;
 
-import java.util.List;
-
-import org.apache.tools.ant.taskdefs.SQLExec.Transaction;
-import org.xlm.jxlm.audit.d6.data.D6SystemizerData;
-import org.xlm.jxlm.audit.d6.data.algo.D6AlgoCommandIF;
-import org.xlm.jxlm.audit.d6.data.algo.topological.bom.D6EntityDirectedLinkStats;
-import org.xlm.jxlm.audit.d6.data.bench.D6Bench;
-import org.xlm.jxlm.audit.d6.data.db.D6SystemizerDataDb;
-import org.xlm.jxlm.audit.d6.data.lot.D6AbstractLot;
-import org.xlm.jxlm.audit.d6.data.lot.D6Lot;
-import org.xlm.jxlm.audit.d6.data.meta.D6EntityLinkAccessorIF;
-import org.xlm.jxlm.audit.d6.data.meta.D6LinkIF;
-import org.xlm.jxlm.audit.x6.common.X6Exception;
-import org.xlm.jxlm.audit.x6.common.data.lot.D6LotSubtypeEnum;
-import org.xlm.jxlm.audit.x6.common.data.lot.D6LotTypeEnum;
-import org.xlm.jxlm.audit.x6.common.thread.X6JobIF;
+import org.xlm.jxlm.d6light.data.algo.D6LAlgoCommandIF;
+import org.xlm.jxlm.d6light.data.algo.topological.D6LEntityDirectedLinkStats;
 import org.xlm.jxlm.d6light.data.conf.AbstractBomSimplifierType;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
-import org.xlm.jxlm.d6light.data.model.D6EntityIF;
-
-import com.sleepycat.persist.EntityCursor;
-import com.sleepycat.persist.EntityJoin;
-import com.sleepycat.persist.ForwardCursor;
+import org.xlm.jxlm.d6light.data.model.D6LEntityIF;
+import org.xlm.jxlm.d6light.data.model.D6LPackageVertex;
+import org.xlm.jxlm.d6light.data.packkage.D6LPackageSubtypeEnum;
 
 /**
  * This class holds imformation for Bom Simplifiers: components and kits detection
@@ -58,7 +42,7 @@ public abstract class D6LAbstractBomSimplifier
 	     * Convert from D6LotSubtypeEnum
 	     * @param lotSubTypeEnum
 	     * @return
-	     * @throws X6Exception 
+	     * @throws D6LException 
 	     */
 		public static BomSimplifierKindEnum valueOf( D6LPackageSubtypeEnum lotSubTypeEnum ) throws D6LException {
 			
@@ -77,45 +61,28 @@ public abstract class D6LAbstractBomSimplifier
     
     }
     
-    protected final D6SystemizerDataDb db;
-    
     protected final boolean specificBusinessLot;
 
     protected final boolean singleExtractorLot;
     
-    protected int iPass;
-    protected int iPassTechLot;
-    
     private D6LAbstractBomSimplifier( 
-        D6SystemizerDataDb db,
         boolean specificBusinessLot, boolean singleExtractorLot
     )
     {
         super();
-        this.db = db;
         this.specificBusinessLot = specificBusinessLot;
         this.singleExtractorLot = singleExtractorLot;
     }
     
     public D6LAbstractBomSimplifier( 
-        D6SystemizerDataDb db,
         AbstractBomSimplifierType conf
     )
     {
         this( 
-        	db, conf.isSpecificBusinessLot(), 
+        	conf.isSpecificBusinessLot(), 
         	// Default value for isSingleExtractorLot
         	( conf.isSingleExtractorLot() != null ) ? conf.isSingleExtractorLot() : true
         );
-    }
-    
-    public void setPasses(
-        int iPass, int iPassTechLot
-    ) {
-
-        this.iPass = iPass;
-        this.iPassTechLot = iPassTechLot;
-
     }
     
     public abstract BomSimplifierKindEnum getKind();
@@ -124,12 +91,14 @@ public abstract class D6LAbstractBomSimplifier
     /**
      * Tune lot with a matching entity
      * @param bomSimplifierLot
-     * @throws X6Exception 
+     * @throws D6LException 
      */
-	public void tuneLot( Transaction txn, D6Lot bomSimplifierLot, Object tuningInfo ) throws X6Exception {
+    /*
+	public void tuneLot( Transaction txn, D6Package bomSimplifierLot, Object tuningInfo ) throws D6LException {
 		// Nothing done here
 	}
-
+	*/
+    
 	public class MatchResult {
 		
 		public final boolean match;
@@ -147,22 +116,14 @@ public abstract class D6LAbstractBomSimplifier
 	 * Return true if BomSimplifier (kit, component) matches without taking in consideration numbers<p/>
 	 * If true, an stats entry is stored
 	 * 
-	 * @param txn
 	 * @param algoCommand
-	 * @param entity
-	 * @param nbDirectedLinksFromEntity
-	 * @param nbDirectedLinksToEntity
-	 * @param singleLot
-	 * @param postActions
 	 * @return
-	 * @throws X6Exception
+	 * @throws D6LException
 	 */
     public abstract boolean matchWithoutNumbers( 
-    	Transaction txn, D6AlgoCommandIF algoCommand, 
-    	D6Bench bench,
-    	D6EntityIF entity, 
-    	D6EntityDirectedLinkStats stat 
-    ) throws X6Exception;
+    	D6LAlgoCommandIF algoCommand, 
+    	D6LEntityIF entity, D6LEntityDirectedLinkStats stat 
+    ) throws D6LException;
 
     /**
      * Return true if BOM simplification matches
@@ -170,25 +131,25 @@ public abstract class D6LAbstractBomSimplifier
      * @param nbDirectedLinksToEntity
      * @param postActions 
      * @return object needed for tuning lot
-     * @throws X6Exception 
+     * @throws D6LException 
      */
     public abstract MatchResult match( 
-    	Transaction txn, D6AlgoCommandIF algoCommand, 
-    	D6Bench bench,
-    	D6EntityIF entity, boolean matchWithoutNumbersResult, D6EntityDirectedLinkStats stat, 
-    	D6Lot singleLot, List<X6JobIF<D6EntityIF>> postActions 
-    ) throws X6Exception;
+    	D6LAlgoCommandIF algoCommand, 
+    	D6LEntityIF entity, boolean matchWithoutNumbersResult, 
+    	D6LPackageVertex singlePackage /*, List<X6JobIF<D6LEntityIF>> postActions*/ 
+    ) throws D6LException;
    
     /**
      * Move component of kit lot to upper level
      * @param txn
-     * @throws X6Exception 
+     * @throws D6LException 
      */
     public void moveSimplifiedTechnicalLotsToBusinessLotIfNeeded( 
-    	D6SystemizerDataDb db, Transaction txn 
     )
-    	throws X6Exception
+    	throws D6LException
     {
+    	throw new Error( "TODO" );
+    	/*
         if ( specificBusinessLot ) {
             
             // browse benches
@@ -208,6 +169,7 @@ public abstract class D6LAbstractBomSimplifier
             }
             
         }   // end if isBusinessComponentLot()
+        */
         
     }
     
@@ -216,14 +178,13 @@ public abstract class D6LAbstractBomSimplifier
      * @param txn
      * @param iPass
      * @param parentIdLot
-     * @throws X6Exception 
+     * @throws D6LException 
      */
     protected void moveSimplifiedTechnicalLotsToBusinessLot( 
-    	D6SystemizerDataDb db, Transaction txn, 
-    	int iPass, int iPassTechLot, 
-    	long idLotOfCurrentBench 
-    ) throws X6Exception {
+    ) throws D6LException {
         
+    	throw new Error( "TODO" );
+    	/*
         // Get sub-lot type
         final D6LPackageSubtypeEnum lotSubType = getLotSubType();
 
@@ -305,11 +266,13 @@ public abstract class D6LAbstractBomSimplifier
 
             }
         }
-        
+        */
     }
 
-	private D6Lot createOuterSimplifiedLot(D6SystemizerDataDb db, Transaction txn, int iPass,
-			final D6LPackageSubtypeEnum lotSubType, D6Lot targetBusinessLot) throws X6Exception {
+	private D6LPackageVertex createOuterSimplifiedLot(
+			final D6LPackageSubtypeEnum lotSubType, D6LPackageVertex targetBusinessLot) throws D6LException {
+    	throw new Error( "TODO" );
+    	/*
 		D6Lot outerSimplifiedLot;
 		outerSimplifiedLot = new D6Lot( D6LPackageTypeEnum.BUSINESS_LOT, null, iPass );
 		outerSimplifiedLot.setName( lotSubType.getLotName() );
@@ -318,6 +281,7 @@ public abstract class D6LAbstractBomSimplifier
 		
 		outerSimplifiedLot.save( db, txn );
 		return outerSimplifiedLot;
+		*/
 	}
 
 	public boolean isSpecificBusinessLot() {
@@ -332,36 +296,25 @@ public abstract class D6LAbstractBomSimplifier
 	 * If a component is extracted, stats for used objects must be updated
 	 *
 	 */
-    public class ReworkChildrenJob implements X6JobIF<D6EntityIF> {
+    public class ReworkChildrenJob /* implements X6JobIF<D6EntityIF> */ {
 
-        /** Db provided **/
-        private final D6SystemizerDataDb db;
-        /** Algo command **/
-        private final D6AlgoCommandIF algoCommand;
-        
-        private final int iPass;
-        private final int iPassTechLot;
-        
-        /** Transaction **/
-        private final Transaction txn;
+         /** Algo command **/
+        private final D6LAlgoCommandIF algoCommand;
         
         /** Kit to operate on **/
-        private final D6EntityIF kit;
+        private final D6LEntityIF kit;
         
         /** Single lot **/
-        private final D6Lot singleLot;
+        private final D6LPackageVertex singleLot;
         
-        public ReworkChildrenJob( D6SystemizerDataDb db, D6AlgoCommandIF algoCommand, int iPass, int iPassTechLot, Transaction txn, D6EntityIF kit, D6Lot singleLot ) {
+        public ReworkChildrenJob( D6LAlgoCommandIF algoCommand, D6LEntityIF kit, D6LPackageVertex singleLot ) {
             super();
-            this.db = db;
             this.algoCommand = algoCommand;
-            this.iPass = iPass;
-            this.iPassTechLot = iPassTechLot;
-            this.txn = txn;
             this.kit = kit;
             this.singleLot = singleLot;
         }
 
+        /*
         @Override
         public void doJob( D6EntityIF notUsed )
             throws Exception
@@ -447,7 +400,7 @@ public abstract class D6LAbstractBomSimplifier
             }
             
         }
-        
+        */
     }
 
     /**
@@ -457,7 +410,7 @@ public abstract class D6LAbstractBomSimplifier
      * @param nbDirectedLinksFromEntity
      * @param nbDirectedLinksToEntity
      */
-	public void createAndSaveHistogramEntry( Transaction txn, int pass, D6EntityIF entity, long nbDirectedLinksFromEntity, long nbDirectedLinksToEntity ) {
+	public void createAndSaveHistogramEntry( D6LEntityIF entity, long nbDirectedLinksFromEntity, long nbDirectedLinksToEntity ) {
 		// Do nothing
 		
 	}

@@ -66,7 +66,7 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
 	{
 		this.graph = graph;
 		
-        doPrepare();
+        doPrepare( true );
         doExecute( true );
 		
 	}
@@ -74,7 +74,7 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
 	/**
 	 * Prepare before execution
 	 */
-	protected abstract void doPrepare() throws D6LException;
+	protected abstract void doPrepare( final boolean callAlgo ) throws D6LException;
 
 	/**
 	 * Actual command execution

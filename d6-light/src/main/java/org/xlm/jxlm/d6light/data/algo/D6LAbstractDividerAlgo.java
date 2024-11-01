@@ -18,7 +18,6 @@
 
 package org.xlm.jxlm.d6light.data.algo;
 
-import org.xlm.jxlm.audit.x6.common.X6Exception;
 import org.xlm.jxlm.d6light.data.conf.AbstractAlgoType;
 import org.xlm.jxlm.d6light.data.conf.AbstractDividerType;
 import org.xlm.jxlm.d6light.data.conf.D6LightDataConf;
@@ -89,7 +88,7 @@ public abstract class D6LAbstractDividerAlgo extends D6LAbstractAlgo implements 
 				break;
 			}
 			default: {
-				throw new X6Exception( "lot type '" + producesLotType.name() + "' is not a valid lot type for 'produces' attribute" );
+				throw new D6LException( "lot type '" + producesLotType.name() + "' is not a valid lot type for 'produces' attribute" );
 			}
 		}
 	}

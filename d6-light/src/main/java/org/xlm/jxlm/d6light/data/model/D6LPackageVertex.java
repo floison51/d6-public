@@ -16,15 +16,18 @@
  *  along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html
 **/
 
-package org.xlm.jxlm.d6light.data.algo.topological;
+package org.xlm.jxlm.d6light.data.model;
 
-import org.xlm.jxlm.d6light.data.algo.D6LAlgoIF;
+public class D6LPackageVertex extends D6LAbstractEntity {
 
-/**
- * Interface for divider algos
- * @author Loison
- *
- */
-public interface D6LDividerAlgoIF extends D6LAlgoIF {
+	public D6LPackageVertex( int id ) {
+		super( id );
+	}
 
+	@Override
+	public String toString() {
+		return "D6Vertex [id=" + id + ", label=" + label + "]";
+	}
+
+	
 }
