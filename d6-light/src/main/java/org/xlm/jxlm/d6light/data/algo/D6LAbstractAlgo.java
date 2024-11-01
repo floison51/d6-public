@@ -36,7 +36,7 @@ import org.xlm.jxlm.d6light.data.util.D6LUtil;
  */
 public abstract class D6LAbstractAlgo extends D6LAbstractPlugin implements D6LAlgoIF {
 
-	private static final String ALGO_MAPPINGS_PROPERTIES = "org/xlm/jxlm/audit/d6/data/algoMappings.properties";
+	private static final String ALGO_MAPPINGS_PROPERTIES = "org/xlm/jxlm/d6light/data/algo/algoMappings.properties";
 	
 	protected D6LightDataConf conf = null;
 	protected AbstractAlgoType algoConf = null;
@@ -82,7 +82,7 @@ public abstract class D6LAbstractAlgo extends D6LAbstractPlugin implements D6LAl
 	 */
 	public static D6LAlgoIF getInstance( 
 	    AbstractAlgoType confAlgo, 
-	    D6LightDataConf sysDataConf, int reservedDoNotUsed
+	    D6LightDataConf sysDataConf
 	) throws D6LException {
 	    
 	    D6LAlgoIF algoInstance = null;
@@ -103,7 +103,7 @@ public abstract class D6LAbstractAlgo extends D6LAbstractPlugin implements D6LAl
     		// call static getInstance from class
     		Method getInstanceMethod = javaClazz.getMethod( 
     		    "getInstance", 
-    		    AbstractAlgoType.class 
+    		    AbstractAlgoType.class, D6LightDataConf.class
     		);
     		if ( getInstanceMethod == null ) {
     			throw new D6LException( "Can't find getInstance() method for class " + javaClazz );

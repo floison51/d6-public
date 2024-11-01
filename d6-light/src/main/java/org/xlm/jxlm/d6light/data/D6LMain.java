@@ -220,7 +220,7 @@ public class D6LMain {
 		}
 		
 		// Instantiate algo
-		D6LAlgoIF algo =  D6LAbstractAlgo.getInstance( algoConf, this.d6lConf, -1 );
+		D6LAlgoIF algo =  D6LAbstractAlgo.getInstance( algoConf, this.d6lConf );
 		
 		// set conf to algo
 		algo.setConf( this.d6lConf, algoConf );

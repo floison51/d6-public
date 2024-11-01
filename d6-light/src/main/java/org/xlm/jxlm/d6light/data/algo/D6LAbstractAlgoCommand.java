@@ -98,7 +98,7 @@ public abstract class D6LAbstractAlgoCommand
     		
     		// create instance
     		Constructor<? extends D6LAbstractAlgoCommand> cAlgoCommand = 
-    			algoCommandClass.getDeclaredConstructor( D6LightDataConf.class );
+    			algoCommandClass.getConstructor( D6LightDataConf.class );
     		algoCommand = cAlgoCommand.newInstance( conf );
     		
 	    } catch ( Exception e ) {

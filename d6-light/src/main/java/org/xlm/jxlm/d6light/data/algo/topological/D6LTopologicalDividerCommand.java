@@ -23,6 +23,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.tools.ant.taskdefs.SQLExec.Transaction;
 import org.xlm.jxlm.d6light.data.algo.D6LAbstractDividerAlgoCommand;
 import org.xlm.jxlm.d6light.data.algo.topological.bomsimplifier.D6LAbstractBomSimplifier;
+import org.xlm.jxlm.d6light.data.conf.D6LightDataConf;
 import org.xlm.jxlm.d6light.data.conf.RegExpType;
 import org.xlm.jxlm.d6light.data.exception.D6LError;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
@@ -41,10 +42,14 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 	
 	private static final Logger LOGGER = LogManager.getLogger( D6LTopologicalDividerCommand.class ); 
 	
+	public D6LTopologicalDividerCommand( D6LightDataConf conf ) throws D6LException {
+		super( conf );
+	}
+	
 	@Override
 	public void doPrepare( final boolean callAlgo ) throws D6LException {
 		
-	    LOGGER.info( "Start Prepare benches" );
+	    LOGGER.info( "Start prepare algo" );
 
 	    throw new D6LError( "TODO" );
 	    /*
