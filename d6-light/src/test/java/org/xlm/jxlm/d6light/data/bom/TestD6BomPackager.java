@@ -26,6 +26,7 @@ import org.xlm.jxlm.d6light.data.D6LMain;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
 import org.xlm.jxlm.d6light.data.imp.D6LGraphFormatEnum;
 
+
 class TestD6LBomPackager {
 
 	@Test
@@ -33,6 +34,7 @@ class TestD6LBomPackager {
 		
 		List<String> opts = Arrays.asList(
 			"-" + D6LMain.OPTION_CONF, "src/conf/d6l-testBOM-CSV-import.xml",
+			"-" + D6LMain.OPTION_ID_ALGO, "simple-BOM-facto",
 			"-" + D6LMain.OPTION_GRAPH_IN, "src/test/resources/org/xlm/jxlm/d6light/data/bom/t01/testBom-t01.gml",
 			"-" + D6LMain.OPTION_GRAPH_FORMAT, D6LGraphFormatEnum.GML.name()
 		);

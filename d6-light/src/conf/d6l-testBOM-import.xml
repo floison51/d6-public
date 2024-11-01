@@ -5,6 +5,10 @@
   <DataIn/>
 	
   <Algos>
+  
+    <TopologicalDivider key="BillOfMaterial" id="simple-BOM-facto">
+    </TopologicalDivider>
+    
   </Algos>
 	
 </D6LightDataConf>

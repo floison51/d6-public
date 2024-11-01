@@ -23,6 +23,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.MessageFormat;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.cli.CommandLine;
@@ -39,6 +41,11 @@ import org.jgrapht.Graph;
 import org.jgrapht.graph.AsUnmodifiableGraph;
 import org.jgrapht.graph.SimpleGraph;
 import org.jgrapht.nio.GraphImporter;
+import org.xlm.jxlm.d6light.data.algo.D6LAbstractAlgo;
+import org.xlm.jxlm.d6light.data.algo.D6LAbstractAlgoCommand;
+import org.xlm.jxlm.d6light.data.algo.D6LAlgoCommandIF;
+import org.xlm.jxlm.d6light.data.algo.D6LAlgoIF;
+import org.xlm.jxlm.d6light.data.conf.AbstractAlgoType;
 import org.xlm.jxlm.d6light.data.conf.D6LConfHelper;
 import org.xlm.jxlm.d6light.data.conf.D6LightDataConf;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
@@ -58,11 +65,16 @@ public class D6LMain {
 	/** Option configuration file **/
 	public static final String OPTION_CONF = "conf";
 	
+	/** Option ID algo: choose graph transformation algo to be applied **/
+	public static final String OPTION_ID_ALGO = "idAlgo";
+	
 	/** Option graph file input **/
 	public static final String OPTION_GRAPH_IN = "graphIn";
 	
 	/** Option graph format **/
 	public static final String OPTION_GRAPH_FORMAT = "graphFormat";
+
+	private File d6ConfFile;
 
 	private File graphInFile;
 
@@ -134,12 +146,12 @@ public class D6LMain {
     private void processCmd( CommandLine cmd ) throws D6LException {
 		
     	// Get conf file
-    	File confFile = getFileFromOption( cmd, OPTION_CONF );
+    	this.d6ConfFile = getFileFromOption( cmd, OPTION_CONF );
     	
     	// Read conf
     	// Get JAXB config
     	try ( 
-    		InputStream isConf = new FileInputStream ( confFile ); 
+    		InputStream isConf = new FileInputStream ( this.d6ConfFile ); 
     	) {
     		this.d6lConf = D6LConfHelper.getConf( isConf, null );
     	} catch ( IOException ioe ) {
@@ -166,6 +178,62 @@ public class D6LMain {
     	// Freeze source graph
     	this.sourceGraph = new AsUnmodifiableGraph<>( this.sourceGraph );
     	
+    	// Algo
+    	String idAlgo = cmd.getOptionValue( OPTION_ID_ALGO );
+    	
+    	// Go!
+    	runAlgo( idAlgo );
+    	
+	}
+
+	private void runAlgo( String idAlgo ) throws D6LException {
+		
+		// Index algos
+		Map<String,AbstractAlgoType> indexAlgoConfById = new HashMap<>();
+		
+		for ( AbstractAlgoType algoConf : d6lConf.getAlgos().getTopologicalDivider() ) {
+			
+			// Put in index
+			if ( indexAlgoConfById.put( algoConf.getId(), algoConf) != null ) {
+				// We have a duplicate
+				throw new D6LException(
+					MessageFormat.format(
+						"Duplicate algo ID ''${0}'' in configuration file ''${1}''",
+						algoConf.getId(), this.d6ConfFile.getAbsolutePath()
+					)
+				);
+			}
+		}
+		
+		// Get algo
+		AbstractAlgoType algoConf = indexAlgoConfById.get( idAlgo );
+		
+		// Check
+		if ( algoConf == null ) {
+			// Not found
+			throw new D6LException(
+				MessageFormat.format(
+					"Algo ID ''${0}'' not found in configuration file ''${1}''",
+					idAlgo, this.d6ConfFile.getAbsolutePath()
+				)
+			);
+		}
+		
+		// Instantiate algo
+		D6LAlgoIF algo =  D6LAbstractAlgo.getInstance( algoConf, this.d6lConf, -1 );
+		
+		// set conf to algo
+		algo.setConf( this.d6lConf, algoConf );
+		
+		// Create command
+		D6LAlgoCommandIF cmdAlgo = D6LAbstractAlgoCommand.newInstance(
+			algo.getClass(), 
+			this.d6lConf
+		);
+		
+		// Run algo
+		cmdAlgo.execute( this.sourceGraph );
+		
 	}
 
 	protected void importGraph( Graph<D6LVertex, D6LEdge> graph ) throws D6LException {
@@ -214,6 +282,11 @@ public class D6LMain {
 		confOption.setRequired( true );
 		confOption.setArgName( "D6 Light configuration file" );
 		options.addOption( confOption );
+	
+		Option confIdAlgo = new Option( OPTION_ID_ALGO, true, "ID of algo to run" );
+		confIdAlgo.setRequired( true );
+		confIdAlgo.setArgName( "ID of algo to run" );
+		options.addOption( confIdAlgo );
 	
 		Option graphInOption = new Option( OPTION_GRAPH_IN, true, "Input graph file" );
 		graphInOption.setRequired( true );
