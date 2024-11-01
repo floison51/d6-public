@@ -39,7 +39,7 @@ import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.appender.FileAppender;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.AsUnmodifiableGraph;
-import org.jgrapht.graph.SimpleGraph;
+import org.jgrapht.graph.SimpleDirectedGraph;
 import org.jgrapht.nio.GraphImporter;
 import org.xlm.jxlm.d6light.data.algo.D6LAbstractAlgo;
 import org.xlm.jxlm.d6light.data.algo.D6LAbstractAlgoCommand;
@@ -52,6 +52,7 @@ import org.xlm.jxlm.d6light.data.exception.D6LException;
 import org.xlm.jxlm.d6light.data.imp.D6LGraphFormatEnum;
 import org.xlm.jxlm.d6light.data.imp.D6LImporterWrapper;
 import org.xlm.jxlm.d6light.data.model.D6LEdge;
+import org.xlm.jxlm.d6light.data.model.D6LPackage;
 import org.xlm.jxlm.d6light.data.model.D6LVertex;
 
 /**
@@ -80,7 +81,8 @@ public class D6LMain {
 
 	private D6LGraphFormatEnum graphFormat;
 
-	private Graph<D6LVertex, D6LEdge> sourceGraph;
+	private Graph<D6LVertex, D6LEdge> inGraph;
+	private Graph<D6LPackage, D6LEdge> outGraph;
 
 	private D6LightDataConf d6lConf;
 	
@@ -168,15 +170,18 @@ public class D6LMain {
     	this.graphFormat = D6LGraphFormatEnum.valueOf( strGraphFormat );
     	
     	// Initialize empty graph
-    	this.sourceGraph = new SimpleGraph<>( 
+    	this.inGraph = new SimpleDirectedGraph<>( 
+    		D6LEdge.class
+    	);
+    	this.outGraph = new SimpleDirectedGraph<>( 
     		D6LEdge.class
     	);
     	
     	// Import graph
-    	importGraph( this.sourceGraph );
+    	importGraph( this.inGraph );
     	
     	// Freeze source graph
-    	this.sourceGraph = new AsUnmodifiableGraph<>( this.sourceGraph );
+    	this.inGraph = new AsUnmodifiableGraph<>( this.inGraph );
     	
     	// Algo
     	String idAlgo = cmd.getOptionValue( OPTION_ID_ALGO );
@@ -232,7 +237,7 @@ public class D6LMain {
 		);
 		
 		// Run algo
-		cmdAlgo.execute( this.sourceGraph );
+		cmdAlgo.execute( this.inGraph, this.outGraph );
 		
 	}
 

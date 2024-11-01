@@ -25,19 +25,19 @@ package org.xlm.jxlm.d6light.data.algo.topological;
  */
 public class D6LEntityDirectedLinkStats {
 
-    private long idEntity = -1;
+    private int idEntity = -1;
     
     /** Nb directed links from for entity bench **/
-    private long nbDirectedLinksFromForBench = -1;
+    private int nbDirectedLinksFromForBench = -1;
     
     /** Nb links from for entity bench **/
-     private long nbLinksFromForBench = -1;
+     private int nbLinksFromForBench = -1;
     
     /** Nb directed links to for entity bench **/
-    private long nbDirectedLinksToForBench = -1;
+    private int nbDirectedLinksToForBench = -1;
     
     /** Nb links to for entity bench **/
-    private long nbLinksToForBench = -1;
+    private int nbLinksToForBench = -1;
     
     /** BOM heads have 0 or more than 2 links directed to them **/
     private boolean isBomHeadForBench = false;
@@ -51,24 +51,24 @@ public class D6LEntityDirectedLinkStats {
      * @param idEntity idEntity
      * @param idBench idBench
      */
-	public D6LEntityDirectedLinkStats( long idEntity ) {
+	public D6LEntityDirectedLinkStats( int idEntity ) {
 		this();
 		this.idEntity = idEntity;
 	}
 
-	public long getIdObject() {
+	public int getIdObject() {
 		return idEntity;
 	}
 
-	public long getNbDirectedLinksFromForBench() {
+	public int getNbDirectedLinksFromForBench() {
 		return nbDirectedLinksFromForBench;
 	}
 
-	public void setNbDirectedLinksFromForBench(long nbDirectedLinksFromForBench) {
+	public void setNbDirectedLinksFromForBench(int nbDirectedLinksFromForBench) {
 		this.nbDirectedLinksFromForBench = nbDirectedLinksFromForBench;
 	}
 
-    public void incNbDirectedLinksFromForBench( long incDirectedLinksFromForBench ) {
+    public void incNbDirectedLinksFromForBench( int incDirectedLinksFromForBench ) {
         
         this.nbDirectedLinksFromForBench += incDirectedLinksFromForBench;
         if ( this.nbDirectedLinksFromForBench < 0 ) {
@@ -76,17 +76,17 @@ public class D6LEntityDirectedLinkStats {
         }
     }
 
-	public long getNbDirectedLinksToForBench() {
+	public int getNbDirectedLinksToForBench() {
 		return nbDirectedLinksToForBench;
 	}
 
-	public void setNbDirectedLinksToForBench( long nbDirectedLinksToForBench ) {
+	public void setNbDirectedLinksToForBench( int nbDirectedLinksToForBench ) {
 		this.nbDirectedLinksToForBench = nbDirectedLinksToForBench;
 		// bom head?
 		this.isBomHeadForBench = ( nbDirectedLinksToForBench == 0 ) || ( nbDirectedLinksToForBench >= 2 );
 	}
 
-    public void incNbDirectedLinksToForBench( long incDirectedLinksToForBench ) {
+    public void incNbDirectedLinksToForBench( int incDirectedLinksToForBench ) {
         this.nbDirectedLinksToForBench += incDirectedLinksToForBench;
         if ( this.nbDirectedLinksToForBench < 0 ) {
             this.nbDirectedLinksToForBench = 0;
@@ -99,30 +99,30 @@ public class D6LEntityDirectedLinkStats {
 		return isBomHeadForBench;
 	}
 
-	public long getNbLinksFromForBench() {
+	public int getNbLinksFromForBench() {
 		return nbLinksFromForBench;
 	}
 
-	public void setNbLinksFromForBench(long nbLinksFromForBench) {
+	public void setNbLinksFromForBench(int nbLinksFromForBench) {
 		this.nbLinksFromForBench = nbLinksFromForBench;
 	}
 
-    public void incNbLinksFromForBench(long incNbLinksFromForBench) {
+    public void incNbLinksFromForBench(int incNbLinksFromForBench) {
         this.nbLinksFromForBench += incNbLinksFromForBench;
         if ( this.nbLinksFromForBench < 0 ) {
             this.nbLinksFromForBench = 0;
         }
     }
 
-	public long getNbLinksToForBench() {
+	public int getNbLinksToForBench() {
 		return nbLinksToForBench;
 	}
 
-	public void setNbLinksToForBench(long nbLinksToForBench) {
+	public void setNbLinksToForBench(int nbLinksToForBench) {
 		this.nbLinksToForBench = nbLinksToForBench;
 	}
 	
-    public void incNbLinksToForBench(long incNbLinksToForBench) {
+    public void incNbLinksToForBench(int incNbLinksToForBench) {
         this.nbLinksToForBench += incNbLinksToForBench;
         if ( this.nbLinksToForBench < 0 ) {
             this.nbLinksToForBench = 0;

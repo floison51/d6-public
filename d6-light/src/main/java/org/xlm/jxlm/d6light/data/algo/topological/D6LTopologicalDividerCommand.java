@@ -18,17 +18,34 @@
 
 package org.xlm.jxlm.d6light.data.algo.topological;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.tools.ant.taskdefs.SQLExec.Transaction;
 import org.xlm.jxlm.d6light.data.algo.D6LAbstractDividerAlgoCommand;
+import org.xlm.jxlm.d6light.data.algo.D6LDividerAlgoIF;
 import org.xlm.jxlm.d6light.data.algo.topological.bomsimplifier.D6LAbstractBomSimplifier;
+import org.xlm.jxlm.d6light.data.algo.topological.bomsimplifier.D6LAbstractBomSimplifier.BomSimplifierKindEnum;
+import org.xlm.jxlm.d6light.data.algo.topological.bomsimplifier.D6LAbstractBomSimplifier.MatchResult;
+import org.xlm.jxlm.d6light.data.conf.AbstractAlgoType;
 import org.xlm.jxlm.d6light.data.conf.D6LightDataConf;
-import org.xlm.jxlm.d6light.data.conf.RegExpType;
+import org.xlm.jxlm.d6light.data.conf.TopologicalDividerType;
+import org.xlm.jxlm.d6light.data.db.D6LInmemoryDb;
 import org.xlm.jxlm.d6light.data.exception.D6LError;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
+import org.xlm.jxlm.d6light.data.job.D6LJobIF;
+import org.xlm.jxlm.d6light.data.model.D6LEdge;
 import org.xlm.jxlm.d6light.data.model.D6LEntityIF;
-import org.xlm.jxlm.d6light.data.model.D6LPackageVertex;
+import org.xlm.jxlm.d6light.data.model.D6LEntityRegistry;
+import org.xlm.jxlm.d6light.data.model.D6LPackage;
+import org.xlm.jxlm.d6light.data.model.D6LVertex;
+import org.xlm.jxlm.d6light.data.packkage.D6LPackageSubtypeEnum;
+import org.xlm.jxlm.d6light.data.packkage.D6LPackageTypeEnum;
 
 /**
  * Topological divider command
@@ -51,13 +68,11 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 		
 	    LOGGER.info( "Start prepare algo" );
 
-	    throw new D6LError( "TODO" );
-	    /*
-	    // Ancestor creates benches
-	    // don't call algo because we do after
+	    // Call ancestor but don't call algo because we do after
 		super.doPrepare( false );
 		
-		D6LAbstractTopologicalDivider topologicalDividerAlgo = (D6LAbstractTopologicalDivider) getAlgo();
+		D6LAbstractTopologicalDivider topologicalDividerAlgo = 
+			(D6LAbstractTopologicalDivider) getAlgo();
 		
 		// Allocate single and components, if needed
 		
@@ -65,13 +80,9 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 		
 		// Use algo value
 		boolean isSinglesAllocation = topologicalDividerAlgo.isAllowsSinglesAllocation();
-        // Regexp can also override allocation dependencing on parent lot name
-		RegExpType allocateSinglesIfParentContainerRegEx = null;
-		
+ 		
         if ( !topologicalDividerAlgo.isAllowsSinglesAllocation() ) {
             LOGGER.info( "Topological divider '" + topologicalDividerAlgo.getName() + "' doesn't single allocation, any <Single> parameters are ignored." );
-            // No regexp override : algo doesn't support it
-            allocateSinglesIfParentContainerRegEx = null;
         }
 
 		AbstractAlgoType algoConf = topologicalDividerAlgo.getConf();
@@ -89,40 +100,17 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 		            isSinglesAllocation = isSinglesAllocationFromConf;
 		        }
 		        
-		        // Regexp can also override allocation dependencing on parent lot name
-		        allocateSinglesIfParentContainerRegEx = topoAlgoConf.getSingles().getAllocateSinglesIfParentContainerRegEx();
-		        
 		    }
 		    
 		}
 		
 		if ( isSinglesAllocation || topologicalDividerAlgo.isNeedBomSimplification() ) {
 			
-		    // browse benches
-			EntityCursor<D6Bench> benches = db.daoBenches.byId.entities( txn, null );
-			try {
-			    
-				for ( D6Bench bench: benches ) {
-				    
-				    // launch a thread per bench
-				    Runnable prepareForBenchRunnable = 
-				       new PrepareForBenchRunnable( 
-				           txn, topologicalDividerAlgo, 
-				           isSinglesAllocation, allocateSinglesIfParentContainerRegEx,
-				           bench 
-				    );
-				    
-				    prepareForBenchRunnable.run();
-				    
-				}
-				
-			} catch ( Throwable t ) {
-			    
-			    throw new D6LException( t );
-			    
-			} finally {
-				benches.close();
-			}
+            // allocate single and/or simplify bom
+            allocateSinglesAndBomSimplification( 
+                isSinglesAllocation,
+                topologicalDividerAlgo.isNeedBomSimplification()
+            );
 			
 		}
 
@@ -131,8 +119,8 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 			getAlgo().doPrepare( this );
     	}
 
-        LOGGER.info( "End Prepare benches" );
-        */
+        LOGGER.info( "End single allocation and BOM simplification" );
+        
 	}
 
 /*
@@ -187,23 +175,18 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 */
 
 	private void allocateSinglesAndBomSimplification( 
-		boolean allocateSingles, RegExpType allocateSinglesIfParentContainerRegEx, 
-		boolean isNeedBomSimplification, boolean isNeedBomSimplifiedEntitiesRemovedFromBench 
+		boolean allocateSingles, 
+		boolean isNeedBomSimplification 
 	) throws D6LException {
 		
-	    throw new D6LError( "TODO" );
-	    /*
-	    LOGGER.info( "Allocate singles and do bom simplification for bench '" + bench.getId() + "'" );
+	    LOGGER.info( "Allocate singles and do bom simplification" );
 	    
-	    List<X6JobIF<D6LEntityIF>> postActions = new ArrayList<>();
+	    List<D6LJobIF<D6LEntityIF>> postActions = new ArrayList<>();
 	    
-        D6DividerAlgoIF dividerAlgo = (D6DividerAlgoIF) getAlgo();
-        
-        // Get lot assigned to bench
-        D6AbstractLot absLot = D6AbstractLot.getAbstractLot( db, txn, bench.getIdLot(), null );
+        D6LDividerAlgoIF dividerAlgo = (D6LDividerAlgoIF) getAlgo();
         
 		// create Bom simplification lots lot for current bench and pass
-        Map<BomSimplifierKindEnum,D6Lot> mapBomSimplificationLots = new HashMap<>();
+        Map<BomSimplifierKindEnum,D6LPackage> mapBomSimplificationLots = new HashMap<>();
         
         if ( isNeedBomSimplification && ( dividerAlgo instanceof D6LTopologicalDividerIF )) {
             
@@ -214,8 +197,8 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
             for ( D6LAbstractBomSimplifier bomSimplifier : listBomSimplifiers ) {
             
                 // Check 
-            	D6Lot bomSimplificationLot = 
-            		createBomSimplificationLot(txn, bench, iPass, dividerAlgo.getProducesLotType(), bomSimplifier );
+            	D6LPackage bomSimplificationLot = 
+            		createBomSimplificationLot( dividerAlgo.getProducesLotType(), bomSimplifier );
         			
         		mapBomSimplificationLots.put( bomSimplifier.getKind(), bomSimplificationLot );
 
@@ -224,168 +207,92 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
         }
 	
 		// find single lot for current bench
-		D6Lot singleLot = null;
+        D6LPackage singleLot = null;
 		
-		// Calculate regexp match
-		boolean allocateSinglesOverride = true;
-		if ( allocateSinglesIfParentContainerRegEx != null ) {
-		    allocateSinglesOverride = D6RegExpParamHelper.regExpParamMatch( allocateSinglesIfParentContainerRegEx, absLot.getName() );
-		}
-		
-		if ( allocateSingles && allocateSinglesOverride ) {		
+		if ( allocateSingles ) {		
 			
 		    // Use a thread safe method to get single lot
 		    // Because some threads may creating another single lot in the mean while...
 		    singleLot = 
-		        db.daoLots.getOrCreateSingleLotForBenchAndPass( 
-		             txn, CursorConfig.READ_UNCOMMITTED, bench, iPass, dividerAlgo.getProducesLotType() 
-		        );
+		    	D6LEntityRegistry.getOrCreateSingleLot( 
+		    		dividerAlgo.getProducesLotType() 
+		    	);
 		}
 		
 		// allocate single and component objects
 		
 		// record objects already processed
-		Set<Long> idEntitiesProcessed = new HashSet<>();
+		Set<Integer> idEntitiesProcessed = new HashSet<>();
 	
-		// browse objects belonging to bench
-        LOGGER.info( "  objects" );
-		try (
-		    EntityCursor<? extends D6LEntityIF> entities = daoEntities.getByBench( bench ).entities( txn, CursorConfig.READ_UNCOMMITTED );
-		    D6Progress progress = new D6Progress( db, -1, "    ", " bench entities" );
-		) 
-		{	
+		// browse vertices belonging to bench
+        LOGGER.info( "  vertices" );
+		for ( D6LVertex v : inGraph.vertexSet() ) {
 			
-			for ( D6LEntityIF entity: entities ) {
-				
-			    // Tick
-				if ( ( progress.iItem % NB_BIG_PROCESSED_TICK ) == 1 ) {
-					progress.show();
-				}
-				
-				// select only unallocated objects
-				if ( entity.getIdLot() != D6Lot.TECH_ID_UNALLOCATED ) {
-				    progress.iItem++;
-					continue;
-				}
-				
-				// Do allocation and get post actions
-				List<X6JobIF<D6LEntityIF>> curPostActions = allocateSingleAndBomSimplificationAndTopOfBom( 
-					txn,
-					entity, mapBomSimplificationLots, singleLot, bench, idEntitiesProcessed,
-					isNeedBomSimplifiedEntitiesRemovedFromBench
-				);
-				
-				postActions.addAll( curPostActions );
-				
-				progress.iItem++;
-
+			// select only unallocated objects
+			if ( v.getIdPackage() != D6LPackage.TECH_ID_UNALLOCATED ) {
+				continue;
 			}
 			
-		} finally {
-		    
-		    // Flush queues
-		    flushQueues();
-		    
+			// Do allocation and get post actions
+			List<D6LJobIF<D6LEntityIF>> curPostActions = allocateSingleAndBomSimplificationAndTopOfBom( 
+				v, mapBomSimplificationLots, singleLot, idEntitiesProcessed
+			);
+			
+			postActions.addAll( curPostActions );
+			
 		}
 		
-        try {
+		// Execute post actions
+        for ( D6LJobIF<D6LEntityIF> postAction : postActions ) {
+            postAction.doJob( null );
+        }
+            
+		// allocate links to component lot, if both roles are in component lot
+        LOGGER.info( "  edges" );
+		for ( D6LEdge link: inGraph.edgeSet() ) {
+			
+			// select only unallocated links
+			if ( link.getIdPackage() != D6LPackage.TECH_ID_UNALLOCATED ) {
+				continue;
+			}
+			
+			D6LVertex roleA_entity = inGraph.getEdgeSource( link );
+			D6LVertex roleB_entity = inGraph.getEdgeTarget( link );
 
-            for ( X6JobIF<D6LEntityIF> postAction : postActions ) {
-                postAction.doJob( null );
+            // remove components from benches
+            for ( D6LPackage bomSimplificationLot : mapBomSimplificationLots.values() ) {
+            
+                // role B in component lot?
+                if ( 
+                    ( roleB_entity.getIdPackage() == bomSimplificationLot.getId() ) 
+                 ) {
+                    
+                    // link is in a lot dependency
+                    
+                    link.setIdPackage( bomSimplificationLot.getId() );
+                    
+                    // We de-allocated link from bench, that means that link stats for objectA and objectB have changed
+                    // Rework stats
+                    reworkStatsAndSingleLotForDirectedLinkToComponent( 
+                    	singleLot, roleA_entity, roleB_entity 
+                    );
+                    
+                }
+
             }
             
-        } catch ( Exception e ) {
-            D6LException.handleException( e );
-        } finally {
-            flushQueues();
-        }
-        
-		// allocate links to component lot, if both roles are in component lot
-        LOGGER.info( "  links" );
-		try (
-		    EntityCursor<? extends D6LEntityIF> links = daoEntityLinks.getByBench( bench ).entities( txn, CursorConfig.READ_UNCOMMITTED );
-		    D6Progress progress = new D6Progress( db, -1, "  ", " bench entities" );
-		) {
+            // role A entity
+            allocateSingleAndBomSimplificationAndTopOfBom(
+				roleA_entity, mapBomSimplificationLots, singleLot, idEntitiesProcessed
+			);
 			
-			for ( D6LEntityIF linkEntity: links ) {
-				
-			    D6LinkIF link = (D6LinkIF) linkEntity;
-				
-				// Tick
-				if ( ( progress.iItem % NB_BIG_PROCESSED_TICK ) == 0 ) {
-                    progress.show();
-				}
-				
-				// select only unallocated links
-				if ( link.getIdLot() != D6Lot.TECH_ID_UNALLOCATED ) {
-				    progress.iItem++;
-					continue;
-				}
-				
-				D6LEntityIF roleA_entity = db.daoMetaEntities.byIdGet( txn, iPass, iPassTechLot, link.getIdRoleA(), null );
-                D6LEntityIF roleB_entity = db.daoMetaEntities.byIdGet( txn, iPass, iPassTechLot, link.getIdRoleB(), null );
+            // role B entity
+			allocateSingleAndBomSimplificationAndTopOfBom( 
+				roleB_entity, mapBomSimplificationLots, singleLot, idEntitiesProcessed
+			);
+			
+        }
 
-                // remove components from benches
-                for ( D6Lot bomSimplificationLot : mapBomSimplificationLots.values() ) {
-                
-                    // role B in component lot?
-                    if ( 
-                        isNeedBomSimplifiedEntitiesRemovedFromBench && 
-                        ( roleB_entity.getIdLot() == bomSimplificationLot.getId() ) 
-                     ) {
-                        
-                        // check
-                        if ( ! ( link.getLinkDirection() == DependencyBeanDirectionEnum.DirectedFromTo ) ) {
-                            throw new D6LException( "Expected a directed link when removing link from bench, idLink = " + link.getId() );
-                        }
-                        // link is in a lot dependency
-                        
-                        // remove it from bench
-                        link.setIdBench( D6Bench.NO_BENCH );
-                        
-                        // Quick bench support
-                        // Quick bench don't allocate entities, quick bench allocation is when entity belongs to lot UNALLOCATED
-                        // Move links to component lot, it will be belong to more to 'quick bench'
-                        // further on, link will be move to a lot dependency
-                        link.setIdLot( bomSimplificationLot.getId() );
-                        
-                        // Use queue to save
-                        pushSaveEntity( link );
-                        //link.save( db, txn );
-                        
-                        // We de-allocated link from bench, that means that link stats for objectA and objectB have changed
-                        // Rework stats
-                        reworkStatsAndSingleLotForDirectedLinkToComponent( txn, singleLot, bench, roleA_entity, roleB_entity );
-                        
-                    }
-
-                }
-                
-                // role A entity
-                allocateSingleAndBomSimplificationAndTopOfBom(
-					txn, 
-					roleA_entity, mapBomSimplificationLots, singleLot, bench, idEntitiesProcessed,
-					isNeedBomSimplifiedEntitiesRemovedFromBench
-				);
-				
-                // role B entity
-				allocateSingleAndBomSimplificationAndTopOfBom( 
-					txn, 
-					roleB_entity, mapBomSimplificationLots, singleLot, bench, idEntitiesProcessed, 
-					isNeedBomSimplifiedEntitiesRemovedFromBench
-				);
-    			
-				progress.iItem++;
-
-	        }
-
-        } finally {
-            
-            // Flush queues
-            flushQueues();
-            
-		}
-		*/
 	}
 
 	/**
@@ -400,9 +307,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 	 * @return
 	 * @throws D6LException
 	 */
-	/*
-	private D6Lot createBomSimplificationLot(
-		Transaction txn, D6Bench bench, int iPass,
+	private D6LPackage createBomSimplificationLot(
 		D6LPackageTypeEnum defaultLotType, D6LAbstractBomSimplifier bomSimplifier
 	)
 		throws D6LException 
@@ -411,26 +316,21 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 		// Lot type
 		D6LPackageTypeEnum lotType = defaultLotType;
 		
-		D6Lot bomSimplificationLot = new D6Lot( lotType, null, iPass );		    
+		D6LPackage bomSimplificationLot = 
+			D6LEntityRegistry.newPackageVertex( lotType, null );
+		
 		setParameters( bomSimplifier, bomSimplificationLot );
-		
-		bomSimplificationLot.setIdLotParent( bench.getIdLot() );
-		
-		// No bench to avoid algo to change its parent
-		bomSimplificationLot.setIdBench( D6Bench.NO_BENCH );
-		
-		// save it
-		bomSimplificationLot.save( db, txn );
 		
 		return bomSimplificationLot;
 		
 	}
-	*/
 	
-	private void setParameters(D6LAbstractBomSimplifier bomSimplifier, D6LPackageVertex bomSimplificationLot)
-			throws D6LException {
-	    throw new D6LError( "TODO" );
-	    /*
+	private void setParameters(
+		D6LAbstractBomSimplifier bomSimplifier, D6LPackage bomSimplificationLot
+	)
+		throws D6LException 
+	{
+	    
 		switch ( bomSimplifier.getKind() ) {
 		    
 		    case Components: {
@@ -446,21 +346,9 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 		    case Kits: {
 		        
 		        // sub-type to identify component lot later on
-		        bomSimplificationLot.setLotSubtype( D6LPackageSubtypeEnum.KIT_LOT );
+		        bomSimplificationLot.setPackageSubtype( D6LPackageSubtypeEnum.KIT_LOT );
 		        // name
 		        bomSimplificationLot.setName( D6LPackageSubtypeEnum.KIT_LOT.getLotName() );
-		        break;
-		        
-		    }
-
-		    case LotExtractor: {
-		        
-		        // sub-type to identify component lot later on
-		        bomSimplificationLot.setLotSubtype( D6LPackageSubtypeEnum.EXTRACTED_LOT );
-
-		        // No name
-		        bomSimplificationLot.setName( "" );
-		        
 		        break;
 		        
 		    }
@@ -470,7 +358,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 		    }
 		    
 		}
-		*/
+		
 	}
 
 	/**
@@ -479,24 +367,20 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 	 * @throws D6LException 
      */
     private void reworkStatsAndSingleLotForDirectedLinkToComponent( 
-        Transaction txn, D6LPackageVertex singleLot, D6LEntityIF roleA, D6LEntityIF roleB 
+        D6LPackage singleLot, D6LEntityIF roleA, D6LEntityIF roleB 
     ) throws D6LException
     {
 
-	    throw new D6LError( "TODO" );
-	    /*
         // Get existing stats
         
         // role A
-        D6LEntityDirectedLinkStats roleA_stats = db.daoEntityStats.getByEntityIdAndBenchId( txn, null, roleA.getIdBench(), roleA.getId() );
+        D6LEntityDirectedLinkStats roleA_stats = 
+        	D6LInmemoryDb.entityDirectedLinkStatsAccessor.getByEntityId( roleA.getId() );
         
         if ( roleA_stats != null ) {
             // we removed a link from role A
             roleA_stats.incNbDirectedLinksFromForBench( -1 );
             roleA_stats.incNbLinksFromForBench( -1 );
-            
-            // Save 
-            roleA_stats.save( db, txn );
             
             // role A is a single?
             long roleA_nbLinksFromEntity = roleA_stats.getNbLinksFromForBench();
@@ -509,32 +393,24 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
                 // singleLot.getIdLotParent() parent lot of single lot
                 // if single lot parent is current business lot, we can not move entity to single lot
                 // this would create a single to component lot dependency into businesslot
-                ( bench.getIdLot() != singleLot.getIdLotParent() ) &&
                 // No links from to entity
                 ( roleA_nbLinksFromEntity == 0 ) && ( roleA_nbLinksToEntity == 0 ) 
             ) {
                 
                 // role A is single, move it to single lot
-                roleA.setIdLot( singleLot.getId() );
+                roleA.setIdPackage( singleLot.getId() );
 
-                // save entity
-                // Use queue to save roleA
-                pushSaveEntity( roleA );
-                //roleA.save( db, txn );
-                
             }
         }
         
         // role B
-        D6LEntityDirectedLinkStats roleB_stats = db.daoEntityStats.getByEntityIdAndBenchId( txn, null, roleB.getIdBench(), roleB.getId() );
+        D6LEntityDirectedLinkStats roleB_stats = 
+        	D6LInmemoryDb.entityDirectedLinkStatsAccessor.getByEntityId( roleB.getId() );
         
         if ( roleB_stats != null ) {
             // we removed a link to role B
             roleB_stats.incNbDirectedLinksToForBench( -1 );
             roleB_stats.incNbLinksToForBench( -1 );
-            
-            // Save
-            roleB_stats.save( db, txn );
             
             // role B is a single?
             long roleB_nbLinksFromEntity = roleB_stats.getNbLinksFromForBench();
@@ -547,51 +423,32 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
                 // singleLot.getIdLotParent() parent lot of single lot
                 // if single lot parent is current business lot, we can not move entity to single lot
                 // this would create a single to component lot dependency into businesslot
-                ( bench.getIdLot() != singleLot.getIdLotParent() ) &&
-                // No links from to entity
+                 // No links from to entity
                 ( roleB_nbLinksFromEntity == 0 ) && ( roleB_nbLinksToEntity == 0 ) 
             ) {
     
                 // role B is single, move it to single lot
-                roleB.setIdLot( singleLot.getId() );
-                
-                // Use queue2 to save roleA
-                pushSaveEntity2( roleB );
-                //roleB.save( db, txn );
+                roleB.setIdPackage( singleLot.getId() );
                 
             }
         }
-        */
+        
     }
 
-    /*
-    private List<X6JobIF<D6LEntityIF>> allocateSingleAndBomSimplificationAndTopOfBom( 
-		Transaction txn, 
-		D6LEntityIF entity, Map<BomSimplifierKindEnum,D6Lot> mapBomSimplifierLots, D6Lot singleLot, 
-		D6Bench bench, Set<Long> idObjectsProcessed,
-		boolean removeComponentsFromBench
+    private List<D6LJobIF<D6LEntityIF>> allocateSingleAndBomSimplificationAndTopOfBom( 
+		D6LVertex entity, Map<BomSimplifierKindEnum,D6LPackage> mapBomSimplifierLots, 
+		D6LPackage singleLot, 
+		Set<Integer> idObjectsProcessed
 	) throws D6LException {
 		
     	// Init bom simplifiers
-		D6AbstractTopologicalDivider topologicalDividerAlgo = (D6AbstractTopologicalDivider) getAlgo();
+		D6LAbstractTopologicalDivider topologicalDividerAlgo = (D6LAbstractTopologicalDivider) getAlgo();
 
-    	for ( D6LAbstractBomSimplifier bomSimplifier : topologicalDividerAlgo.getListBomSimplifiers() ) {
-    		
-        	// Set passes
-        	bomSimplifier.setPasses( iPass, iPassTechLot );
-        	
-    	}    	
-
-        List<X6JobIF<D6LEntityIF>> postActions = new ArrayList<>();
+        List<D6LJobIF<D6LEntityIF>> postActions = new ArrayList<>();
         
         // check only unallocated objects
-		if ( entity.getIdLot() != D6Lot.TECH_ID_UNALLOCATED ) {
+		if ( entity.getIdPackage() != D6LPackage.TECH_ID_UNALLOCATED ) {
 			// already processed
-			return postActions;
-		}
-		
-		if ( entity.isLink() ) {
-			// objects only
 			return postActions;
 		}
 		
@@ -601,115 +458,36 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 			return postActions;
 		}
 		
+		// find links from this entity
+    	Set<D6LEdge> directedLinksFromEntity = inGraph.incomingEdgesOf( entity );
     	// count directed links from entity
-    	long nbDirectedLinksFromEntity = 0;
-    	
-		// find links from this entity, for current bench
-    	try (
-        	ForwardCursor<? extends D6LinkIF> joinCursorDirectedLinksFromEntity = daoEntityLinks.getByBenchAndRoleA_AndDirection(
-        		txn, 
-            	// current bench
-        		bench, 
-        		// roleA -> object
-        		entity.getId(), 
-        		// only directed link
-                DependencyBeanDirectionEnum.DirectedFromTo, 
-        		CursorConfig.READ_UNCOMMITTED
-        	);
-    	) {
-    		// count
-	    	while ( joinCursorDirectedLinksFromEntity.next() != null ) {
-	    		nbDirectedLinksFromEntity++;
-	    	}
-    	}
-    	
-    	// count links from entity
-    	long nbLinksFromEntity = 0;
-    	
-    	try (
-        	ForwardCursor<? extends D6LinkIF> joinCursorLinksFromEntity = daoEntityLinks.getByBenchAndRoleA(
-        		txn, 
-            	// current bench
-        		bench, 
-        		// roleA -> object
-        		entity.getId(), 
-        		CursorConfig.READ_UNCOMMITTED
-        	);
-    	) {
-    		// count
-	    	while ( joinCursorLinksFromEntity.next() != null ) {
-	    		nbLinksFromEntity++;
-	    	}
-    	}
+    	int nbDirectedLinksFromEntity = directedLinksFromEntity.size();
+    	// Graph is directed by constraint
+    	int nbLinksFromEntity = nbDirectedLinksFromEntity;
     	
     	// count directed links to entity
-    	long nbDirectedLinksToEntity = 0;
+		// find links from this entity
+    	Set<D6LEdge> directedLinksToEntity = inGraph.outgoingEdgesOf( entity );
+    	int nbDirectedLinksToEntity = directedLinksToEntity.size();
 
-    	try (
-        	ForwardCursor<? extends D6LinkIF> joinCursorDirectedLinksToEntity = daoEntityLinks.getByBenchAndRoleB_AndDirection(
-        		txn, 
-            	// current bench
-        		bench, 
-            	// roleB -> object
-        		entity.getId(), 
-        		// only directed link
-                DependencyBeanDirectionEnum.DirectedFromTo, 
-        		CursorConfig.READ_UNCOMMITTED 
-        	);
-    	) {
-    		// count
-	    	while ( joinCursorDirectedLinksToEntity.next() != null ) {
-	    		nbDirectedLinksToEntity++;
-	    	}
-    	}
-    	
     	// count links to entity
-    	long nbLinksToEntity = 0;
+    	// Graph is directed by constraint
+    	int nbLinksToEntity = nbDirectedLinksToEntity;
 
-    	try (
-        	ForwardCursor<? extends D6LinkIF> joinCursorLinksToEntity = daoEntityLinks.getByBenchAndRoleB(
-        		txn, 
-            	// current bench
-        		bench, 
-            	// roleB -> object
-        		entity.getId(), 
-        		CursorConfig.READ_UNCOMMITTED
-        	);
-    	) {
-    		// for debug
-	    	while ( joinCursorLinksToEntity.next() != null ) {
-	    		nbLinksToEntity++;
-	    	}
-    	}
-    	
     	// Save numbers is a stat object
-    	D6LEntityDirectedLinkStats stat = new D6LEntityDirectedLinkStats( entity.getId(), bench.getId() );
+    	D6LEntityDirectedLinkStats stat = new D6LEntityDirectedLinkStats( entity.getId() );
     	stat.setNbDirectedLinksFromForBench( nbDirectedLinksFromEntity );
     	stat.setNbLinksFromForBench( nbLinksFromEntity );
     	stat.setNbDirectedLinksToForBench( nbDirectedLinksToEntity );
     	stat.setNbLinksToForBench( nbLinksToEntity );
     	
-    	// save
-    	stat.save( db, txn );
-    	
-		// Check entity is not a bom simplified lot
-		D6LPackageSubtypeEnum requiredParentLotSubType = null;
-		D6AbstractLot absCurLot = null;
-		if ( entity instanceof D6AbstractLot ) {
-			absCurLot = (D6AbstractLot) entity;
-			requiredParentLotSubType = absCurLot.getRequiredParentLotSubType();
-		}
-		
 		// If it's a required parent sub-type enum, allocation is done further on
 		// if no links, entity is single
 		if ( 
-			( requiredParentLotSubType == null ) && 
 			( singleLot != null ) && ( nbLinksFromEntity == 0 ) && ( nbLinksToEntity == 0 ) 
 		) {
 
-		    entity.setIdLot( singleLot.getId() );
-	        // save using queue
-			pushSaveEntity( entity );
+		    entity.setIdPackage( singleLot.getId() );
 			
 		} else {
 			
@@ -717,45 +495,38 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 			for ( D6LAbstractBomSimplifier bomSimplifier : topologicalDividerAlgo.getListBomSimplifiers() ) {
 			    
 			    // Get bom simplifier lot
-			    D6Lot bomSimplifierLot = mapBomSimplifierLots.get( bomSimplifier.getKind() );
+			    D6LPackage bomSimplifierLot = mapBomSimplifierLots.get( bomSimplifier.getKind() );
 			    
     			if ( bomSimplifierLot != null ) {
 
     				boolean matchWithoutNumbersResult = bomSimplifier.matchWithoutNumbers( 
-    					txn, this,
-    					bench,
+    					this,
     					entity, stat 
     				);
     				
     				if ( matchWithoutNumbersResult ) {
 	    	            // Create histogram entry
-	    	            bomSimplifier.createAndSaveHistogramEntry( txn, getPass(), entity, nbDirectedLinksFromEntity, nbDirectedLinksToEntity );
+	    	            bomSimplifier.createAndSaveHistogramEntry( entity, nbDirectedLinksFromEntity, nbDirectedLinksToEntity );
     				}
     				
     				// Is it a lot requiring to be put in simplifier lot?
     				boolean matchByLotSubType = false;
     				
-					if ( requiredParentLotSubType != null ) {
-						
-						// May be a match
-						// As kind
-						BomSimplifierKindEnum requiredParentKind = BomSimplifierKindEnum.valueOf( requiredParentLotSubType );
-						
-						// Check simplifier matches and entity is a lot
-						if ( ( requiredParentKind == bomSimplifier.getKind() ) && ( absCurLot != null ) ) {
-							// Match if lot sub type is required one
-							matchByLotSubType = ( absCurLot.getLotSubtype() == requiredParentLotSubType );
-						}
-						
-					}
-    				
    			        MatchResult matchResult = null;
    			        
    			        // No need to match if matched by lot sub type
    			        if ( !matchByLotSubType ) {
+   			        	/*
+   public abstract MatchResult match( 
+    	D6LAlgoCommandIF algoCommand, 
+    	D6LEntityIF entity, boolean matchWithoutNumbersResult, 
+    	D6LPackage singlePackage, List<D6LJobIF<D6LEntityIF>> postActions
+    ) throws D6LException;
+
+   			        	 */
    			        	matchResult = bomSimplifier.match( 
-   			        		txn, this, 
-   			        		bench, entity, 
+   			        		this, 
+   			        		entity, 
    			        		matchWithoutNumbersResult, stat, singleLot, postActions 
    			        	);
    			        }
@@ -765,29 +536,24 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
    			        	( ( matchResult != null ) && matchResult.match ) 
    			        ) {
    			        	
+   			        	/*
 	    				// Modify lot according to entity
    			        	if ( matchResult != null ) {
-   			        		bomSimplifier.tuneLot( txn, bomSimplifierLot, matchResult.lotTuningInfo );
+   			        		bomSimplifier.tuneLot( bomSimplifierLot, matchResult.lotTuningInfo );
    			        	}
+   			        	*/
    			        	
 	    			    // put to component lot
-	    				entity.setIdLot( bomSimplifierLot.getId() );
-	    				
-	    	            // save using queue
-	    	            pushSaveEntity( entity );
-	    	            
-	    				// remove components from benches
-	    				if ( removeComponentsFromBench ) {
-	    					X6JobIF<D6LEntityIF> removeComponentsFromBenchJob = 
-	    						new RemoveComponentsFromBenchJob( txn, bench, entity );
-	    					postActions.add( removeComponentsFromBenchJob );
-	    				}
+	    				entity.setIdPackage( bomSimplifierLot.getId() );
 	    				
 	    	            // Do we need a new simplifier lot?
 	    	            if ( !bomSimplifier.isSingleExtractorLot() ) {
 	    	            	
 	    	            	// Create new lot
-	    	            	D6Lot newLot = createBomSimplificationLot(txn, bench, iPass, topologicalDividerAlgo.getProducesLotType(), bomSimplifier );
+	    	            	D6LPackage newLot = 
+	    	            		createBomSimplificationLot( 
+	    	            			topologicalDividerAlgo.getProducesLotType(), bomSimplifier 
+	    	            		);
 	    	            	// Record it
 	    	            	mapBomSimplifierLots.put( bomSimplifier.getKind(), newLot );
 	    	            }
@@ -805,62 +571,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 		return postActions;
 		
 	}
-	*/
     
-    /**
-     * Job removing a component from bench 
-     */
-    /*
-    private class RemoveComponentsFromBenchJob implements X6JobIF<D6LEntityIF> {
-
-    	private final Transaction txn;
-    	private final D6Bench bench;
-        private final D6LEntityIF targetEntity;
-    	
-    	public RemoveComponentsFromBenchJob( Transaction txn, D6Bench bench, D6LEntityIF targetEntity ) {
-    	
-    		super();
-    		this.txn = txn;
-    		this.bench = bench;
-    		this.targetEntity = targetEntity;
-    		
-    	}
-    	
-		@Override
-		public void doJob( D6LEntityIF _entity ) throws Exception {
-			
-			// entity is not used, targetEntity is used 
-	    	// For entity
-			targetEntity.setIdBench( D6Bench.NO_BENCH );
-            // save using queue
-            pushSaveEntity( targetEntity );
-		    
-		    // We have also to remove links connected to it
-		    // Some dividers such as Metis or Louvain rely on links, letting links in bench would grap back entit-object 
-		    
-	    	try (
-	    		D6UnionForwardCursor< ? extends D6LinkIF > links = 
-	    			new D6UnionForwardCursor<D6LinkIF>(
-	    				// Links by role A
-	    				daoEntityLinks.getByBenchAndRoleA( txn, bench, targetEntity.getId(), CursorConfig.READ_UNCOMMITTED ),
-	    				// Links by role B
-	    				daoEntityLinks.getByBenchAndRoleB( txn, bench, targetEntity.getId(), CursorConfig.READ_UNCOMMITTED )
-	    			);
-	    	) {
-	    		for ( D6LinkIF link: links ) {
-
-	    			link.setIdBench( D6Bench.NO_BENCH );
-	    			
-		            // save using queue
-		            pushSaveEntity( link );
-
-	    		}
-	    	}
-			
-		}
-    	
-    }
-    */
     
 	@Override
     protected String getShortName()

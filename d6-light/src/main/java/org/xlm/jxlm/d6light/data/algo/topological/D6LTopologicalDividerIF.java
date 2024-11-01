@@ -49,10 +49,4 @@ public interface D6LTopologicalDividerIF extends D6LDividerAlgoIF {
 	 */
 	public List<D6LAbstractBomSimplifier> getListBomSimplifiers();
 
-    /**
-     * Return true is technical lotizer needs bom simplified entities removed from bench
-     * @return
-     */
-    public boolean isNeedBomSimplifiedEntitiesRemovedFromBench();
- 
 }

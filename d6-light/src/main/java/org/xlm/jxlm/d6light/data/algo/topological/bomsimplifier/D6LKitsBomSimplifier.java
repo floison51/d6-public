@@ -23,7 +23,7 @@ import org.xlm.jxlm.d6light.data.algo.topological.D6LEntityDirectedLinkStats;
 import org.xlm.jxlm.d6light.data.conf.BomSimplifierType;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
 import org.xlm.jxlm.d6light.data.model.D6LEntityIF;
-import org.xlm.jxlm.d6light.data.model.D6LPackageVertex;
+import org.xlm.jxlm.d6light.data.model.D6LPackage;
 import org.xlm.jxlm.d6light.data.packkage.D6LPackageSubtypeEnum;
 
 public class D6LKitsBomSimplifier extends D6LAbstractBomSimplifier
@@ -76,7 +76,7 @@ public class D6LKitsBomSimplifier extends D6LAbstractBomSimplifier
     public MatchResult match( 
     	D6LAlgoCommandIF algoCommand, 
     	D6LEntityIF entity, boolean matchWithoutNumbersResult, 
-    	D6LPackageVertex singlePackage /*, List<X6JobIF<D6LEntityIF>> postActions*/ 
+    	D6LPackage singlePackage /*, List<X6JobIF<D6LEntityIF>> postActions*/ 
     ) 
     	throws D6LException
     {

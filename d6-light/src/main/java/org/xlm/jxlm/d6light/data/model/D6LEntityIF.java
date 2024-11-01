@@ -23,5 +23,9 @@ public interface D6LEntityIF {
 	int getId();
 	
 	String getLabel();
+	
+	int getIdPackage();
+
+	void setIdPackage( int idPackage );
 
 }

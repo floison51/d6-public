@@ -25,7 +25,9 @@ public abstract class D6LAbstractEntity implements D6LEntityIF {
 	protected int id;
 	
 	protected String label;
-	
+
+	protected int idPackage;
+
 	protected D6LAbstractEntity( int id ) {
 		super();
 		this.id = id;
@@ -62,6 +64,14 @@ public abstract class D6LAbstractEntity implements D6LEntityIF {
 			return false;
 		D6LAbstractEntity other = (D6LAbstractEntity) obj;
 		return id == other.id;
+	}
+
+	public int getIdPackage() {
+		return idPackage;
+	}
+
+	public void setIdPackage(int idPackage) {
+		this.idPackage = idPackage;
 	}
 	
 }

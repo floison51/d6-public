@@ -12,7 +12,7 @@ import org.xlm.jxlm.d6light.data.conf.D6LightDataConf;
 import org.xlm.jxlm.d6light.data.conf.TopologicalDividerType;
 import org.xlm.jxlm.d6light.data.exception.D6LError;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
-import org.xlm.jxlm.d6light.data.model.D6LPackageVertex;
+import org.xlm.jxlm.d6light.data.model.D6LPackage;
 import org.xlm.jxlm.d6light.data.packkage.D6LPackageTypeEnum;
 
 /**
@@ -171,7 +171,7 @@ public abstract class D6LAbstractLouvainDivider extends D6LAbstractTopologicalDi
 
     protected void readLouvainResult( 
         Map<Long, Map<Integer, Long>> mapLouvainLotIdToTechLotId,
-        D6LPackageVertex businessLot, int nbPartition
+        D6LPackage businessLot, int nbPartition
     )
         throws D6LException
     {
@@ -246,7 +246,7 @@ public abstract class D6LAbstractLouvainDivider extends D6LAbstractTopologicalDi
 
 	protected void processLouvainLot( 
         Map<Long, Map<Integer, Long>> mapLouvainLotIdToTechLotId,
-        D6LPackageVertex businessLot, int iLouvainLot, long louvainLocalObjectId
+        D6LPackage businessLot, int iLouvainLot, long louvainLocalObjectId
     )
     	throws D6LException
     {
@@ -302,7 +302,7 @@ public abstract class D6LAbstractLouvainDivider extends D6LAbstractTopologicalDi
         */
     }
 
-    private Long createNewLot( D6LPackageVertex businessLot )
+    private Long createNewLot( D6LPackage businessLot )
         throws D6LException
     {
     	throw new D6LError( "TODO" );

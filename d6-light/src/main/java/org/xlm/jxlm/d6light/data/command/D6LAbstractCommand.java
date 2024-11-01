@@ -24,6 +24,7 @@ import org.jgrapht.Graph;
 import org.xlm.jxlm.d6light.data.conf.D6LightDataConf;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
 import org.xlm.jxlm.d6light.data.model.D6LEdge;
+import org.xlm.jxlm.d6light.data.model.D6LPackage;
 import org.xlm.jxlm.d6light.data.model.D6LVertex;
 
 /**
@@ -35,13 +36,11 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
 
     protected static final Logger LOGGER = LogManager.getLogger( D6LAbstractCommand.class );
 	
-    /** Index of pass **/
-    protected int iPass = -1;
-    
 	/** Configuration **/
 	protected D6LightDataConf conf;
 	
-	protected Graph<D6LVertex,D6LEdge> graph;
+	protected Graph<D6LVertex,D6LEdge> inGraph;
+	protected Graph<D6LPackage,D6LEdge> outGraph;
 	
 	/**
 	 * Default constructor
@@ -63,9 +62,13 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
 	}
 
 	@Override
-	public final void execute( Graph<D6LVertex,D6LEdge> graph ) throws D6LException
+	public final void execute( 
+		Graph<D6LVertex,D6LEdge> inGraph,
+		Graph<D6LPackage,D6LEdge> outGraph
+	) throws D6LException
 	{
-		this.graph = graph;
+		this.inGraph = inGraph;
+		this.outGraph = outGraph;
 		
         doPrepare( true );
         doExecute( true );

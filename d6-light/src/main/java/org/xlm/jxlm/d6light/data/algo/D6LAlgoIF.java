@@ -21,6 +21,7 @@ package org.xlm.jxlm.d6light.data.algo;
 import org.xlm.jxlm.d6light.data.conf.AbstractAlgoType;
 import org.xlm.jxlm.d6light.data.conf.D6LightDataConf;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
+import org.xlm.jxlm.d6light.data.packkage.D6LPackageTypeEnum;
 
 /**
  * Interface for Data Systemizer algorithms
@@ -71,4 +72,11 @@ public interface D6LAlgoIF {
 	 */
 	public void doRun( D6LAlgoCommandIF algoCommand ) throws D6LException;
 	
+    /**
+     * Get lot type produced with algo : Business or Technical or null if no lots are produced by algo
+     * @return
+     */
+    public D6LPackageTypeEnum getProducesLotType();
+
+
 }

@@ -187,10 +187,6 @@
 		    					<element name="AllocateSingles"
 		    						type="boolean" maxOccurs="1" minOccurs="0">
 		    					</element>
-		    					<element
-		    						name="AllocateSinglesIfParentContainerRegEx"
-		    						type="tns:RegExpType" maxOccurs="1" minOccurs="0">
-		    					</element>
 		    				</sequence>
 		    			</complexType>
 		    		</element>

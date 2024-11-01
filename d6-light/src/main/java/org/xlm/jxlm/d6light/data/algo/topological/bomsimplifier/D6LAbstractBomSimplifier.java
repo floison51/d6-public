@@ -18,12 +18,15 @@
 
 package org.xlm.jxlm.d6light.data.algo.topological.bomsimplifier;
 
+import java.util.List;
+
 import org.xlm.jxlm.d6light.data.algo.D6LAlgoCommandIF;
 import org.xlm.jxlm.d6light.data.algo.topological.D6LEntityDirectedLinkStats;
 import org.xlm.jxlm.d6light.data.conf.AbstractBomSimplifierType;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
+import org.xlm.jxlm.d6light.data.job.D6LJobIF;
 import org.xlm.jxlm.d6light.data.model.D6LEntityIF;
-import org.xlm.jxlm.d6light.data.model.D6LPackageVertex;
+import org.xlm.jxlm.d6light.data.model.D6LPackage;
 import org.xlm.jxlm.d6light.data.packkage.D6LPackageSubtypeEnum;
 
 /**
@@ -135,8 +138,8 @@ public abstract class D6LAbstractBomSimplifier
      */
     public abstract MatchResult match( 
     	D6LAlgoCommandIF algoCommand, 
-    	D6LEntityIF entity, boolean matchWithoutNumbersResult, 
-    	D6LPackageVertex singlePackage /*, List<X6JobIF<D6LEntityIF>> postActions*/ 
+    	D6LEntityIF entity, boolean matchWithoutNumbersResult, D6LEntityDirectedLinkStats stat, 
+    	D6LPackage singlePackage, List<D6LJobIF<D6LEntityIF>> postActions
     ) throws D6LException;
    
     /**
@@ -269,8 +272,8 @@ public abstract class D6LAbstractBomSimplifier
         */
     }
 
-	private D6LPackageVertex createOuterSimplifiedLot(
-			final D6LPackageSubtypeEnum lotSubType, D6LPackageVertex targetBusinessLot) throws D6LException {
+	private D6LPackage createOuterSimplifiedLot(
+			final D6LPackageSubtypeEnum lotSubType, D6LPackage targetBusinessLot) throws D6LException {
     	throw new Error( "TODO" );
     	/*
 		D6Lot outerSimplifiedLot;
@@ -305,9 +308,9 @@ public abstract class D6LAbstractBomSimplifier
         private final D6LEntityIF kit;
         
         /** Single lot **/
-        private final D6LPackageVertex singleLot;
+        private final D6LPackage singleLot;
         
-        public ReworkChildrenJob( D6LAlgoCommandIF algoCommand, D6LEntityIF kit, D6LPackageVertex singleLot ) {
+        public ReworkChildrenJob( D6LAlgoCommandIF algoCommand, D6LEntityIF kit, D6LPackage singleLot ) {
             super();
             this.algoCommand = algoCommand;
             this.kit = kit;

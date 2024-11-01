@@ -31,7 +31,7 @@ import org.xlm.jxlm.d6light.data.conf.ParamType;
 import org.xlm.jxlm.d6light.data.exception.D6LError;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
 import org.xlm.jxlm.d6light.data.model.D6LEntityIF;
-import org.xlm.jxlm.d6light.data.model.D6LPackageVertex;
+import org.xlm.jxlm.d6light.data.model.D6LPackage;
 import org.xlm.jxlm.d6light.data.packkage.D6LPackageTypeEnum;
 
 /**
@@ -247,7 +247,7 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 	    */
 	}
 
-	private D6LPackageVertex getNewBom() throws D6LException {
+	private D6LPackage getNewBom() throws D6LException {
 	    
 		throw new D6LError( "TODO" );
 		/*
@@ -451,7 +451,7 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
      * @return
 	 * @throws D6LException 
      */
-    private D6LPackageVertex createErrorLot() throws D6LException
+    private D6LPackage createErrorLot() throws D6LException
     {
 		throw new D6LError( "TODO" );
 		/*

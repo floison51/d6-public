@@ -20,14 +20,41 @@ package org.xlm.jxlm.d6light.data.model;
 
 import org.jgrapht.graph.DefaultEdge;
 
-public class D6LEdge extends DefaultEdge {
+public class D6LEdge extends DefaultEdge implements D6LEntityIF {
 
 	/** Serial ID **/
 	private static final long serialVersionUID = -4376861182806887574L;
+	
+	private String label;
+	private int idPackage;
 
 	@Override
 	public String toString() {
 		return "D6OuterEdge [getSource()=" + getSource() + ", getTarget()=" + getTarget() + "]";
+	}
+
+	@Override
+	public int getId() {
+		// TODO Auto-generated method stub
+		return -1;
+	}
+
+	@Override
+	public String getLabel() {
+		return label;
+	}
+
+	@Override
+	public int getIdPackage() {
+		return idPackage;
+	}
+
+	public void setLabel(String label) {
+		this.label = label;
+	}
+
+	public void setIdPackage(int idPackage) {
+		this.idPackage = idPackage;
 	}
 	
 	/*

@@ -14,7 +14,7 @@ public class D6LEntityDirectedLinkStatsAccessor
 {
 
     /* Master accessors */
-	Map<Long,D6LEntityDirectedLinkStats> mapByEntityId;
+	Map<Integer,D6LEntityDirectedLinkStats> mapByEntityId;
     
     /**
      * Constructor, opens all primary and secondary indices.
@@ -26,6 +26,10 @@ public class D6LEntityDirectedLinkStatsAccessor
     	mapByEntityId = new HashMap<>();
     	
     }
+
+	public D6LEntityDirectedLinkStats getByEntityId( int entityId ) {
+		return mapByEntityId.get( entityId );
+	}
     
     /**
      * Get Bom heads given a bench.<p/>
