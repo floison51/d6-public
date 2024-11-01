@@ -16,29 +16,22 @@
  *  along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html
 **/
 
-package org.xlm.jxlm.d6light.data.bom;
+package org.xlm.jxlm.d6light.data.algo;
 
-import java.util.Arrays;
-import java.util.List;
+import org.xlm.jxlm.d6light.data.packkage.D6LPackageTypeEnum;
 
-import org.junit.jupiter.api.Test;
-import org.xlm.jxlm.d6light.data.D6LMain;
-import org.xlm.jxlm.d6light.data.exception.D6LException;
-import org.xlm.jxlm.d6light.data.imp.D6LGraphFormatEnum;
+/**
+ * Interface for divider algos
+ * @author Loison
+ *
+ */
+public interface D6LDividerAlgoIF extends D6LAlgoIF {
 
-class TestD6LBomPackager {
-
-	@Test
-	void testBomPackager() throws D6LException {
-		
-		List<String> opts = Arrays.asList(
-			"-" + D6LMain.OPTION_CONF, "src/conf/d6l-testBOM-CSV-import.xml",
-			"-" + D6LMain.OPTION_GRAPH_IN, "src/test/resources/org/xlm/jxlm/d6light/data/bom/t01/testBom-t01.gml",
-			"-" + D6LMain.OPTION_GRAPH_FORMAT, D6LGraphFormatEnum.GML.name()
-		);
-		
-				
-		D6LMain.main( opts.toArray( new String[] {} ) ) ;
-	}
-
+	/**
+	 * Default value for produce lot type
+	 * Actual algo implementation must return their default value. 2 values accepted: BusinessLot or TechnicalLot.
+	 * @return
+	 */
+	public D6LPackageTypeEnum getDefaultProducesLotType();
+	
 }

@@ -16,29 +16,39 @@
  *  along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html
 **/
 
-package org.xlm.jxlm.d6light.data.bom;
+package org.xlm.jxlm.d6light.data.command;
 
-import java.util.Arrays;
-import java.util.List;
-
-import org.junit.jupiter.api.Test;
-import org.xlm.jxlm.d6light.data.D6LMain;
+import org.jgrapht.Graph;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
-import org.xlm.jxlm.d6light.data.imp.D6LGraphFormatEnum;
+import org.xlm.jxlm.d6light.data.model.D6LEdge;
+import org.xlm.jxlm.d6light.data.model.D6LVertex;
 
-class TestD6LBomPackager {
+/**
+ * Command interface
+ * @author Loison
+ *
+ */
+public interface D6LCommandIF {
 
-	@Test
-	void testBomPackager() throws D6LException {
-		
-		List<String> opts = Arrays.asList(
-			"-" + D6LMain.OPTION_CONF, "src/conf/d6l-testBOM-CSV-import.xml",
-			"-" + D6LMain.OPTION_GRAPH_IN, "src/test/resources/org/xlm/jxlm/d6light/data/bom/t01/testBom-t01.gml",
-			"-" + D6LMain.OPTION_GRAPH_FORMAT, D6LGraphFormatEnum.GML.name()
-		);
-		
-				
-		D6LMain.main( opts.toArray( new String[] {} ) ) ;
-	}
+    /**
+     * Comman display name
+     * @return
+     */
+    public String getDisplayName();
+    
+	/**
+	 * Execute command
+	 * @param graph Input of command
+	 * @return
+	 * @throws X6Exception 
+	 * @throws D6NotAllocatedException 
+	 */
+	public void execute( Graph<D6LVertex,D6LEdge> graph ) throws D6LException;
 
+	/**
+	 * Get conf ID read from D6 configuration file, example : &lt;algoRef refId="bom-algo"/&gt;
+	 * @return
+	 */
+    public String getConfId();
+    
 }

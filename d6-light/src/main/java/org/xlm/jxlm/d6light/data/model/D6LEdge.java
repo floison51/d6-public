@@ -20,7 +20,7 @@ package org.xlm.jxlm.d6light.data.model;
 
 import org.jgrapht.graph.DefaultEdge;
 
-public class D6Edge extends DefaultEdge {
+public class D6LEdge extends DefaultEdge {
 
 	/** Serial ID **/
 	private static final long serialVersionUID = -4376861182806887574L;

@@ -16,18 +16,31 @@
  *  along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html
 **/
 
-package org.xlm.jxlm.d6light.data.model;
+package org.xlm.jxlm.d6light.data.plugin;
 
-public class D6Vertex extends D6AbstractEntity {
+import java.util.List;
 
-	public D6Vertex( int id ) {
-		super( id );
-	}
+import org.xlm.jxlm.d6light.data.conf.ParamType;
+import org.xlm.jxlm.d6light.data.exception.D6LException;
 
-	@Override
-	public String toString() {
-		return "D6Vertex [id=" + id + ", label=" + label + "]";
-	}
-
+/**
+ * Plugin for data systemizer light
+ * @author Francois Loison
+ *
+ */
+public interface D6LPluginIF {
+	
+	/**
+	 * Record and validation parameters provided by configuration
+	 * @param confParams
+	 * @throws X6Exception
+	 */
+	public void recordAndValidateConfigParameters( List<ParamType> confParams ) throws D6LException;
+	
+	/**
+	 * Plugin name
+	 * @return
+	 */
+	public String getPluginName();
 	
 }

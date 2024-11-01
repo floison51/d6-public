@@ -23,28 +23,28 @@ import java.text.MessageFormat;
 import org.jgrapht.nio.BaseEventDrivenImporter;
 import org.jgrapht.nio.GraphImporter;
 import org.jgrapht.nio.gml.GmlImporter;
-import org.xlm.jxlm.d6light.data.D6Exception;
-import org.xlm.jxlm.d6light.data.model.D6Edge;
+import org.xlm.jxlm.d6light.data.exception.D6LException;
+import org.xlm.jxlm.d6light.data.model.D6LEdge;
 import org.xlm.jxlm.d6light.data.model.D6EntityRegistry;
-import org.xlm.jxlm.d6light.data.model.D6Vertex;
+import org.xlm.jxlm.d6light.data.model.D6LVertex;
 
 /**
  * Graph file importer
  */
 public class D6LImporterWrapper {
 
-	public GraphImporter<D6Vertex, D6Edge> getGraphImporterInstance( 
+	public GraphImporter<D6LVertex, D6LEdge> getGraphImporterInstance( 
 		D6LGraphFormatEnum format
-	) throws D6Exception {
+	) throws D6LException {
 
-		GraphImporter<D6Vertex, D6Edge> result = null;
-		BaseEventDrivenImporter<D6Vertex, D6Edge> intermediate = null;
+		GraphImporter<D6LVertex, D6LEdge> result = null;
+		BaseEventDrivenImporter<D6LVertex, D6LEdge> intermediate = null;
 
 		switch ( format ) {
 
 			case GML: {
 				
-				GmlImporter<D6Vertex, D6Edge> gmlImp = new GmlImporter<>();
+				GmlImporter<D6LVertex, D6LEdge> gmlImp = new GmlImporter<>();
 				intermediate = gmlImp;
 				result = gmlImp;
 				
@@ -57,7 +57,7 @@ public class D6LImporterWrapper {
 			}
 	
 			default: {
-				throw new D6Exception(MessageFormat.format("Unknown import format ''{0}''.", format.name()));
+				throw new D6LException(MessageFormat.format("Unknown import format ''{0}''.", format.name()));
 			}
 		}
 
@@ -78,7 +78,7 @@ public class D6LImporterWrapper {
 			);
 			
 
-		return (GraphImporter<D6Vertex, D6Edge>) result;
+		return (GraphImporter<D6LVertex, D6LEdge>) result;
 
 	}
 

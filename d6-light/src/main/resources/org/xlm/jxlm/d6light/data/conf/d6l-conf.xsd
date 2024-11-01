@@ -163,9 +163,18 @@
     		<extension base="tns:AbstractAlgoType">
 		    	<sequence>
 		    	</sequence>
-     		</extension>
+    			<attribute name="produces" type="tns:PackageTypeType" use="optional"/>
+    		</extension>
     	</complexContent>
     </complexType>
+
+    <simpleType name="PackageTypeType">
+		<restriction base="string">
+			<enumeration value="Business"></enumeration>
+			<enumeration value="Technical"></enumeration>
+		</restriction>
+	</simpleType>
+	
     
     <complexType name="TopologicalDividerType">
     	<complexContent>

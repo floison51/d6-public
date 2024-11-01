@@ -41,10 +41,11 @@ import org.jgrapht.graph.SimpleGraph;
 import org.jgrapht.nio.GraphImporter;
 import org.xlm.jxlm.d6light.data.conf.D6LConfHelper;
 import org.xlm.jxlm.d6light.data.conf.D6LightDataConf;
+import org.xlm.jxlm.d6light.data.exception.D6LException;
 import org.xlm.jxlm.d6light.data.imp.D6LGraphFormatEnum;
 import org.xlm.jxlm.d6light.data.imp.D6LImporterWrapper;
-import org.xlm.jxlm.d6light.data.model.D6Edge;
-import org.xlm.jxlm.d6light.data.model.D6Vertex;
+import org.xlm.jxlm.d6light.data.model.D6LEdge;
+import org.xlm.jxlm.d6light.data.model.D6LVertex;
 
 /**
  * Main class for D6-light
@@ -67,7 +68,7 @@ public class D6LMain {
 
 	private D6LGraphFormatEnum graphFormat;
 
-	private Graph<D6Vertex, D6Edge> sourceGraph;
+	private Graph<D6LVertex, D6LEdge> sourceGraph;
 
 	private D6LightDataConf d6lConf;
 	
@@ -81,9 +82,9 @@ public class D6LMain {
  	/**
 	 * Main method
 	 * @param args
- 	 * @throws D6Exception 
+ 	 * @throws D6LException 
 	 */
-	public static void main( String... args ) throws D6Exception {
+	public static void main( String... args ) throws D6LException {
 		
 		D6LMain me = new D6LMain();
         
@@ -91,7 +92,7 @@ public class D6LMain {
 
 	}
 
-	public void doJob( String... args ) throws D6Exception {
+	public void doJob( String... args ) throws D6LException {
 		
         LOGGER.info( "Data Systemizer Light version " + getVersion() );
         
@@ -130,7 +131,7 @@ public class D6LMain {
 		
 	}
 	
-    private void processCmd( CommandLine cmd ) throws D6Exception {
+    private void processCmd( CommandLine cmd ) throws D6LException {
 		
     	// Get conf file
     	File confFile = getFileFromOption( cmd, OPTION_CONF );
@@ -142,7 +143,7 @@ public class D6LMain {
     	) {
     		this.d6lConf = D6LConfHelper.getConf( isConf, null );
     	} catch ( IOException ioe ) {
-    		D6Exception.handleException( ioe );
+    		D6LException.handleException( ioe );
     	}
     	
     	// Get graph file
@@ -156,7 +157,7 @@ public class D6LMain {
     	
     	// Initialize empty graph
     	this.sourceGraph = new SimpleGraph<>( 
-    		D6Edge.class
+    		D6LEdge.class
     	);
     	
     	// Import graph
@@ -167,13 +168,13 @@ public class D6LMain {
     	
 	}
 
-	protected void importGraph( Graph<D6Vertex, D6Edge> graph ) throws D6Exception {
+	protected void importGraph( Graph<D6LVertex, D6LEdge> graph ) throws D6LException {
 		
 		// Importer wrapper
     	D6LImporterWrapper importerWrapper = new D6LImporterWrapper();
     	
     	// Get graph importer according to format
-    	GraphImporter<D6Vertex, D6Edge> importer =  
+    	GraphImporter<D6LVertex, D6LEdge> importer =  
     		importerWrapper.getGraphImporterInstance( graphFormat );
     	
     	// Import graph
@@ -181,7 +182,7 @@ public class D6LMain {
     	
 	}
 
-	private File getFileFromOption( CommandLine cmd, String option ) throws D6Exception {
+	private File getFileFromOption( CommandLine cmd, String option ) throws D6LException {
 		
 		String path = cmd.getOptionValue( option );
  
@@ -190,11 +191,11 @@ public class D6LMain {
     	
     	// Check
     	if ( !file.exists() ) {
-    		throw new D6Exception( MessageFormat.format( "File {0} doesn't exist.", file ) );
+    		throw new D6LException( MessageFormat.format( "File {0} doesn't exist.", file ) );
     	}
 
     	if ( !file.canRead() ) {
-    		throw new D6Exception( MessageFormat.format( "File {0} is not readable.", file ) );
+    		throw new D6LException( MessageFormat.format( "File {0} is not readable.", file ) );
     	}
     	
     	return file;
@@ -229,7 +230,7 @@ public class D6LMain {
     }
     
     private CommandLine parseOptions( String[] args, Options options )
-        throws D6Exception
+        throws D6LException
     {
         CommandLineParser parser = new DefaultParser();
 		CommandLine cmd = null;
@@ -252,16 +253,16 @@ public class D6LMain {
 		}
 		
 		if ( cmd == null ) {
-		    throw new D6Exception( "Can't parse arguments" );
+		    throw new D6LException( "Can't parse arguments" );
 		}
         return cmd;
     }
     
-	private void help( Options options ) throws D6Exception {
+	private void help( Options options ) throws D6LException {
 		// automatically generate the help statement
 		HelpFormatter formatter = new HelpFormatter();
 		formatter.printHelp( "java " + D6LMain.class.getName() , options );
-		throw new D6Exception( "Syntax error" );
+		throw new D6LException( "Syntax error" );
 	}
 	
 	/**

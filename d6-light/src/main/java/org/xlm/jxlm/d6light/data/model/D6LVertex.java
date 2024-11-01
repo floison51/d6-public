@@ -16,29 +16,18 @@
  *  along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html
 **/
 
-package org.xlm.jxlm.d6light.data.bom;
+package org.xlm.jxlm.d6light.data.model;
 
-import java.util.Arrays;
-import java.util.List;
+public class D6LVertex extends D6AbstractEntity {
 
-import org.junit.jupiter.api.Test;
-import org.xlm.jxlm.d6light.data.D6LMain;
-import org.xlm.jxlm.d6light.data.exception.D6LException;
-import org.xlm.jxlm.d6light.data.imp.D6LGraphFormatEnum;
-
-class TestD6LBomPackager {
-
-	@Test
-	void testBomPackager() throws D6LException {
-		
-		List<String> opts = Arrays.asList(
-			"-" + D6LMain.OPTION_CONF, "src/conf/d6l-testBOM-CSV-import.xml",
-			"-" + D6LMain.OPTION_GRAPH_IN, "src/test/resources/org/xlm/jxlm/d6light/data/bom/t01/testBom-t01.gml",
-			"-" + D6LMain.OPTION_GRAPH_FORMAT, D6LGraphFormatEnum.GML.name()
-		);
-		
-				
-		D6LMain.main( opts.toArray( new String[] {} ) ) ;
+	public D6LVertex( int id ) {
+		super( id );
 	}
 
+	@Override
+	public String toString() {
+		return "D6Vertex [id=" + id + ", label=" + label + "]";
+	}
+
+	
 }

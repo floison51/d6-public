@@ -16,7 +16,7 @@
  *  along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html
 **/
 
-package org.xlm.jxlm.d6light.data;
+package org.xlm.jxlm.d6light.data.exception;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,14 +28,14 @@ import org.apache.commons.lang3.StringUtils;
  * @author Loison
  *
  */
-public class D6Exception extends Exception {
+public class D6LException extends Exception {
 
 	private static final long serialVersionUID = 2296853761438100788L;
 
     /**
      * Constructor
      */
-    public D6Exception() {
+    public D6LException() {
         super();
     }
 
@@ -43,7 +43,7 @@ public class D6Exception extends Exception {
 	 * Constructor
 	 * @param message message
 	 */
-	public D6Exception( String message ) {
+	public D6LException( String message ) {
 		super( message );
 	}
 
@@ -52,7 +52,7 @@ public class D6Exception extends Exception {
 	 * @param message message
 	 * @param cause cause
 	 */
-    public D6Exception( String message, Throwable cause )
+    public D6LException( String message, Throwable cause )
     {
         super( message, cause );
     }
@@ -61,7 +61,7 @@ public class D6Exception extends Exception {
      * Constructor
      * @param cause cause
      */
-    public D6Exception( Throwable cause )
+    public D6LException( Throwable cause )
     {
         super( cause );
     }
@@ -70,14 +70,14 @@ public class D6Exception extends Exception {
      * Handle a exception, throw back a X6Exception
      * 
      * @param e
-     * @throws D6Exception 
+     * @throws D6LException 
      */
-    public static void handleException( Exception e ) throws D6Exception
+    public static void handleException( Exception e ) throws D6LException
     {
-        if ( e instanceof D6Exception ) {
-            throw ( D6Exception ) e;
+        if ( e instanceof D6LException ) {
+            throw ( D6LException ) e;
         } else {
-            throw new D6Exception( e );
+            throw new D6LException( e );
         }
         
     }
@@ -86,19 +86,19 @@ public class D6Exception extends Exception {
      * Handle a throwable, throw back a X6Exception
      * 
      * @param e
-     * @throws D6Exception 
+     * @throws D6LException 
      */
-    public static void handleThrowable( Throwable t ) throws D6Exception
+    public static void handleThrowable( Throwable t ) throws D6LException
     {
-        if ( t instanceof D6Exception ) {
-            throw ( D6Exception ) t;
+        if ( t instanceof D6LException ) {
+            throw ( D6LException ) t;
         } else {
-            throw new D6Exception( t );
+            throw new D6LException( t );
         }
         
     }
 
-    public static void handleException( List<? extends Exception> exceptions ) throws D6Exception
+    public static void handleException( List<? extends Exception> exceptions ) throws D6LException
     {
         if ( ( exceptions == null ) || exceptions.isEmpty() ) {
             return;
@@ -110,7 +110,7 @@ public class D6Exception extends Exception {
             values.add( e.getMessage() );
         }
         
-        throw new D6Exception( StringUtils.join( exceptions, '\n' ) );
+        throw new D6LException( StringUtils.join( exceptions, '\n' ) );
     }
 
 }

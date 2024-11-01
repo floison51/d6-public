@@ -41,7 +41,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
-import org.xlm.jxlm.d6light.data.D6Exception;
+import org.xlm.jxlm.d6light.data.exception.D6LException;
 import org.xml.sax.InputSource;
 
 /**
@@ -65,7 +65,7 @@ public class D6LConfHelper {
 	 * @return Configuration
 	 * @throws Exception
 	 */
-	public static D6LightDataConf getConf( InputStream is, Properties props ) throws D6Exception {
+	public static D6LightDataConf getConf( InputStream is, Properties props ) throws D6LException {
 		
 		// get raw conf
 	    
@@ -85,7 +85,7 @@ public class D6LConfHelper {
  	 * @return parsed JAXB object
  	 * @throws Exception
  	 */
-	public static Object getParsed( InputStream inputStream, String pakkage, String xsdClassPath ) throws D6Exception {
+	public static Object getParsed( InputStream inputStream, String pakkage, String xsdClassPath ) throws D6LException {
 		return getParsed( inputStream, pakkage, xsdClassPath, null, null );
 	}
 
@@ -98,7 +98,7 @@ public class D6LConfHelper {
 	 * @return parsed JAXB object
 	 * @throws Exception
 	 */
-	public static Object getParsed( InputStream inputStream, String pakkage, String xsdClassPath, StringBuilder xmlEncoding ) throws D6Exception {
+	public static Object getParsed( InputStream inputStream, String pakkage, String xsdClassPath, StringBuilder xmlEncoding ) throws D6LException {
 		return getParsed(inputStream, pakkage, xsdClassPath, null, xmlEncoding  );
 	}
 
@@ -111,7 +111,7 @@ public class D6LConfHelper {
 	 * @return parsed JAXB object
 	 * @throws Exception
 	 */
-	public static Object getParsed( InputStream inputStream, String pakkage, String xsdClassPath, Properties antProps ) throws D6Exception {
+	public static Object getParsed( InputStream inputStream, String pakkage, String xsdClassPath, Properties antProps ) throws D6LException {
 		return getParsed( inputStream, pakkage, xsdClassPath, antProps, null );
 	}
 	
@@ -126,7 +126,7 @@ public class D6LConfHelper {
 	 * @throws Exception
 	 */
 	public static Object getParsed( InputStream inputStream, String pakkage, String xsdClassPath, Properties antProps, StringBuilder xmlEncoding ) 
-	    throws D6Exception
+	    throws D6LException
 	{
 
 	    try {
@@ -140,7 +140,7 @@ public class D6LConfHelper {
     		SchemaFactory schemaFactory = SchemaFactory.newInstance( XMLConstants.W3C_XML_SCHEMA_NS_URI );
     		InputStream isSchema = D6LConfHelper.class.getResourceAsStream( xsdClassPath );
     		if ( isSchema == null ) {
-    			throw new D6Exception( "Can't find schema from classpath " + xsdClassPath );
+    			throw new D6LException( "Can't find schema from classpath " + xsdClassPath );
     		}
     		Schema schema = schemaFactory.newSchema( new StreamSource( isSchema) );
     		unmarshaller.setSchema( schema );
@@ -194,7 +194,7 @@ public class D6LConfHelper {
 
 	    } catch ( Exception e ) {
 	        
-	        D6Exception.handleException( e );
+	        D6LException.handleException( e );
 	        
 	    }
 	    

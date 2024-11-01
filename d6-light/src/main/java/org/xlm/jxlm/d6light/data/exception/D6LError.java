@@ -16,21 +16,21 @@
  *  along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html
 **/
 
-package org.xlm.jxlm.d6light.data;
+package org.xlm.jxlm.d6light.data.exception;
 
 /**
  * D6-light exception
  * @author Loison
  *
  */
-public class D6Error extends Error {
+public class D6LError extends Error {
 
 	private static final long serialVersionUID = 2296853761438100788L;
 
     /**
      * Constructor
      */
-    public D6Error() {
+    public D6LError() {
         super();
     }
 
@@ -38,7 +38,7 @@ public class D6Error extends Error {
 	 * Constructor
 	 * @param message message
 	 */
-	public D6Error( String message ) {
+	public D6LError( String message ) {
 		super( message );
 	}
 
@@ -47,7 +47,7 @@ public class D6Error extends Error {
 	 * @param message message
 	 * @param cause cause
 	 */
-    public D6Error( String message, Throwable cause )
+    public D6LError( String message, Throwable cause )
     {
         super( message, cause );
     }
@@ -56,7 +56,7 @@ public class D6Error extends Error {
      * Constructor
      * @param cause cause
      */
-    public D6Error( Throwable cause )
+    public D6LError( Throwable cause )
     {
         super( cause );
     }
@@ -65,14 +65,14 @@ public class D6Error extends Error {
      * Handle a throwable, throw back a X6Exception
      * 
      * @param e
-     * @throws D6Error 
+     * @throws D6LError 
      */
-    public static void handleThrowable( Throwable t ) throws D6Error
+    public static void handleThrowable( Throwable t ) throws D6LError
     {
-        if ( t instanceof D6Error ) {
-            throw ( D6Error ) t;
+        if ( t instanceof D6LError ) {
+            throw ( D6LError ) t;
         } else {
-            throw new D6Error( t );
+            throw new D6LError( t );
         }
         
     }

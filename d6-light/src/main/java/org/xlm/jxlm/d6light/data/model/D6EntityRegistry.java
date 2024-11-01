@@ -22,19 +22,19 @@ import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.xlm.jxlm.d6light.data.D6Error;
+import org.xlm.jxlm.d6light.data.exception.D6LError;
 
 public class D6EntityRegistry {
 
 	private static Map<Integer,D6EntityIF> registry = new HashMap<>();
 	
-	public static D6Vertex newVertex( int id ) throws D6Error {
+	public static D6LVertex newVertex( int id ) throws D6LError {
 		
 		if ( registry.containsKey( id ) ) {
-			throw new D6Error( MessageFormat.format( "Duplicate id ${0}", id ) );
+			throw new D6LError( MessageFormat.format( "Duplicate id ${0}", id ) );
 		}
 		
-		D6Vertex vertex = new D6Vertex( id );
+		D6LVertex vertex = new D6LVertex( id );
 		
 		return vertex;
 		
