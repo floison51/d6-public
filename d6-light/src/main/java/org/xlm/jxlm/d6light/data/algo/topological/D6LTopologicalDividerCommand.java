@@ -35,13 +35,11 @@ import org.xlm.jxlm.d6light.data.algo.topological.bomsimplifier.D6LAbstractBomSi
 import org.xlm.jxlm.d6light.data.conf.AbstractAlgoType;
 import org.xlm.jxlm.d6light.data.conf.D6LightDataConf;
 import org.xlm.jxlm.d6light.data.conf.TopologicalDividerType;
-import org.xlm.jxlm.d6light.data.db.D6LInmemoryDb;
-import org.xlm.jxlm.d6light.data.exception.D6LError;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
 import org.xlm.jxlm.d6light.data.job.D6LJobIF;
+import org.xlm.jxlm.d6light.data.measures.D6LEntityDirectedLinkStats;
 import org.xlm.jxlm.d6light.data.model.D6LEdge;
 import org.xlm.jxlm.d6light.data.model.D6LEntityIF;
-import org.xlm.jxlm.d6light.data.model.D6LEntityRegistry;
 import org.xlm.jxlm.d6light.data.model.D6LPackage;
 import org.xlm.jxlm.d6light.data.model.D6LVertex;
 import org.xlm.jxlm.d6light.data.packkage.D6LPackageSubtypeEnum;
@@ -213,10 +211,9 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 			
 		    // Use a thread safe method to get single lot
 		    // Because some threads may creating another single lot in the mean while...
-		    singleLot = 
-		    	D6LEntityRegistry.getOrCreateSingleLot( 
-		    		dividerAlgo.getProducesLotType() 
-		    	);
+		    singleLot = db.daoEntityRegistry.getOrCreateSingleLot( 
+	    		dividerAlgo.getProducesLotType() 
+	    	);
 		}
 		
 		// allocate single and component objects
@@ -316,8 +313,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 		// Lot type
 		D6LPackageTypeEnum lotType = defaultLotType;
 		
-		D6LPackage bomSimplificationLot = 
-			D6LEntityRegistry.newPackageVertex( lotType, null );
+		D6LPackage bomSimplificationLot = db.daoEntityRegistry.newPackage( lotType, null );
 		
 		setParameters( bomSimplifier, bomSimplificationLot );
 		
@@ -375,7 +371,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
         
         // role A
         D6LEntityDirectedLinkStats roleA_stats = 
-        	D6LInmemoryDb.entityDirectedLinkStatsAccessor.getByEntityId( roleA.getId() );
+        	db.daoEntityStats.getByEntityId( roleA.getId() );
         
         if ( roleA_stats != null ) {
             // we removed a link from role A
@@ -405,7 +401,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
         
         // role B
         D6LEntityDirectedLinkStats roleB_stats = 
-        	D6LInmemoryDb.entityDirectedLinkStatsAccessor.getByEntityId( roleB.getId() );
+        	db.daoEntityStats.getByEntityId( roleB.getId() );
         
         if ( roleB_stats != null ) {
             // we removed a link to role B
@@ -578,10 +574,5 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
     {
         return "cmd-topdiv";
     }
-
-	@Override
-	protected void doExecute( boolean callAlgo ) throws D6LException {
-		throw new D6LError( "TODO" );
-	}
 
 }

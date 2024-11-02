@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.tools.ant.taskdefs.SQLExec.Transaction;
+import org.jgrapht.Graph;
 import org.xlm.jxlm.d6light.data.algo.D6LAlgoCommandIF;
 import org.xlm.jxlm.d6light.data.algo.topological.D6LAbstractTopologicalDivider;
 import org.xlm.jxlm.d6light.data.conf.AbstractAlgoType;
@@ -30,8 +31,10 @@ import org.xlm.jxlm.d6light.data.conf.D6LightDataConf;
 import org.xlm.jxlm.d6light.data.conf.ParamType;
 import org.xlm.jxlm.d6light.data.exception.D6LError;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
+import org.xlm.jxlm.d6light.data.model.D6LEdge;
 import org.xlm.jxlm.d6light.data.model.D6LEntityIF;
 import org.xlm.jxlm.d6light.data.model.D6LPackage;
+import org.xlm.jxlm.d6light.data.model.D6LVertex;
 import org.xlm.jxlm.d6light.data.packkage.D6LPackageTypeEnum;
 
 /**
@@ -55,9 +58,13 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 	}
 
 	@Override
-	public void setConf( D6LightDataConf conf, AbstractAlgoType confAlgo ) throws D6LException {
+	public void setConf( 
+		D6LightDataConf conf, AbstractAlgoType algoConf, 
+		Graph<D6LVertex,D6LEdge> inGraph, Graph<D6LPackage,D6LEdge> outGraph,
+		D6LPackage benchPackage
+	) throws D6LException {
 		
-	    super.setConf( conf, confAlgo );
+		super.setConf( conf, algoConf, inGraph, outGraph, benchPackage );
 
 	}
 	
@@ -626,12 +633,6 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 		return true;
 	}
 	
-    @Override
-    public boolean isNeedBomSimplifiedEntitiesRemovedFromBench() {
-        return true;
-    }
-
-
 	@Override
 	public String getName() {
 		return "Bill Of Material Topological Divider";

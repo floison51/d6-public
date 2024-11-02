@@ -18,11 +18,15 @@
 
 package org.xlm.jxlm.d6light.data.algo;
 
+import org.jgrapht.Graph;
 import org.xlm.jxlm.d6light.data.conf.AbstractAlgoType;
 import org.xlm.jxlm.d6light.data.conf.AbstractDividerType;
 import org.xlm.jxlm.d6light.data.conf.D6LightDataConf;
 import org.xlm.jxlm.d6light.data.exception.D6LError;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
+import org.xlm.jxlm.d6light.data.model.D6LEdge;
+import org.xlm.jxlm.d6light.data.model.D6LPackage;
+import org.xlm.jxlm.d6light.data.model.D6LVertex;
 import org.xlm.jxlm.d6light.data.packkage.D6LPackageTypeEnum;
 
 
@@ -48,10 +52,14 @@ public abstract class D6LAbstractDividerAlgo extends D6LAbstractAlgo implements 
 	/**
 	 * Handle 'producesLotType' value. Children overriding this method must call super().
 	 */
-	public void setConf( D6LightDataConf conf, AbstractAlgoType algoConf ) throws D6LException {
+	public void setConf( 
+		D6LightDataConf conf, AbstractAlgoType algoConf, 
+		Graph<D6LVertex,D6LEdge> inGraph, Graph<D6LPackage,D6LEdge> outGraph,
+		D6LPackage benchPackage
+	) throws D6LException {
 
 		// Ancestor
-		super.setConf( conf, algoConf );
+		super.setConf( conf, algoConf, inGraph, outGraph, benchPackage );
 		
 		// produce value
 		if ( algoConf instanceof AbstractDividerType ) {

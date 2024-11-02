@@ -30,15 +30,15 @@ import org.xlm.jxlm.d6light.data.packkage.D6LPackageTypeEnum;
 
 public class D6LEntityRegistry {
 
-	private static Map<Integer,D6LEntityIF> registryIn = new HashMap<>();
+	private Map<Integer,D6LEntityIF> registryIn = new HashMap<>();
 	
 	private static AtomicInteger seqVertex = new AtomicInteger();
 
-	private static Map<Integer,D6LEntityIF> registryOut = new HashMap<>();
+	private Map<Integer,D6LEntityIF> registryOut = new HashMap<>();
 	
 	private static AtomicInteger seqPackageVertex = new AtomicInteger();
 
-	private static void registerVertex( D6LVertex v ) {
+	private void registerVertex( D6LVertex v ) {
 
 		int id = v.getId();
 		
@@ -56,7 +56,7 @@ public class D6LEntityRegistry {
 	 * @return
 	 * @throws D6LError
 	 */
-	public static D6LVertex newVertex( int id ) throws D6LError {
+	public D6LVertex newVertex( int id ) throws D6LError {
 		
 		D6LVertex vertex = new D6LVertex( id );
 		registerVertex( vertex );
@@ -65,7 +65,13 @@ public class D6LEntityRegistry {
 		
 	}
 	
-	private static void registerPackageVertex( D6LPackage pv ) {
+	public D6LVertex newVertex() throws D6LError {
+		
+		return newVertex( seqVertex.getAndIncrement() );
+		
+	}
+
+	private void registerPackageVertex( D6LPackage pv ) {
 		
 		int id = pv.getId();
 		
@@ -76,18 +82,7 @@ public class D6LEntityRegistry {
 		registryOut.put( id,  pv );
 	}
 	
-	/*
-	public static D6LPackageVertex newPackageVertex() throws D6LError {
-		
-		D6LPackageVertex packageVertex = new D6LPackageVertex( seqPackageVertex.getAndIncrement() );
-		registerPackageVertex( packageVertex );
-		
-		return packageVertex;
-		
-	}
-	*/
-	
-	public static D6LPackage newPackageVertex( 
+	public D6LPackage newPackage( 
 		D6LPackageTypeEnum type, D6LPackageSubtypeEnum subtype 
 	) throws D6LError {
 		
@@ -102,7 +97,7 @@ public class D6LEntityRegistry {
 		
 	}
 
-	public static D6LPackage getOrCreateSingleLot( D6LPackageTypeEnum packageType ) throws D6LException {
+	public D6LPackage getOrCreateSingleLot( D6LPackageTypeEnum packageType ) throws D6LException {
     
 		D6LPackage singleLot = getSingleLot();
         
@@ -117,7 +112,7 @@ public class D6LEntityRegistry {
         return singleLot;
  	}
 
-	protected static D6LPackage createSingleLot( 
+	protected D6LPackage createSingleLot( 
 		D6LPackageTypeEnum lotType, String lotName 
 	 ) throws D6LException {
 	  
@@ -150,7 +145,7 @@ public class D6LEntityRegistry {
 	 * @return
 	 * @throws X6Exception
 	 */
-	public static D6LPackage getSingleLot() throws D6LException {
+	public D6LPackage getSingleLot() throws D6LException {
 		
 		// get single lots for current bench
 		

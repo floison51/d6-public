@@ -48,12 +48,14 @@ import org.xlm.jxlm.d6light.data.algo.D6LAlgoIF;
 import org.xlm.jxlm.d6light.data.conf.AbstractAlgoType;
 import org.xlm.jxlm.d6light.data.conf.D6LConfHelper;
 import org.xlm.jxlm.d6light.data.conf.D6LightDataConf;
+import org.xlm.jxlm.d6light.data.db.D6LDb;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
 import org.xlm.jxlm.d6light.data.imp.D6LGraphFormatEnum;
 import org.xlm.jxlm.d6light.data.imp.D6LImporterWrapper;
 import org.xlm.jxlm.d6light.data.model.D6LEdge;
 import org.xlm.jxlm.d6light.data.model.D6LPackage;
 import org.xlm.jxlm.d6light.data.model.D6LVertex;
+import org.xlm.jxlm.d6light.data.packkage.D6LPackageTypeEnum;
 
 /**
  * Main class for D6-light
@@ -85,6 +87,8 @@ public class D6LMain {
 	private Graph<D6LPackage, D6LEdge> outGraph;
 
 	private D6LightDataConf d6lConf;
+	
+	private D6LDb db = D6LDb.getInstance();
 	
     /**
      * Default constructor
@@ -224,15 +228,19 @@ public class D6LMain {
 			);
 		}
 		
+		// Create a root target package
+		D6LPackage benchPackage = db.daoEntityRegistry.newPackage( D6LPackageTypeEnum.BUSINESS_PKG, null );
+		outGraph.addVertex( benchPackage ); 
+		
 		// Instantiate algo
 		D6LAlgoIF algo =  D6LAbstractAlgo.getInstance( algoConf, this.d6lConf );
 		
 		// set conf to algo
-		algo.setConf( this.d6lConf, algoConf );
+		algo.setConf( this.d6lConf, algoConf, inGraph, outGraph, benchPackage );
 		
 		// Create command
 		D6LAlgoCommandIF cmdAlgo = D6LAbstractAlgoCommand.newInstance(
-			algo.getClass(), 
+			algo, 
 			this.d6lConf
 		);
 		

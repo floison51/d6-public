@@ -126,6 +126,7 @@ public class InfomapResultsReader implements Clusterer {
     }
   }
 
+  /*
   private void print() {
     for (int node = 0; node < nodeCount; node++) {
       System.out.print(node + ":");
@@ -135,7 +136,8 @@ public class InfomapResultsReader implements Clusterer {
       System.out.println();
     }
   }
-
+*/
+  
   private void process() {
     for (int layer = 0; layer < layerCount; layer++) {
       assignCommunityIDs(layer);

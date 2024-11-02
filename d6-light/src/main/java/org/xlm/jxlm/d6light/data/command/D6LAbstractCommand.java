@@ -22,6 +22,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jgrapht.Graph;
 import org.xlm.jxlm.d6light.data.conf.D6LightDataConf;
+import org.xlm.jxlm.d6light.data.db.D6LDb;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
 import org.xlm.jxlm.d6light.data.model.D6LEdge;
 import org.xlm.jxlm.d6light.data.model.D6LPackage;
@@ -41,6 +42,8 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
 	
 	protected Graph<D6LVertex,D6LEdge> inGraph;
 	protected Graph<D6LPackage,D6LEdge> outGraph;
+	
+	protected final D6LDb db = D6LDb.getInstance();
 	
 	/**
 	 * Default constructor
@@ -71,7 +74,7 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
 		this.outGraph = outGraph;
 		
         doPrepare( true );
-        doExecute( true );
+        doRun( true );
 		
 	}
 
@@ -87,7 +90,7 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
 	 * @throws X6Exception
 	 * @throws Exception
 	 */
-	protected abstract void doExecute( final boolean callAlgo ) throws D6LException;
+	protected abstract void doRun( final boolean callAlgo ) throws D6LException;
 
 
     /**

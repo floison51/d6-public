@@ -262,15 +262,6 @@
     <complexType name="AbstractBomSimplifierType" abstract="true">
     	<sequence>
     		<element name="Class" type="string" maxOccurs="1" minOccurs="0"></element>
-    		<element minOccurs="1" maxOccurs="1"
-    			name="SpecificBusinessLot" type="boolean">
-    			<annotation>
-    				<documentation>
-    					If true move components lot in a business
-    					component lot belong to parent lot
-    				</documentation>
-    			</annotation>
-    		</element>
     		<element name="SingleExtractorLot" type="boolean"
     			maxOccurs="1" minOccurs="0">
     		</element>

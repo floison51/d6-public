@@ -67,7 +67,7 @@ public abstract class D6LAbstractAlgoCommand
      */
 	@SuppressWarnings( "unchecked" )
 	public static D6LAlgoCommandIF newInstance( 
-		Class<? extends D6LAlgoIF> algoClass,
+		D6LAlgoIF algo,
 		D6LightDataConf conf
 	) throws D6LException {
 		
@@ -75,7 +75,7 @@ public abstract class D6LAbstractAlgoCommand
 	    
 	    try {
     		
-	        String algoClassName = algoClass.getName();
+	        String algoClassName = algo.getClass().getName();
     		
     		// get mapping
     		String algoCommandClassName = D6LAbstractAlgo.propsFactory.getProperty( "command|" + algoClassName );
@@ -105,6 +105,10 @@ public abstract class D6LAbstractAlgoCommand
 	        
 	        D6LException.handleException( e );
 	    }
+	    
+	    // set algo
+	    algoCommand.algo = algo; 
+	    
 		return algoCommand;
 		
 	}
@@ -143,12 +147,6 @@ public abstract class D6LAbstractAlgoCommand
 	@Override
 	public D6LAlgoIF getAlgo() {
 		return this.algo;
-	}
-
-	protected void doExecute() throws D6LException {
-	    
-		doExecute( false );
-		
 	}
 
     @Override

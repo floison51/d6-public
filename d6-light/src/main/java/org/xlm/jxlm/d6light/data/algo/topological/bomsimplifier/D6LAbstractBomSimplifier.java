@@ -19,15 +19,21 @@
 package org.xlm.jxlm.d6light.data.algo.topological.bomsimplifier;
 
 import java.util.List;
+import java.util.Set;
 
+import org.jgrapht.Graph;
 import org.xlm.jxlm.d6light.data.algo.D6LAlgoCommandIF;
-import org.xlm.jxlm.d6light.data.algo.topological.D6LEntityDirectedLinkStats;
 import org.xlm.jxlm.d6light.data.conf.AbstractBomSimplifierType;
+import org.xlm.jxlm.d6light.data.db.D6LDb;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
 import org.xlm.jxlm.d6light.data.job.D6LJobIF;
+import org.xlm.jxlm.d6light.data.measures.D6LEntityDirectedLinkStats;
+import org.xlm.jxlm.d6light.data.model.D6LEdge;
 import org.xlm.jxlm.d6light.data.model.D6LEntityIF;
 import org.xlm.jxlm.d6light.data.model.D6LPackage;
+import org.xlm.jxlm.d6light.data.model.D6LVertex;
 import org.xlm.jxlm.d6light.data.packkage.D6LPackageSubtypeEnum;
+import org.xlm.jxlm.d6light.data.packkage.D6LPackageTypeEnum;
 
 /**
  * This class holds imformation for Bom Simplifiers: components and kits detection
@@ -64,27 +70,36 @@ public abstract class D6LAbstractBomSimplifier
     
     }
     
-    protected final boolean specificBusinessLot;
-
     protected final boolean singleExtractorLot;
+
+	private final Graph<D6LVertex, D6LEdge> inGraph;
+	
+	private final D6LPackage benchLot; 
+	
+	protected final D6LDb db = D6LDb.getInstance();
     
     private D6LAbstractBomSimplifier( 
-        boolean specificBusinessLot, boolean singleExtractorLot
+        boolean singleExtractorLot,
+        Graph<D6LVertex,D6LEdge> inGraph,
+        D6LPackage benchLot
     )
     {
         super();
-        this.specificBusinessLot = specificBusinessLot;
         this.singleExtractorLot = singleExtractorLot;
+        this.inGraph = inGraph;
+        this.benchLot = benchLot;
     }
     
     public D6LAbstractBomSimplifier( 
-        AbstractBomSimplifierType conf
+        AbstractBomSimplifierType conf,
+        Graph<D6LVertex,D6LEdge> inGraph,
+        D6LPackage benchLot
     )
     {
         this( 
-        	conf.isSpecificBusinessLot(), 
         	// Default value for isSingleExtractorLot
-        	( conf.isSingleExtractorLot() != null ) ? conf.isSingleExtractorLot() : true
+        	( conf.isSingleExtractorLot() != null ) ? conf.isSingleExtractorLot() : true,
+        	inGraph, benchLot
         );
     }
     
@@ -138,44 +153,10 @@ public abstract class D6LAbstractBomSimplifier
      */
     public abstract MatchResult match( 
     	D6LAlgoCommandIF algoCommand, 
-    	D6LEntityIF entity, boolean matchWithoutNumbersResult, D6LEntityDirectedLinkStats stat, 
+    	D6LVertex entity, boolean matchWithoutNumbersResult, D6LEntityDirectedLinkStats stat, 
     	D6LPackage singlePackage, List<D6LJobIF<D6LEntityIF>> postActions
     ) throws D6LException;
    
-    /**
-     * Move component of kit lot to upper level
-     * @param txn
-     * @throws D6LException 
-     */
-    public void moveSimplifiedTechnicalLotsToBusinessLotIfNeeded( 
-    )
-    	throws D6LException
-    {
-    	throw new Error( "TODO" );
-    	/*
-        if ( specificBusinessLot ) {
-            
-            // browse benches
-            try (
-                EntityCursor<D6Bench> benches = db.daoBenches.byId.entities( txn, null );
-            ) {
-                for ( D6Bench bench: benches ) {
-                    
-                    // skip no bench
-                    if ( bench.getId() == D6Bench.NO_BENCH ) {
-                        continue;
-                    }
-                    
-                    moveSimplifiedTechnicalLotsToBusinessLot( db, txn, iPass, iPassTechLot, bench.getIdLot() );
-                            
-                }
-            }
-            
-        }   // end if isBusinessComponentLot()
-        */
-        
-    }
-    
     /**
      * Move components or kits technical lots to component ro kit business lot
      * @param txn
@@ -186,8 +167,6 @@ public abstract class D6LAbstractBomSimplifier
     protected void moveSimplifiedTechnicalLotsToBusinessLot( 
     ) throws D6LException {
         
-    	throw new Error( "TODO" );
-    	/*
         // Get sub-lot type
         final D6LPackageSubtypeEnum lotSubType = getLotSubType();
 
@@ -197,13 +176,12 @@ public abstract class D6LAbstractBomSimplifier
         }
         
         // create or get business component lot
-        D6Lot outerSimplifiedLot = null;
+        D6LPackage outerSimplifiedLot = null;
         
-        D6Lot benchLot = db.daoLots.byId.get( txn, idLotOfCurrentBench, null );
-
         // get parent lot until we get a Business Lot
-        D6Lot targetBusinessLot = benchLot;
+        D6LPackage targetBusinessLot = benchLot;
         
+        /*
         do {
             // move to parent
             targetBusinessLot = db.daoLots.byId.get( txn, targetBusinessLot.getIdLotParent(), null );
@@ -214,7 +192,9 @@ public abstract class D6LAbstractBomSimplifier
             ( targetBusinessLot.getId() != D6Lot.ID_NO_LOT ) && 
             ( targetBusinessLot.getLotType() != D6LPackageTypeEnum.BUSINESS_LOT ) 
         );
+        */
         
+        /*
         // Are we allowed to re-use an outer lot 
         if ( isSingleExtractorLot() ) {
         	
@@ -232,14 +212,16 @@ public abstract class D6LAbstractBomSimplifier
 	        }
 	        
         }
+        */
         
         // to be created?
         if ( outerSimplifiedLot == null ) {
             
-        	outerSimplifiedLot = createOuterSimplifiedLot(db, txn, iPass, lotSubType, targetBusinessLot);
+        	outerSimplifiedLot = createOuterSimplifiedLot( lotSubType, targetBusinessLot);
             
         }
         
+        /*
         // move inner components lots to biz lot
         EntityJoin<Long, D6Lot> joinTech = new EntityJoin<>( db.daoLots.byId );
         // component lot condition
@@ -274,21 +256,13 @@ public abstract class D6LAbstractBomSimplifier
 
 	private D6LPackage createOuterSimplifiedLot(
 			final D6LPackageSubtypeEnum lotSubType, D6LPackage targetBusinessLot) throws D6LException {
-    	throw new Error( "TODO" );
-    	/*
-		D6Lot outerSimplifiedLot;
-		outerSimplifiedLot = new D6Lot( D6LPackageTypeEnum.BUSINESS_LOT, null, iPass );
-		outerSimplifiedLot.setName( lotSubType.getLotName() );
-		outerSimplifiedLot.setLotSubtype( lotSubType );
-		outerSimplifiedLot.setIdLotParent( targetBusinessLot.getId() );
-		
-		outerSimplifiedLot.save( db, txn );
-		return outerSimplifiedLot;
-		*/
-	}
 
-	public boolean isSpecificBusinessLot() {
-		return specificBusinessLot;
+		D6LPackage outerSimplifiedLot;
+		outerSimplifiedLot = db.daoEntityRegistry.newPackage( D6LPackageTypeEnum.BUSINESS_PKG, lotSubType );
+		outerSimplifiedLot.setName( lotSubType.getLotName() );
+		
+		return outerSimplifiedLot;
+		
 	}
 
 	public boolean isSingleExtractorLot() {
@@ -299,111 +273,61 @@ public abstract class D6LAbstractBomSimplifier
 	 * If a component is extracted, stats for used objects must be updated
 	 *
 	 */
-    public class ReworkChildrenJob /* implements X6JobIF<D6EntityIF> */ {
+    public class ReworkChildrenJob implements D6LJobIF<D6LEntityIF> {
 
          /** Algo command **/
         private final D6LAlgoCommandIF algoCommand;
         
         /** Kit to operate on **/
-        private final D6LEntityIF kit;
+        private final D6LVertex kit;
         
         /** Single lot **/
         private final D6LPackage singleLot;
         
-        public ReworkChildrenJob( D6LAlgoCommandIF algoCommand, D6LEntityIF kit, D6LPackage singleLot ) {
+        public ReworkChildrenJob( D6LAlgoCommandIF algoCommand, D6LVertex kit, D6LPackage singleLot ) {
             super();
             this.algoCommand = algoCommand;
             this.kit = kit;
             this.singleLot = singleLot;
         }
 
-        /*
         @Override
-        public void doJob( D6EntityIF notUsed )
-            throws Exception
-        {
+        public void doJob( D6LEntityIF notUsed )  throws D6LException {
             
-            D6EntityLinkAccessorIF<? extends D6LinkIF> daoEntityLinks = algoCommand.getDaoEntityLinks();
+            // Get kit children
+        	Set<D6LEdge> kitLinks = inGraph.outgoingEdgesOf( kit );
             
-            try {
+        	for ( D6LEdge kitLink : kitLinks ) {
                 
-                // Get kit children
-                try (
-                    EntityCursor<? extends D6LinkIF> kitLinks = daoEntityLinks.getByIdRoleA().subIndex( kit.getId() ).entities( txn, null );
-                ) {
-                    for ( D6LinkIF kitLink : kitLinks ) {
-                        
-                        // Get to entity
-                        D6EntityIF child = db.daoMetaEntities.byIdGet( txn, iPass, iPassTechLot, kitLink.getIdRoleB(), null );
-                        
-                        // Get stats
-                        D6EntityDirectedLinkStats childStats = db.daoEntityStats.byIdEntity.get( child.getId() );
-                        
-                        if ( childStats != null ) {
-                        	
-	                        // rework child stats
-	                        // Remove kit
-	                        switch ( kitLink.getLinkDirection() ) {
-	                            
-	                            case DirectedFromTo : {
-	                                childStats.incNbDirectedLinksToForBench( -1 );
-	                                childStats.incNbLinksToForBench( -1 );
-	                                break;
-	                            }
-	                            case DirectedToFrom : {
-	                                childStats.incNbDirectedLinksFromForBench( -1 );
-	                                childStats.incNbLinksFromForBench( -1 );
-	                                break;
-	                            }
-	                            case DirectedBoth : {
-	                                childStats.incNbLinksFromForBench( -1 );
-	                                // No break: intentional
-	                            }
-	                            case NotDirected : {
-	                                childStats.incNbLinksToForBench( -1 );
-	                                break;
-	                            }
-	                        }
-	                        
-	                        // Save 
-	                        childStats.save( db, txn );
-	                        
-	                        // Is it now a single entity?
-	                        // if no links, entity is single
-	                        // But not for bom simplifier lots
-	                        D6LPackageSubtypeEnum requiredParentLotSubType = null;
-	                        if ( child instanceof D6AbstractLot ) {
-	                        	requiredParentLotSubType = ( ( D6AbstractLot ) child ).getRequiredParentLotSubType();
-	                        }
-	                        
-	                        if ( 
-	                        	( singleLot != null ) && 
-	                        	( childStats.getNbLinksFromForBench() == 0 ) && ( childStats.getNbLinksToForBench() == 0 ) 
-	                        	&&
-	                        	// Not a bom simplifier lot
-	                        	( requiredParentLotSubType == null )
-	                        ) {
-	
-	                            child.setIdLot( singleLot.getId() );
-	                            // save using queue
-	                            child.save( db, txn );
-	                            
-	                        }
-	                        
-                        }
+                // Get to entity
+                D6LVertex child = inGraph.getEdgeTarget( kitLink );
+                
+                // Get stats
+                D6LEntityDirectedLinkStats childStats = 
+                	db.daoEntityStats.getByEntityId( child.getId() );
+                
+                if ( childStats != null ) {
+                	
+                    // rework child stats
+                    // Remove kit
+                	
+                	// Kink is by constraint from/to directed
+                    childStats.incNbDirectedLinksToForBench( -1 );
+                    childStats.incNbLinksToForBench( -1 );
+                                            
+                    if ( 
+                    	( singleLot != null ) && 
+                    	( childStats.getNbLinksFromForBench() == 0 ) && ( childStats.getNbLinksToForBench() == 0 ) 
+                     ) {
+
+                        child.setIdPackage( singleLot.getId() );
                         
                     }
+                    
                 }
                 
-            } catch ( Throwable t ) {
-                
-                D6SystemizerData.LOGGER.fatal( "Can't process kit '" + kit.toString() + "'" );
-                throw t;
-                
             }
-            
         }
-        */
     }
 
     /**

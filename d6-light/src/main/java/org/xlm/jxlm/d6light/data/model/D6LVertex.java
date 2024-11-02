@@ -18,8 +18,6 @@
 
 package org.xlm.jxlm.d6light.data.model;
 
-import org.xlm.jxlm.d6light.data.exception.D6LError;
-
 public class D6LVertex extends D6LAbstractEntity {
 
 	D6LVertex( int id ) {
@@ -33,13 +31,12 @@ public class D6LVertex extends D6LAbstractEntity {
 
 	@Override
 	public int getIdPackage() {
-		throw new D6LError( "Not supported in this flavor" );
+		return idPackage;
 	}
 
 	@Override
 	public void setIdPackage(int idPackage) {
-		throw new D6LError( "Not supported in this flavor" );
+		this.idPackage = idPackage;
 	}
-
 	
 }

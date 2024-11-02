@@ -18,12 +18,19 @@
 
 package org.xlm.jxlm.d6light.data.algo.topological.bomsimplifier;
 
+import java.util.List;
+
+import org.jgrapht.Graph;
 import org.xlm.jxlm.d6light.data.algo.D6LAlgoCommandIF;
-import org.xlm.jxlm.d6light.data.algo.topological.D6LEntityDirectedLinkStats;
 import org.xlm.jxlm.d6light.data.conf.BomSimplifierType;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
+import org.xlm.jxlm.d6light.data.job.D6LJobIF;
+import org.xlm.jxlm.d6light.data.measures.D6LEntityDirectedLinkStats;
+import org.xlm.jxlm.d6light.data.measures.D6LHistogramEntry.HistoKeyEnum;
+import org.xlm.jxlm.d6light.data.model.D6LEdge;
 import org.xlm.jxlm.d6light.data.model.D6LEntityIF;
 import org.xlm.jxlm.d6light.data.model.D6LPackage;
+import org.xlm.jxlm.d6light.data.model.D6LVertex;
 import org.xlm.jxlm.d6light.data.packkage.D6LPackageSubtypeEnum;
 
 public class D6LComponentsBomSimplifier extends D6LAbstractBomSimplifier
@@ -32,10 +39,12 @@ public class D6LComponentsBomSimplifier extends D6LAbstractBomSimplifier
     protected final int linksTrigger;
     
     public D6LComponentsBomSimplifier( 
-        BomSimplifierType conf
+        BomSimplifierType conf,
+        Graph<D6LVertex,D6LEdge> inGraph,
+        D6LPackage benchLot
     )
     {
-        super(conf );
+        super( conf, inGraph, benchLot );
         this.linksTrigger = conf.getLinksTrigger();
     }
 
@@ -75,20 +84,17 @@ public class D6LComponentsBomSimplifier extends D6LAbstractBomSimplifier
     @Override
     public MatchResult match( 
     	D6LAlgoCommandIF algoCommand, 
-    	D6LEntityIF entity, boolean matchWithoutNumbersResult, 
-    	D6LPackage singlePackage /*, List<X6JobIF<D6LEntityIF>> postActions*/ 
+    	D6LVertex entity, boolean matchWithoutNumbersResult, D6LEntityDirectedLinkStats stat, 
+    	D6LPackage singlePackage, List<D6LJobIF<D6LEntityIF>> postActions 
     ) 
     	throws D6LException
     {
             
-        throw new Error( "TODO" );
-        /*
         boolean matches = 
            matchWithoutNumbersResult && 
            ( stat.getNbDirectedLinksToForBench() >= linksTrigger );
         
         return new MatchResult( matches, null );
-        */
     }
 
 	@Override
@@ -96,13 +102,11 @@ public class D6LComponentsBomSimplifier extends D6LAbstractBomSimplifier
 		long nbDirectedLinksToEntity
 	) {
 		
-        throw new Error( "TODO" );
-        /*
 		// Log component linksTo 
-		D6HistogramEntry he = new D6HistogramEntry( HistoKeyEnum.nbDirectedLinksToCompo, pass, nbDirectedLinksToEntity );
-		// Save it
-		he.save( db, txn );
-		*/
+		db.daoHistogram.newHistogramEntry( 
+			HistoKeyEnum.nbDirectedLinksToCompo, 
+			nbDirectedLinksToEntity 
+		);
 	}
 
 }

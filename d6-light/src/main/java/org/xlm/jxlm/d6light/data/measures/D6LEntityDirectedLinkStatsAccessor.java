@@ -1,6 +1,6 @@
 
 
-package org.xlm.jxlm.d6light.data.algo.topological;
+package org.xlm.jxlm.d6light.data.measures;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -27,6 +27,7 @@ import java.util.Set;
 
 import javax.xml.bind.JAXBElement;
 
+import org.jgrapht.Graph;
 import org.xlm.jxlm.d6light.data.algo.D6LAbstractDividerAlgo;
 import org.xlm.jxlm.d6light.data.algo.D6LAlgoCommandIF;
 import org.xlm.jxlm.d6light.data.algo.topological.bom.D6LByDirectedLinkBomDivider;
@@ -43,6 +44,10 @@ import org.xlm.jxlm.d6light.data.conf.ParamType;
 import org.xlm.jxlm.d6light.data.conf.TopologicalDividerType;
 import org.xlm.jxlm.d6light.data.conf.TopologicalDividerType.BomSimplifiers;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
+import org.xlm.jxlm.d6light.data.model.D6LEdge;
+import org.xlm.jxlm.d6light.data.model.D6LPackage;
+import org.xlm.jxlm.d6light.data.model.D6LVertex;
+import org.xlm.jxlm.d6light.data.packkage.D6LPackageTypeEnum;
 import org.xlm.jxlm.d6light.data.plugin.D6LPluginIF;
 
 /**
@@ -76,6 +81,7 @@ public abstract class D6LAbstractTopologicalDivider
 	 */
 	public static D6LTopologicalDividerIF getInstance( 
 	    AbstractAlgoType confAlgo, D6LightDataConf conf
+	    
 	) throws D6LException {
 
 		// get actual algo conf
@@ -113,9 +119,13 @@ public abstract class D6LAbstractTopologicalDivider
 	}
 	
 	@Override
-	public void setConf( D6LightDataConf conf, AbstractAlgoType algoConf ) throws D6LException {
+	public void setConf(
+		D6LightDataConf conf, AbstractAlgoType algoConf, 
+		Graph<D6LVertex,D6LEdge> inGraph, Graph<D6LPackage,D6LEdge> outGraph,
+		D6LPackage benchPackage
+	) throws D6LException {
 		
-		super.setConf( conf, algoConf );
+		super.setConf( conf, algoConf, inGraph, outGraph, benchPackage );
 		
         // init parameters
         TopologicalDividerType topologicalDividerConf = ( TopologicalDividerType ) algoConf;
@@ -155,13 +165,17 @@ public abstract class D6LAbstractTopologicalDivider
 	            	switch ( kind ) {
 		            	case Components : {
 		            		
-		            		bomSimplifier = new D6LComponentsBomSimplifier( (BomSimplifierType) bomSimplifierConf );
+		            		bomSimplifier = new D6LComponentsBomSimplifier( 
+		            			(BomSimplifierType) bomSimplifierConf, inGraph, benchPackage
+		            		);
 		                    break;
 		            		
 		            	}
 		            	case Kits : {
 		            		
-		            		bomSimplifier = new D6LKitsBomSimplifier( (BomSimplifierType) bomSimplifierConf );
+		            		bomSimplifier = new D6LKitsBomSimplifier( 
+		            			(BomSimplifierType) bomSimplifierConf, inGraph, benchPackage
+		            		);
 		                    break;
 		            		
 		            	}
@@ -219,16 +233,13 @@ public abstract class D6LAbstractTopologicalDivider
 		// delegate to algo
 		doAlgoRun( algoCommand );
 		
-		// move component lot to upper level if needed
-		for ( D6LAbstractBomSimplifier bomSimplifier : listBomSimplifiers ) {
-			
-			// Move simplifier lot if needed
-			bomSimplifier.moveSimplifiedTechnicalLotsToBusinessLotIfNeeded();
-			
-		}
-		
 	}
 	
+	@Override
+	public D6LPackageTypeEnum getProducesLotType() {
+		return producesLotType;
+	}
+
 	/**
 	 * Execution to be done by implementation classes
 	 * @param txn
