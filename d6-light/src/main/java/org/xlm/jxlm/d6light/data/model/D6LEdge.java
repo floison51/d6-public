@@ -26,7 +26,7 @@ public class D6LEdge extends DefaultEdge implements D6LEntityIF {
 	private static final long serialVersionUID = -4376861182806887574L;
 	
 	private String label;
-	private int idPackage;
+	private int idPackage = D6LPackage.TECH_ID_UNALLOCATED;
 
 	@Override
 	public String toString() {

@@ -18,23 +18,26 @@
 
 package org.xlm.jxlm.d6light.data.algo.topological.bom;
 
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.tools.ant.taskdefs.SQLExec.Transaction;
 import org.jgrapht.Graph;
 import org.xlm.jxlm.d6light.data.algo.D6LAlgoCommandIF;
 import org.xlm.jxlm.d6light.data.algo.topological.D6LAbstractTopologicalDivider;
 import org.xlm.jxlm.d6light.data.conf.AbstractAlgoType;
 import org.xlm.jxlm.d6light.data.conf.D6LightDataConf;
 import org.xlm.jxlm.d6light.data.conf.ParamType;
-import org.xlm.jxlm.d6light.data.exception.D6LError;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
 import org.xlm.jxlm.d6light.data.model.D6LEdge;
 import org.xlm.jxlm.d6light.data.model.D6LEntityIF;
 import org.xlm.jxlm.d6light.data.model.D6LPackage;
 import org.xlm.jxlm.d6light.data.model.D6LVertex;
+import org.xlm.jxlm.d6light.data.packkage.D6LPackageSubtypeEnum;
 import org.xlm.jxlm.d6light.data.packkage.D6LPackageTypeEnum;
 
 /**
@@ -83,30 +86,13 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 	@Override
 	protected void doAlgoRun( D6LAlgoCommandIF algoCommand ) throws D6LException {
 		
-		throw new D6LError( "TODO" );
-		/*
-		// browse benches
-		try (
-		    EntityCursor<D6Bench> benches = db.daoBenches.byId.entities( txn, null );
-		) {
-			for ( D6Bench bench: benches ) {
-				// skip no bench
-				if ( bench.getId() == D6Bench.NO_BENCH ) {
-					continue;
-				}
-				
-				// process boms for current bench
-				processBomsForBench( txn, bench );
+		// process boms for current bench
+		processBomsForBench();
 					
-			}
-			
-		}
-		
         // Circuits are not allocated
 		// Fix this
-        allocateCircuitsToErrorLot( txn );
+        allocateCircuitsToErrorLot();
         
-		*/
 	}
 
 	/**
@@ -116,156 +102,81 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 	 * @throws D6LException
 	 */
 	protected void processBomsForBench() throws D6LException {
-		throw new D6LError( "TODO" );
-		/*
+		
 		// find BOMs top objects
-		LOGGER.info( "Get Bill Of Material top objects for bench " + bench.getId() );
+		LOGGER.info( "Get Bill Of Material top objects" );
 		
     	// get boms for current bench
-    	List<D6LEntityIF> bomHeadEntities = new ArrayList<>();
+    	List<D6LVertex> bomHeadVertices = new ArrayList<>();
     	
-    	try (
-	    	ForwardCursor<Long> cursorBomHeadStats = 
-    			db.daoEntityStats.getBomHeadsForBench( txn, CursorConfig.READ_UNCOMMITTED, bench.getId() );
-    	) {
-    	    
-    		for ( Long idStat: cursorBomHeadStats ) {
-    		    
-    			// Get stat
-    			D6LEntityDirectedLinkStats stat = db.daoEntityStats.byId.get( txn, idStat, null );
-
-    			// get object
-    			D6LEntityIF bomHeadObject = daoEntities.getById().get( txn, stat.getIdObject(), null );
-    			
-    			// process only unallocated boms
-    			if ( bomHeadObject.getIdLot() == D6Lot.TECH_ID_UNALLOCATED ) {
-    				bomHeadEntities.add( bomHeadObject );
-    			}
-    			
-    		}
+    	Set<Integer> idBomHeadVertices = db.daoEntityStats.getBomHeads();
+    	
+		for ( int idBomHeadVertex: idBomHeadVertices ) {
+		   
+			// get vertex
+			D6LVertex bomHeadVertex = db.daoEntityRegistry.getVertex( idBomHeadVertex );
+			
+			// process only unallocated boms
+			if ( bomHeadVertex.getIdPackage() == D6LPackage.TECH_ID_UNALLOCATED ) {
+				bomHeadVertices.add( bomHeadVertex );
+			}
+			
     	}
     	
-		LOGGER.info( "  found " + bomHeadEntities.size() + " BOM head objects" );
+		LOGGER.info( "  found " + bomHeadVertices.size() + " BOM head objects" );
 		
 		LOGGER.info( "Build Bill Of Materials from BOM head objects" );
 
 		// Lotize BOM heads
 		LOGGER.info( "Step 1 - Lotize BOM heads" );
-		lotizeBomHeads( txn, bench, bomHeadEntities, iPass );
+		lotizeBomHeads( bomHeadVertices );
 		
 		
 		// Lotize BOM head children
 		LOGGER.info( "Step 2 - Lotize BOM head children" );
 
-		try (
-			// Prepare a thread manager
-			X6ThreadManager threadManager = 
-			     new X6ThreadManager(
-			         conf.props, D6LByDirectedLinkBomDivider.class.getSimpleName(),
-			         "bom", nbConcurrentThreads, true 
-			     );
-				
-		    // Progress for bom heads
-		    D6Progress progressBomHeads = new D6Progress( db, bomHeadEntities.size(), "", "BOM Heads" );		
-		    // Progress for bom children
-		    D6Progress progressBomChildren = new D6Progress( db, -1, "  ", "BOM children" );
-		) 
-		{
-    		for ( D6LEntityIF bomHeadEntity : bomHeadEntities ) {
-    			
-    			progressBomHeads.iItem++;
-    			if ( ( progressBomHeads.iItem % progressBomHeads.iTick ) == 1 ) {
-    				progressBomHeads.show();
-    			}
-    			
-    			// recurse BOM children by threads
-    			RecurseBomRunnable recurseBomRunnable = 
-    				new RecurseBomRunnable( txn, iPass, bomHeadEntity, bench, bomHeadEntity.getIdLot(), progressBomChildren );
-    			
-    			threadManager.startThread( recurseBomRunnable );
-    			
-    		}
-            
-    		// Wait for threads end
-            threadManager.join();
-            
-    		// error?
-    		List<Throwable> throables = threadManager.getThroables();
-    		if ( !throables.isEmpty() ) {
-    			// show first one
-    			throw new D6LException( throables.get( 0 ) );
-    		}
-    		
-		} catch ( Throwable t ) {
-		    D6LException.handleThrowable( t );
+		for ( D6LVertex bomHeadEntity : bomHeadVertices ) {
+			
+			// recurse BOM children by threads
+			RecurseBomPseudoRunnable recurseBomRunnable = 
+				new RecurseBomPseudoRunnable( bomHeadEntity, bomHeadEntity.getIdPackage() );
+			
+			recurseBomRunnable.run();
+			
 		}
-		
+        
 		// ok, this an optimisation to (losange case)
 		if ( isHandleDiamonds ) {
-			finalizeBoms( txn, bench, bomHeadEntities );
+			finalizeBoms( bomHeadVertices );
 		}
-		*/
+		
 	}
 
 	private void lotizeBomHeads( 
-	    List<D6LEntityIF> bomHeadEntities, int iPass
+	    List<D6LVertex> bomHeadEntities
 	) throws D6LException {
 		
-		throw new D6LError( "TODO" );
-		/*
-
-	    try (
-	        // Progress
-		    D6Progress progress = new D6LUtil.D6Progress( db, bomHeadEntities.size(), "", "BOM Heads" );
-		) {
-    		// Browse BOM head objects
-    		for ( D6LEntityIF bomHeadObject: bomHeadEntities ) {
-    			
-    			// progress
-    			progress.iItem++;
-    			if ( ( progress.iItem % progress.iTick ) == 1 ) {
-    				progress.show();
-    			}
-    			
-    			// Create BOM lot
-    			D6Lot bomHeadLot = getNewBom( bench, iPass );
-    			
-    			// set BOM head entity as primary lot target
-    			bomHeadLot.setPrimaryTargetEntityUid( bomHeadObject.getUniversalId() );
-    			
-    			// BOM fct ID is BOM head fct ID
-    			if ( bomHeadObject instanceof D6InfoManagedEntityIF ) {
-    				D6EntityInfoIF bomHeadObjectInfo = db.daoObjectInfos.byId.get( bomHeadObject.getId() );
-    				if ( bomHeadObjectInfo != null ) {
-    					bomHeadLot.setFctId( bomHeadObjectInfo.getFctId() );
-    				}
-    			}
-    			
-    			// save it
-    			bomHeadLot.save( db, txn );
-    			
-    			// allocate bom head to lot
-    			bomHeadObject.setIdLot( bomHeadLot.getId() );
-    			// save it
-    			bomHeadObject.save( db, txn );
-    			
-    		}
-	    }
-	    */
+		// Browse BOM head objects
+		for ( D6LVertex bomHeadObject: bomHeadEntities ) {
+			
+			// Create BOM lot
+			D6LPackage bomHeadLot = getNewBom();
+			
+			// set BOM head entity as primary lot target
+			bomHeadLot.setPrimaryTarget( bomHeadObject );
+			
+			// allocate bom head to lot
+			bomHeadObject.setIdPackage( bomHeadLot.getId() );
+			
+		}
 	}
 
 	private D6LPackage getNewBom() throws D6LException {
 	    
-		throw new D6LError( "TODO" );
-		/*
-		D6LPackageVertex bom = new D6LPackageVertex( producesLotType, D6LPackage.DISPLAY_TYPE_BOM );
-		// set bench
-		bom.setIdBench( bench.getId() );
-		// set business parent lot
-		bom.setIdLotParent( bench.getIdLot() );
+		D6LPackage bom = db.daoEntityRegistry.newPackage( producesLotType, D6LPackageSubtypeEnum.BOM );
 		
 		return bom;
-		*/
+		
 	}
 
 	/**
@@ -276,11 +187,9 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 	 * @throws Exception 
 	 */
 	private void finalizeBoms( 
-	    List<D6LEntityIF> bomHeadEntities
+	    List<D6LVertex> bomHeadEntities
 	) throws D6LException {
 		
-		throw new D6LError( "TODO" );
-		/*
 		// finalization loop
 		boolean goOn = true;
 		while ( goOn ) {
@@ -289,117 +198,87 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 			boolean aFixHasBeenDone = false;
 			
 			// set of parent objects BOM ID
-			Set<Long> setParentBomIds = new HashSet<>();
+			Set<Integer> setParentBomIds = new HashSet<>();
 			
 			// browse bom heads
-			for ( D6LEntityIF bomHead: bomHeadEntities ) {
+			for ( D6LVertex bomHead: bomHeadEntities ) {
 				
 				aFixHasBeenDone = 
-				    finalizeBomsForBomHead( txn, bench, aFixHasBeenDone, setParentBomIds, bomHead );
+				    finalizeBomsForBomHead( aFixHasBeenDone, setParentBomIds, bomHead );
 					
 			}
 			
 			// end on loop
 			goOn = aFixHasBeenDone;	// this loop fixed nothing
 		}
-		*/
+		
 	}
 
     private boolean finalizeBomsForBomHead( boolean aFixHasBeenDone,
-                                            Set<Long> setParentBomIds, D6LEntityIF bomHead )
+                                            Set<Integer> setParentBomIds, D6LVertex bomHead )
         throws D6LException
     {
         
-		throw new D6LError( "TODO" );
-		/*
         boolean new_aFixHasBeenDone = aFixHasBeenDone;
         
         // clear set of parent objects BOM ID
         setParentBomIds.clear();
         
-        try (
-            // get parent objects
-            ForwardCursor<? extends D6LinkIF> bomHeadParentLinks = 
-            	daoEntityLinks.getLinksAssociatedToEntityByRoleB_and_LinkLevel( 
-            		txn, bomHead.getId(), 
-            		// only directed to links
-            		DependencyBeanDirectionEnum.DirectedFromTo, 
-            		// we target link level, we need links like O <--L--> O, so link level = 1
-            		1,
-            		CursorConfig.READ_UNCOMMITTED
-            	);
-        ) {
-        	for ( D6LinkIF link: bomHeadParentLinks ) {
-        		// get parent entity
-        		D6LEntityIF parentEntity = daoEntities.getById().get( txn, link.getIdRoleA(), null );
-        		// store bom ID if same bench
-        		if ( parentEntity.getIdBench() == bench.getId() ) {
-        			setParentBomIds.add( parentEntity.getIdLot() );
-        		}
-        	}
-        }
+        // get parent objects
+    	Set<D6LEdge> bomHeadParentLinks = inGraph.incomingEdgesOf( bomHead );
+    	for ( D6LEdge link: bomHeadParentLinks ) {
+    		
+    		// get parent entity
+    		D6LVertex parentEntity = inGraph.getEdgeSource( link );
+    		// store bom ID if same bench
+   			setParentBomIds.add( parentEntity.getIdPackage() );
+    		
+    	}
         
         // only one parent bom ID and parent bom ID != current bom ID?
         if ( setParentBomIds.size() == 1 ) {
         	// get unique id
-        	long parentBomId = setParentBomIds.iterator().next();
+        	int parentBomId = setParentBomIds.iterator().next();
         	// different from current bomID
-        	if ( parentBomId != bomHead.getIdLot() ) {
+        	if ( parentBomId != bomHead.getIdPackage() ) {
         		
         		// yes, a repair is needed
         	    new_aFixHasBeenDone = true;
         		
         		// this bom head can be 'crushed' in current bench scope
-        		replaceBomId( txn, bench, bomHead, parentBomId );
+        		replaceBomId( bomHead, parentBomId );
         		
         	}
         }
         
         return new_aFixHasBeenDone;
-        */
+        
     }
 
 
 	private void replaceBomId( 
-	    D6LEntityIF currentBomHead, long toBomId
+	    D6LVertex currentBomHead, int toBomId
 	) throws D6LException {
 		
-		throw new D6LError( "TODO" );
-		/*
 		// select entities allocated to currentBomId for bench
 		
 		// Entities
+		Iterator<D6LEntityIF> iterator = db.daoEntityRegistry.entityIterator();
 		
-		EntityJoin<Long, ? extends D6LEntityIF> joinEntities = daoEntities.getByBenchAndLot( bench, currentBomHead.getIdLot() );
-		try (
-			ForwardCursor<? extends D6LEntityIF> entities = joinEntities.entities(txn, CursorConfig.READ_UNCOMMITTED );
-		) {
-			// set to new bom
-			for ( D6LEntityIF entity: entities ) {
-				entity.setIdLot( toBomId );
-				entity.save( db, txn );
-			}
-		}
-		
-		// Links
-		
-		EntityJoin<Long, ? extends D6LEntityIF> joinEntityLink = daoEntityLinks.getByBenchAndLot( bench, currentBomHead.getIdLot() );
-		try (
-			ForwardCursor<? extends D6LEntityIF> entityLinks = joinEntityLink.entities( txn, CursorConfig.READ_UNCOMMITTED );
-		) {
-			// set to new bom
-			for ( D6LEntityIF entityLink: entityLinks ) {
-				D6LinkIF link = (D6LinkIF) entityLink;
+		while ( iterator.hasNext() ) {
+			
+			D6LEntityIF entity = iterator.next();
+			
+			if ( entity.getIdPackage() == currentBomHead.getIdPackage() ) {
 				
-				link.setIdLot( toBomId );
-				link.save( db, txn );
+				entity.setIdPackage( toBomId );
+				
 			}
 		}
 		
 		// change bom head
-		currentBomHead.setIdLot( toBomId );
-		currentBomHead.save( db, txn );
-		*/
+		currentBomHead.setIdPackage( toBomId );
+		
 	}
 
     /**
@@ -408,112 +287,44 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
      * @throws D6LException 
      * @throws DatabaseException 
      */
-    private void allocateCircuitsToErrorLot( Transaction txn ) throws D6LException
+    private void allocateCircuitsToErrorLot() throws D6LException
     {
         
-		throw new D6LError( "TODO" );
-		/*
-        // browse benches
-        try (
-            EntityCursor<D6Bench> benches = db.daoBenches.byId.entities( txn, null );
-        ) {
-            for ( D6Bench bench: benches ) {
-                // skip no bench
-                if ( bench.getId() == D6Bench.NO_BENCH ) {
-                    continue;
-                }
+    	Iterator<D6LEntityIF> iterator = db.daoEntityRegistry.entityIterator();
+    	while ( iterator.hasNext() ) {
+    		D6LEntityIF entity = iterator.next();
+    		
+    		if ( entity.getIdPackage() == D6LPackage.TECH_ID_UNALLOCATED ) {
+    			throw new D6LException( 
+    				MessageFormat.format( "Unallocated entity {0}", entity.getId() )
+    			);
+    		}
+    	}
                 
-                // Error lot
-                D6Lot errorLot = null;
-
-                // Unallocated entities?
-                try (
-                    ForwardCursor<? extends D6LEntityIF> unallocatedEntities = 
-                        daoEntities.getByBenchAndLot( bench, D6Lot.TECH_ID_UNALLOCATED ).entities( txn, CursorConfig.READ_COMMITTED );
-                ) {
-                    
-                    for ( D6LEntityIF unallocatedEntity: unallocatedEntities ) {
-                        
-                        // move to error lot
-                        if ( errorLot == null ) {
-                            errorLot = createErrorLot( txn, bench );
-                        }
-                        unallocatedEntity.setIdLot( errorLot.getId() );
-                        unallocatedEntity.save( db, null );;
-                    }
-                    
-                }
-                
-            }
-            
-        }
-        */
     }
-
-
-	/**
-     * Create error lot
-     * @param txn
-     * @param bench
-     * @return
-	 * @throws D6LException 
-     */
-    private D6LPackage createErrorLot() throws D6LException
-    {
-		throw new D6LError( "TODO" );
-		/*
-        D6Lot errorLot = new D6Lot( getProducesLotType(), "Unallocated", iPass );
-        errorLot.setLotSubtype( D6LPackageSubtypeEnum.DEFAULT_LOT );
-        
-        // assign to parent lot from bench 
-        errorLot.setIdLot( bench.getIdLot() );
-        
-        // save lot
-        errorLot.save( db, txn );
-        
-        return errorLot;
-        */
-    }
-
 
     /**
 	 * Recurse BOM runnable
 	 */
-	private class RecurseBomRunnable implements Runnable {
+	private class RecurseBomPseudoRunnable {
 
-		@Override
-		public void run() {
-			// TODO Auto-generated method stub
-			
-		}
-		/*
-		private D6LEntityIF bomHeadEntity;
-		private D6Bench bench;
-		private long bomId;
-		private D6Progress progress;
-		private Transaction txn;
-		private int iPass;
+		private D6LVertex bomHeadEntity;
+		private int bomId;
 		
-		public RecurseBomRunnable( Transaction txn, int iPass, D6LEntityIF bomHeadEntity, D6Bench bench, long bomId, D6Progress progress ) {
+		public RecurseBomPseudoRunnable( D6LVertex bomHeadEntity, int bomId ) {
 			super();
-			this.txn = txn;
-			this.iPass = iPass;
 			this.bomHeadEntity = bomHeadEntity;
-			this.bench = bench;
 			this.bomId = bomId;
-			this.progress = progress;
 		}
 
-
-		@Override
-		public void run() {
+		public void run() throws D6LException {
 
 			// Init set of objects and links belonging to BOM
-			Set<Long> bomObjectContent = new HashSet<>();
+			Set<Integer> bomObjectContent = new HashSet<>();
 
 			// recurse BOM
 			try {
-				recurseBom( txn, iPass, bench, bomId, bomHeadEntity, bomObjectContent );
+				recurseBom( bomId, bomHeadEntity, bomObjectContent );
 			} catch ( Exception e ) {
 				throw new D6LException( e );
 			}
@@ -523,97 +334,50 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 		}
 		
 		private void recurseBom( 
-			final Transaction txn, int iPass,
-			final D6Bench bench,
-			long bomId, D6LEntityIF bomEntity, final Set<Long> bomEntityContent
+			int bomId, D6LVertex bomEntity, final Set<Integer> bomEntityContent
 		) throws Exception {
-			
-			// stats
-			synchronized ( progress ) {
-				progress.iItem++;
-				
-				if ( ( progress.iItem % progress.iTick ) == 1 ) {
-					// show progress
-					progress.show();
-				}
-			}
 			
 			// Add current object to bom content
 			bomEntityContent.add( bomEntity.getId() );
 			
 			// set bom ID to current object
 			
-			if ( 
-			      ( 
-			          bench.isQuick() && 
-			          ( bomEntity.getIdLot() == D6Lot.TECH_ID_UNALLOCATED ) 
-			      )
-			      ||
-			      ( 
-			          !bench.isQuick() &&
-			          ( bomEntity.getIdBench() == bench.getId() )
-			          && 
-                      // this is our bench
-			          ( bomEntity.getIdLot() == D6Lot.TECH_ID_UNALLOCATED )
-			      )
-			) {
+			if ( bomEntity.getIdPackage() == D6LPackage.TECH_ID_UNALLOCATED ) {
 					
 				// not allocated yet
-				bomEntity.setIdLot( bomId );
-				// save it
-				bomEntity.save( db, txn );
+				bomEntity.setIdPackage( bomId );
 				
 			}
 			
 			// Get links to avoid modification into cursor to avoid leaving too much openened cursors
-			List<D6LinkIF> childrenLinks = new ArrayList<>();
-			
-			try (
-				// get children
-				ForwardCursor<? extends D6LinkIF> bomChildren = 
-					daoEntityLinks.getLinksAssociatedToEntityByRoleA_and_LinkLevel( 
-						txn, bomEntity.getId(),
-						// only directed to links
-						DependencyBeanDirectionEnum.DirectedFromTo, 
-			    		// we target link level, we need links like O <--L--> O, so link level = 1
-			    		1,
-						null 
-					);
-			) {
-				for ( D6LinkIF link: bomChildren ) {
-					childrenLinks.add( link );
-				}
-					
-			}
+			Set<D6LEdge> childrenLinks = inGraph.outgoingEdgesOf( bomEntity );
 			
 			// browse children
-			for ( D6LinkIF link: childrenLinks ) {
+			for ( D6LEdge link: childrenLinks ) {
 				
 				// set bom to link
-				link.setIdLot( bomId );
-				// save link
-				link.save( db, txn );
+				link.setIdPackage( bomId );
 				
-				D6LEntityIF child = db.daoMetaEntities.byIdGet( txn, iPass, iPassTechLot, link.getIdRoleB(), null );
+				D6LVertex child = inGraph.getEdgeTarget( link );
 				
 				if ( 
 	                  // have we already browsed child?
 				      ( bomEntityContent.contains( child.getId() ) )
 				      ||
 				      // already allocated?
-				      ( child.getIdLot() != D6Lot.TECH_ID_UNALLOCATED )
+				      ( child.getIdPackage() != D6LPackage.TECH_ID_UNALLOCATED )
 				){
 					// yes, next child
 					continue;
 				}
 				
 				// recurse child
-				recurseBom( txn, iPass, bench, bomId, child, bomEntityContent );
+				recurseBom( bomId, child, bomEntityContent );
 				
 			}
 			
 		}
-		*/
+		
 	}
 	
 	@Override

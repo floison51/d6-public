@@ -69,6 +69,14 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 	    // Call ancestor but don't call algo because we do after
 		super.doPrepare( false );
 		
+		/*
+		// Existing objects are allocated to Business lot, move them to Technical lot
+		moveLotEntities( D6LPackage.BUSINESS_ID_EXISTING, D6Lot.TECH_ID_EXISTING );
+		
+		// Bad objects are allocated to Bad Business lot, move them to Bad Technical lot
+		moveLotEntities( txn, daoEntities, daoEntityLinks, D6Lot.BUSINESS_ID_BAD, D6Lot.TECH_ID_BAD );
+		*/
+		
 		D6LAbstractTopologicalDivider topologicalDividerAlgo = 
 			(D6LAbstractTopologicalDivider) getAlgo();
 		
@@ -120,57 +128,6 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
         LOGGER.info( "End single allocation and BOM simplification" );
         
 	}
-
-/*
-	private class PrepareForBenchRunnable implements Runnable {
-	    
-	    private final Transaction txn;
-        private final D6AbstractTopologicalDivider topologicalDividerAlgo;
-        private final boolean isSinglesAllocation;
-        private final RegExpType allocateSinglesIfParentContainerRegEx; 
-        private final D6Bench bench;
-
-        public PrepareForBenchRunnable( 
-	        Transaction txn, D6AbstractTopologicalDivider topologicalDividerAlgo,
-	        boolean isSinglesAllocation,
-	        RegExpType allocateSinglesIfParentContainerRegEx, 
-	        D6Bench bench
-	    ) {
-	        super();
-	        this.txn = txn;
-	        this.topologicalDividerAlgo = topologicalDividerAlgo;
-	        this.isSinglesAllocation = isSinglesAllocation;
-	        this.allocateSinglesIfParentContainerRegEx = allocateSinglesIfParentContainerRegEx;
-	        this.bench = bench;
-	    }
-
-        @Override
-        public void run()
-        {
-            try {
-                
-                // skip no bench
-                if ( bench.getId() == D6Bench.NO_BENCH ) {
-                    return;
-                }
-                
-                // allocate single and/or simplify bom
-                allocateSinglesAndBomSimplification( 
-                    txn, bench, iPass,
-                    isSinglesAllocation, allocateSinglesIfParentContainerRegEx,
-                    topologicalDividerAlgo.isNeedBomSimplification(),
-                    topologicalDividerAlgo.isNeedBomSimplifiedEntitiesRemovedFromBench()
-                );
-                
-                // save bench
-                bench.save( db, txn );
-                
-            } catch ( D6LException e ) {
-                throw new X6Error( e );
-            }
-        }
-	}
-*/
 
 	private void allocateSinglesAndBomSimplification( 
 		boolean allocateSingles, 
@@ -471,7 +428,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
     	int nbLinksToEntity = nbDirectedLinksToEntity;
 
     	// Save numbers is a stat object
-    	D6LEntityDirectedLinkStats stat = new D6LEntityDirectedLinkStats( entity.getId() );
+    	D6LEntityDirectedLinkStats stat = db.daoEntityStats.newStats( entity.getId() );
     	stat.setNbDirectedLinksFromForBench( nbDirectedLinksFromEntity );
     	stat.setNbLinksFromForBench( nbLinksFromEntity );
     	stat.setNbDirectedLinksToForBench( nbDirectedLinksToEntity );

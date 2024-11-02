@@ -26,7 +26,7 @@ public abstract class D6LAbstractEntity implements D6LEntityIF {
 	
 	protected String label;
 
-	protected int idPackage;
+	protected int idPackage = D6LPackage.TECH_ID_UNALLOCATED;
 
 	protected D6LAbstractEntity( int id ) {
 		super();

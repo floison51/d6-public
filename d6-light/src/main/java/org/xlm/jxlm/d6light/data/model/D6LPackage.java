@@ -34,6 +34,8 @@ public class D6LPackage extends D6LAbstractEntity {
 	
 	private String name;
 	
+	private D6LVertex primaryTarget;
+	
 	private int idPackage;
 
 	D6LPackage( int id ) {
@@ -48,7 +50,7 @@ public class D6LPackage extends D6LAbstractEntity {
 
 	@Override
 	public String toString() {
-		return "D6Vertex [id=" + id + ", label=" + label + "]";
+		return "D6LPkg [id=" + id + ", label=" + label + "]";
 	}
 
 	public String getDisplayType() {
@@ -89,6 +91,14 @@ public class D6LPackage extends D6LAbstractEntity {
 
 	public void setIdPackage(int idPackage) {
 		this.idPackage = idPackage;
+	}
+
+	public void setPrimaryTarget( D6LVertex vertex ) {
+		this.primaryTarget = vertex;
+	}
+
+	public D6LVertex getPrimaryTarget() {
+		return primaryTarget;
 	}
 
 	

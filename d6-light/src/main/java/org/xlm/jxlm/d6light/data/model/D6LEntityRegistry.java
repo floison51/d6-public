@@ -20,6 +20,7 @@ package org.xlm.jxlm.d6light.data.model;
 
 import java.text.MessageFormat;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -170,6 +171,14 @@ public class D6LEntityRegistry {
 		
 		return singleLotForBench;
 		
+	}
+
+	public D6LVertex getVertex( int id ) {
+		return (D6LVertex) registryIn.get( id );
+	}
+
+	public Iterator<D6LEntityIF> entityIterator() {
+		return registryIn.values().iterator();
 	}
 
 

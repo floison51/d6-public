@@ -2,8 +2,13 @@
 
 package org.xlm.jxlm.d6light.data.measures;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * Accessor for Berkeley DB persistent EntityDirectedLinkStats
@@ -30,35 +35,40 @@ public class D6LEntityDirectedLinkStatsAccessor
 	public D6LEntityDirectedLinkStats getByEntityId( int entityId ) {
 		return mapByEntityId.get( entityId );
 	}
+
+	public Iterator<Entry<Integer,D6LEntityDirectedLinkStats>> getIterator() {
+		return mapByEntityId.entrySet().iterator();
+	}
     
     /**
-     * Get Bom heads given a bench.<p/>
+     * Get Bom heads.<p/>
      * Bom Heads have more than 2 links directed to them.
      * @param txn Transaction
      * @param config configuration
      * @param idBench idBench
      * @return
      */
-    /*
-    public ForwardCursor<Long> getBomHeadsForBench( Transaction txn, CursorConfig config, long idBench ) {
+    public Set<Integer> getBomHeads() {
     	// Bom Heads have more than 2 links directed to them
     	
-        ForwardCursor<Long> cursor;
+    	Set<Integer> result = new HashSet<>();
         
-    	EntityJoin<Long,D6LEntityDirectedLinkStats> join = new EntityJoin<>( byId );
+    	for ( Entry<Integer,D6LEntityDirectedLinkStats> entry : mapByEntityId.entrySet() ) {
+    		
+    		if ( entry.getValue().getNbDirectedLinksFromForBench() == 0 ) {
+    			result.add( entry.getKey() );
+    		}
+    	}
     	
-    	// bench condition
-    	join.addCondition( byIdBench, idBench );
-    	
-    	// is bom head condition
-    	join.addCondition( byIsBomHeadForBench, true );
-    	
-    	// get cursor
-    	cursor = join.keys( txn, config );
-    	
-    	return cursor;
+    	return Collections.unmodifiableSet( result );
     }
-    */
+
+	public D6LEntityDirectedLinkStats newStats( int idEntity ) {
+		D6LEntityDirectedLinkStats stats = new D6LEntityDirectedLinkStats( idEntity );
+		mapByEntityId.put( idEntity, stats );
+		return stats;
+	}
+
     
     /**
      * Get top object-entity given a bench

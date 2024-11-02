@@ -26,6 +26,7 @@ package org.xlm.jxlm.d6light.data.packkage;
 public enum D6LPackageSubtypeEnum {
 
 	DEFAULT_LOT( "default" ), 
+    BOM( "BOM", "BOM" ), 
 	COMPONENT_LOT( "component", "Components" ), 
     KIT_LOT( "kit", "Kits" ), 
     EXTRACTED_LOT( "extracted", "extracted" ),

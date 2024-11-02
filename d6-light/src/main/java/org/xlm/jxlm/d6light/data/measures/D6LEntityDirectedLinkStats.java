@@ -51,7 +51,7 @@ public class D6LEntityDirectedLinkStats {
      * @param idEntity idEntity
      * @param idBench idBench
      */
-	public D6LEntityDirectedLinkStats( int idEntity ) {
+	D6LEntityDirectedLinkStats( int idEntity ) {
 		this();
 		this.idEntity = idEntity;
 	}
