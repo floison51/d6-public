@@ -19,6 +19,7 @@
 package org.xlm.jxlm.d6light.data.model;
 
 import org.hibernate.SessionFactory;
+import org.jgrapht.Graph;
 import org.xlm.jxlm.d6light.data.exception.D6LError;
 import org.xlm.jxlm.d6light.data.packkage.D6LPackageSubtypeEnum;
 import org.xlm.jxlm.d6light.data.packkage.D6LPackageTypeEnum;
@@ -26,19 +27,27 @@ import org.xlm.jxlm.d6light.data.packkage.D6LPackageTypeEnum;
 import jakarta.persistence.Basic;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.SequenceGenerator;
 
 @Entity
 public class D6LPackage extends D6LAbstractEntity {
 
 	public static final int TECH_ID_UNALLOCATED = -1;
+	public static final int BIZ_ID_ROOT_BENCH = -2;
 
 	/** Lot containing single objects **/
     public static final String 	TECH_NAME_SINGLE = "Single";
 
-	public static final D6LPackage UNALLOCATED = new D6LPackage( TECH_ID_UNALLOCATED, D6LPackageTypeEnum.TECHNICAL_PKG, null );
+	public static final D6LPackage UNALLOCATED = new D6LPackage( TECH_ID_UNALLOCATED, D6LPackageTypeEnum.TECHNICAL_PKG );
+
+	// Create a root target package
+	public static final D6LPackage ROOT_BENCH_PACKAGE = 
+		new D6LPackage( BIZ_ID_ROOT_BENCH, D6LPackageTypeEnum.BUSINESS_PKG );
 	
+
 	@Id
 	@SequenceGenerator( name="D6LPackageSeq", sequenceName="seq_D6LPackage", initialValue = 0, allocationSize=0)
 	private int id;
@@ -55,8 +64,8 @@ public class D6LPackage extends D6LAbstractEntity {
 	
 	private String name;
 	
-    //@OneToOne( fetch=FetchType.LAZY )
-    //private D6LVertex primaryTarget;
+    @OneToOne( fetch=FetchType.LAZY )
+    private D6LVertex primaryTarget;
 	
 	public D6LPackage() {
 		super();
@@ -67,6 +76,10 @@ public class D6LPackage extends D6LAbstractEntity {
 		this.id = id;
 		this.packageType = type;
 		this.packageSubtype = displayType;
+	}
+
+	public D6LPackage( int id, D6LPackageTypeEnum type ) {
+		this( id, type, null );
 	}
 
 	@Override
@@ -105,7 +118,7 @@ public class D6LPackage extends D6LAbstractEntity {
 	public void setName(String name) {
 		this.name = name;
 	}
-/*
+
 	public void setPrimaryTarget( D6LVertex vertex ) {
 		this.primaryTarget = vertex;
 	}
@@ -113,13 +126,14 @@ public class D6LPackage extends D6LAbstractEntity {
 	public D6LVertex getPrimaryTarget() {
 		return primaryTarget;
 	}
-*/	
-	public static void initDb( SessionFactory sessionFactory ) {
+	
+	public static void initDb( SessionFactory sessionFactory, Graph<D6LPackage, D6LEdge> outGraph ) {
 		
 		// Create persisted objects
 		sessionFactory.inSession( 
 			session -> {
-				session.persist( UNALLOCATED );	
+				session.persist( UNALLOCATED );
+				session.persist( ROOT_BENCH_PACKAGE );
 			});
 		
 	}

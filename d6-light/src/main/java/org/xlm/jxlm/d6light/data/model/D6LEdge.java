@@ -18,25 +18,42 @@
 
 package org.xlm.jxlm.d6light.data.model;
 
+import java.util.Objects;
+
 import org.jgrapht.graph.DefaultEdge;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.SequenceGenerator;
+
+@Entity
 public class D6LEdge extends DefaultEdge implements D6LEntityIF {
 
 	/** Serial ID **/
 	private static final long serialVersionUID = -4376861182806887574L;
 	
+	@Id
+	@SequenceGenerator( name="D6LEdgeSeq", sequenceName="seq_D6LEdge", initialValue = 0, allocationSize=0)
+	private int id;
+	
 	private String label;
-	private int idPackage = D6LPackage.TECH_ID_UNALLOCATED;
+	
+	@ManyToOne( targetEntity = D6LPackage.class )
+	protected D6LPackage packkage = D6LPackage.UNALLOCATED;
 
-	@Override
-	public String toString() {
-		return "D6OuterEdge [getSource()=" + getSource() + ", getTarget()=" + getTarget() + "]";
+	D6LEdge() {
+		super();
 	}
-
+	
+	D6LEdge( int id ) {
+		this();
+		this.id = id;
+	}
+	
 	@Override
 	public int getId() {
-		// TODO Auto-generated method stub
-		return -1;
+		return id;
 	}
 
 	@Override
@@ -45,18 +62,42 @@ public class D6LEdge extends DefaultEdge implements D6LEntityIF {
 	}
 
 	@Override
-	public int getIdPackage() {
-		return idPackage;
+	public D6LPackage getPackage() {
+		return packkage;
+	}
+
+	@Override
+	public void setPackage( D6LPackage packkage ) {
+		this.packkage = packkage;
 	}
 
 	public void setLabel(String label) {
 		this.label = label;
 	}
 
-	public void setIdPackage(int idPackage) {
-		this.idPackage = idPackage;
+	@Override
+	public String toString() {
+		return "D6OuterEdge [getSource()=" + getSource() + ", getTarget()=" + getTarget() + "]";
 	}
-	
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(id);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		D6LEdge other = (D6LEdge) obj;
+		return id == other.id;
+	}
+
+
 	/*
 	public D6OuterEdge( int id ) {
 		super();

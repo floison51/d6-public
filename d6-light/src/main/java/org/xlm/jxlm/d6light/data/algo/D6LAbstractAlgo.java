@@ -22,15 +22,11 @@ import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.Properties;
 
-import org.jgrapht.Graph;
 import org.xlm.jxlm.d6light.data.conf.AbstractAlgoType;
 import org.xlm.jxlm.d6light.data.conf.D6LightDataConf;
 import org.xlm.jxlm.d6light.data.db.D6LDb;
 import org.xlm.jxlm.d6light.data.exception.D6LError;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
-import org.xlm.jxlm.d6light.data.model.D6LEdge;
-import org.xlm.jxlm.d6light.data.model.D6LPackage;
-import org.xlm.jxlm.d6light.data.model.D6LVertex;
 import org.xlm.jxlm.d6light.data.plugin.D6LAbstractPlugin;
 import org.xlm.jxlm.d6light.data.util.D6LUtil;
 
@@ -45,11 +41,6 @@ public abstract class D6LAbstractAlgo extends D6LAbstractPlugin implements D6LAl
 	
 	protected D6LightDataConf conf = null;
 	protected AbstractAlgoType algoConf = null;
-	
-	protected Graph<D6LVertex,D6LEdge> inGraph;
-	protected Graph<D6LPackage,D6LEdge> outGraph;
-	
-	protected D6LPackage benchPackage;
 	
 	protected final D6LDb db = D6LDb.getInstance();
 
@@ -139,17 +130,11 @@ public abstract class D6LAbstractAlgo extends D6LAbstractPlugin implements D6LAl
 	
 	@Override
 	public void setConf( 
-		D6LightDataConf conf, AbstractAlgoType algoConf, 
-		Graph<D6LVertex,D6LEdge> inGraph, Graph<D6LPackage,D6LEdge> outGraph,
-		D6LPackage benchPackage
+		D6LightDataConf conf, AbstractAlgoType algoConf
 	) throws D6LException {
 		
 		this.conf = conf;
 		this.algoConf = algoConf;
-		this.inGraph = inGraph;
-		this.outGraph = outGraph;
-		
-		this.benchPackage = benchPackage;
 		
 	}
 	

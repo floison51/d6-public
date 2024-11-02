@@ -20,14 +20,12 @@ package org.xlm.jxlm.d6light.data.algo.topological.bomsimplifier;
 
 import java.util.List;
 
-import org.jgrapht.Graph;
 import org.xlm.jxlm.d6light.data.algo.D6LAlgoCommandIF;
 import org.xlm.jxlm.d6light.data.conf.BomSimplifierType;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
 import org.xlm.jxlm.d6light.data.job.D6LJobIF;
 import org.xlm.jxlm.d6light.data.measures.D6LEntityDirectedLinkStats;
 import org.xlm.jxlm.d6light.data.measures.D6LHistogramEntry.HistoKeyEnum;
-import org.xlm.jxlm.d6light.data.model.D6LEdge;
 import org.xlm.jxlm.d6light.data.model.D6LEntityIF;
 import org.xlm.jxlm.d6light.data.model.D6LPackage;
 import org.xlm.jxlm.d6light.data.model.D6LVertex;
@@ -39,12 +37,10 @@ public class D6LKitsBomSimplifier extends D6LAbstractBomSimplifier
     protected final int linksTrigger;
     
     public D6LKitsBomSimplifier( 
-        BomSimplifierType conf,
-        Graph<D6LVertex,D6LEdge> inGraph,
-        D6LPackage benchLot
+        BomSimplifierType conf
     )
     {
-        super( conf, inGraph, benchLot );
+        super( conf );
         this.linksTrigger = conf.getLinksTrigger();
     }
 

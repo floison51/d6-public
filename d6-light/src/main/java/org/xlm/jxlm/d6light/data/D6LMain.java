@@ -41,6 +41,10 @@ import org.jgrapht.Graph;
 import org.jgrapht.graph.AsUnmodifiableGraph;
 import org.jgrapht.graph.SimpleDirectedGraph;
 import org.jgrapht.nio.GraphImporter;
+import org.xlm.jxlm.d6light.data.algo.D6LAbstractAlgo;
+import org.xlm.jxlm.d6light.data.algo.D6LAbstractAlgoCommand;
+import org.xlm.jxlm.d6light.data.algo.D6LAlgoCommandIF;
+import org.xlm.jxlm.d6light.data.algo.D6LAlgoIF;
 import org.xlm.jxlm.d6light.data.conf.AbstractAlgoType;
 import org.xlm.jxlm.d6light.data.conf.D6LConfHelper;
 import org.xlm.jxlm.d6light.data.conf.D6LightDataConf;
@@ -221,16 +225,11 @@ public class D6LMain {
 			);
 		}
 		
-		// Create a root target package
-		/*
-		D6LPackage benchPackage = db.daoEntityRegistry.newPackage( D6LPackageTypeEnum.BUSINESS_PKG, null );
-		outGraph.addVertex( benchPackage ); 
-		
 		// Instantiate algo
 		D6LAlgoIF algo =  D6LAbstractAlgo.getInstance( algoConf, this.d6lConf );
 		
 		// set conf to algo
-		algo.setConf( this.d6lConf, algoConf, inGraph, outGraph, benchPackage );
+		algo.setConf( this.d6lConf, algoConf );
 		
 		// Create command
 		D6LAlgoCommandIF cmdAlgo = D6LAbstractAlgoCommand.newInstance(
@@ -239,8 +238,8 @@ public class D6LMain {
 		);
 		
 		// Run algo
-		cmdAlgo.execute( this.inGraph, this.outGraph );
-		*/
+		cmdAlgo.execute();
+		
 	}
 
 	protected void importGraph( Graph<D6LVertex, D6LEdge> graph ) throws D6LException {

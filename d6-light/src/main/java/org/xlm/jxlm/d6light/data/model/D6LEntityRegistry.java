@@ -18,19 +18,9 @@
 
 package org.xlm.jxlm.d6light.data.model;
 
-import java.text.MessageFormat;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.xlm.jxlm.d6light.data.exception.D6LError;
-import org.xlm.jxlm.d6light.data.exception.D6LException;
-import org.xlm.jxlm.d6light.data.packkage.D6LPackageSubtypeEnum;
-import org.xlm.jxlm.d6light.data.packkage.D6LPackageTypeEnum;
-
 public class D6LEntityRegistry {
 
+	/*
 	private Map<Integer,D6LEntityIF> registryIn = new HashMap<>();
 	
 	private static AtomicInteger seqVertex = new AtomicInteger();
@@ -50,13 +40,14 @@ public class D6LEntityRegistry {
 		registryIn.put( id, v );
 		
 	}
-	
+	*/
 	/**
 	 * For import: id provided by importer
 	 * @param id
 	 * @return
 	 * @throws D6LError
 	 */
+	/*
 	public D6LVertex newVertex( int id ) throws D6LError {
 		
 		D6LVertex vertex = new D6LVertex( id );
@@ -65,7 +56,8 @@ public class D6LEntityRegistry {
 		return vertex;
 		
 	}
-	
+	*/
+	/*
 	public D6LVertex newVertex() throws D6LError {
 		
 		return newVertex( seqVertex.getAndIncrement() );
@@ -136,7 +128,7 @@ public class D6LEntityRegistry {
         return singleLot;
  
     }
-
+	*/
     /**
 	 * Get single lot given a bench and a pass<p/>
 	 * @param txn
@@ -146,6 +138,7 @@ public class D6LEntityRegistry {
 	 * @return
 	 * @throws X6Exception
 	 */
+	/*
 	public D6LPackage getSingleLot() throws D6LException {
 		
 		// get single lots for current bench
@@ -181,6 +174,6 @@ public class D6LEntityRegistry {
 		return registryIn.values().iterator();
 	}
 
-
+	*/
 
 }

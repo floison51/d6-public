@@ -18,14 +18,27 @@
 
 package org.xlm.jxlm.d6light.data.measures;
 
+import org.xlm.jxlm.d6light.data.model.D6LVertex;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.SequenceGenerator;
+
 /**
  * Directed links per bench stats per entity
  * @author Francois Loison
  *
  */
+@Entity
 public class D6LEntityDirectedLinkStats {
 
-    private int idEntity = -1;
+	@Id
+	@SequenceGenerator( name="D6LMeasureSeq", sequenceName="seq_D6LMeasure", initialValue = 0, allocationSize=0)
+	private int id;
+	
+	@ManyToMany
+    private D6LVertex vertex;
     
     /** Nb directed links from for entity bench **/
     private int nbDirectedLinksFromForBench = -1;
@@ -51,13 +64,13 @@ public class D6LEntityDirectedLinkStats {
      * @param idEntity idEntity
      * @param idBench idBench
      */
-	D6LEntityDirectedLinkStats( int idEntity ) {
+	D6LEntityDirectedLinkStats( D6LVertex vertex ) {
 		this();
-		this.idEntity = idEntity;
+		this.vertex = vertex;
 	}
 
-	public int getIdObject() {
-		return idEntity;
+	public D6LVertex getVertex() {
+		return vertex;
 	}
 
 	public int getNbDirectedLinksFromForBench() {
@@ -128,5 +141,9 @@ public class D6LEntityDirectedLinkStats {
             this.nbLinksToForBench = 0;
         }
     }
+
+	public int getId() {
+		return id;
+	}
 
 }

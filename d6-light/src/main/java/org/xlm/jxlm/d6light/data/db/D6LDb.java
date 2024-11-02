@@ -9,16 +9,16 @@ import static org.hibernate.cfg.JdbcSettings.USER;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
-import org.hibernate.query.SelectionQuery;
 import org.jgrapht.Graph;
-import org.xlm.jxlm.d6light.data.exception.D6LException;
-import org.xlm.jxlm.d6light.data.measures.D6LEntityDirectedLinkStatsAccessor;
-import org.xlm.jxlm.d6light.data.measures.D6LHistogramAccessor;
+import org.xlm.jxlm.d6light.data.exception.D6LError;
+import org.xlm.jxlm.d6light.data.measures.D6LEntityDirectedLinkStats;
+import org.xlm.jxlm.d6light.data.measures.D6LHistogramEntry;
 import org.xlm.jxlm.d6light.data.model.D6LEdge;
+import org.xlm.jxlm.d6light.data.model.D6LEntityDirectedLinkStatsAccessor;
 import org.xlm.jxlm.d6light.data.model.D6LEntityRegistry;
+import org.xlm.jxlm.d6light.data.model.D6LHistogramAccessor;
 import org.xlm.jxlm.d6light.data.model.D6LPackage;
 import org.xlm.jxlm.d6light.data.model.D6LVertex;
-import org.xlm.jxlm.d6light.data.packkage.D6LPackageTypeEnum;
 
 
 public class D6LDb {
@@ -50,10 +50,10 @@ public class D6LDb {
 		
 	}
 	
-	public static synchronized D6LDb getInstance() throws D6LException {
+	public static synchronized D6LDb getInstance() throws D6LError {
 			
 		if ( me == null ) {
-			throw new D6LException( "Database not configured" );
+			throw new D6LError( "Database not configured" );
 		}
 		
 		return me;
@@ -79,6 +79,9 @@ public class D6LDb {
         		
                 .addAnnotatedClass( D6LVertex.class )
                 .addAnnotatedClass( D6LPackage.class )
+                .addAnnotatedClass( D6LEdge.class )
+                .addAnnotatedClass( D6LHistogramEntry.class )
+                .addAnnotatedClass( D6LEntityDirectedLinkStats.class )
                 
                 // use H2 in-memory database
                 .setProperty(URL, "jdbc:h2:mem:db1")
@@ -98,8 +101,20 @@ public class D6LDb {
         sessionFactory.getSchemaManager().exportMappedObjects(true);
         
         // Init packages
-        D6LPackage.initDb( sessionFactory );
-
+        D6LPackage.initDb( sessionFactory, outGraph );
+        
+        sessionFactory.inSession(
+        	session -> {
+		        // Save vertices
+		        for ( D6LVertex v : inGraph.vertexSet() ) {
+		        	session.persist( v );
+		        }
+		        // Save edges
+		        for ( D6LEdge e : inGraph.edgeSet() ) {
+		        	session.persist( e );
+		        }
+        	});
+        
         /*
         // persist an entity
         sessionFactory.inTransaction(session -> {

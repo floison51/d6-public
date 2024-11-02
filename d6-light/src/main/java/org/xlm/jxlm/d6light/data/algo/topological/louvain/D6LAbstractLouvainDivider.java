@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
-import org.jgrapht.Graph;
 import org.xlm.jxlm.d6light.data.algo.D6LAlgoCommandIF;
 import org.xlm.jxlm.d6light.data.algo.topological.D6LAbstractTopologicalDivider;
 import org.xlm.jxlm.d6light.data.conf.AbstractAlgoType;
@@ -13,9 +12,7 @@ import org.xlm.jxlm.d6light.data.conf.D6LightDataConf;
 import org.xlm.jxlm.d6light.data.conf.TopologicalDividerType;
 import org.xlm.jxlm.d6light.data.exception.D6LError;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
-import org.xlm.jxlm.d6light.data.model.D6LEdge;
 import org.xlm.jxlm.d6light.data.model.D6LPackage;
-import org.xlm.jxlm.d6light.data.model.D6LVertex;
 import org.xlm.jxlm.d6light.data.packkage.D6LPackageTypeEnum;
 
 /**
@@ -47,12 +44,10 @@ public abstract class D6LAbstractLouvainDivider extends D6LAbstractTopologicalDi
 	
 	@Override
 	public final void setConf( 
-		D6LightDataConf conf, AbstractAlgoType algoConf, 
-		Graph<D6LVertex,D6LEdge> inGraph, Graph<D6LPackage,D6LEdge> outGraph,
-		D6LPackage benchPackage
+		D6LightDataConf conf, AbstractAlgoType algoConf
 	) throws D6LException {
 
-		super.setConf( conf, algoConf, inGraph, outGraph, benchPackage );
+		super.setConf( conf, algoConf );
 		
 		// Louvain folder
 		louvainFolder = new File( "TODO", simpleName );

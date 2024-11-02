@@ -72,34 +72,27 @@ public abstract class D6LAbstractBomSimplifier
     
     protected final boolean singleExtractorLot;
 
-	private final Graph<D6LVertex, D6LEdge> inGraph;
-	
-	private final D6LPackage benchLot; 
-	
 	protected final D6LDb db = D6LDb.getInstance();
     
+	private final Graph<D6LVertex, D6LEdge> inGraph = db.inGraph;
+	
+	private final D6LPackage benchLot = D6LPackage.ROOT_BENCH_PACKAGE; 
+	
     private D6LAbstractBomSimplifier( 
-        boolean singleExtractorLot,
-        Graph<D6LVertex,D6LEdge> inGraph,
-        D6LPackage benchLot
+        boolean singleExtractorLot
     )
     {
         super();
         this.singleExtractorLot = singleExtractorLot;
-        this.inGraph = inGraph;
-        this.benchLot = benchLot;
     }
     
     public D6LAbstractBomSimplifier( 
-        AbstractBomSimplifierType conf,
-        Graph<D6LVertex,D6LEdge> inGraph,
-        D6LPackage benchLot
+        AbstractBomSimplifierType conf
     )
     {
         this( 
         	// Default value for isSingleExtractorLot
-        	( conf.isSingleExtractorLot() != null ) ? conf.isSingleExtractorLot() : true,
-        	inGraph, benchLot
+        	( conf.isSingleExtractorLot() != null ) ? conf.isSingleExtractorLot() : true
         );
     }
     
@@ -320,7 +313,7 @@ public abstract class D6LAbstractBomSimplifier
                     	( childStats.getNbLinksFromForBench() == 0 ) && ( childStats.getNbLinksToForBench() == 0 ) 
                      ) {
 
-                        child.setIdPackage( singleLot.getId() );
+                        child.setPackage( singleLot );
                         
                     }
                     

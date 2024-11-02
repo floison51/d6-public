@@ -1,14 +1,6 @@
 
 
-package org.xlm.jxlm.d6light.data.measures;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
+package org.xlm.jxlm.d6light.data.model;
 
 /**
  * Accessor for Berkeley DB persistent EntityDirectedLinkStats
@@ -19,12 +11,14 @@ public class D6LEntityDirectedLinkStatsAccessor
 {
 
     /* Master accessors */
+	/*
 	Map<Integer,D6LEntityDirectedLinkStats> mapByEntityId;
-    
+    */
     /**
      * Constructor, opens all primary and secondary indices.
      * @param store Store
      */
+	/*
     public D6LEntityDirectedLinkStatsAccessor()
     {
 
@@ -39,7 +33,7 @@ public class D6LEntityDirectedLinkStatsAccessor
 	public Iterator<Entry<Integer,D6LEntityDirectedLinkStats>> getIterator() {
 		return mapByEntityId.entrySet().iterator();
 	}
-    
+    */
     /**
      * Get Bom heads.<p/>
      * Bom Heads have more than 2 links directed to them.
@@ -48,6 +42,7 @@ public class D6LEntityDirectedLinkStatsAccessor
      * @param idBench idBench
      * @return
      */
+	/*
     public Set<Integer> getBomHeads() {
     	// Bom Heads have more than 2 links directed to them
     	
@@ -69,7 +64,7 @@ public class D6LEntityDirectedLinkStatsAccessor
 		return stats;
 	}
 
-    
+    */
     /**
      * Get top object-entity given a bench
      * @param txn Transaction

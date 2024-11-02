@@ -52,6 +52,8 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 
     private boolean isHandleDiamonds = true;
     
+    private final Graph<D6LVertex, D6LEdge> inGraph = db.inGraph;
+    
     /**
      * Constructor
      * @param db D6 DB
@@ -62,12 +64,10 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 
 	@Override
 	public void setConf( 
-		D6LightDataConf conf, AbstractAlgoType algoConf, 
-		Graph<D6LVertex,D6LEdge> inGraph, Graph<D6LPackage,D6LEdge> outGraph,
-		D6LPackage benchPackage
+		D6LightDataConf conf, AbstractAlgoType algoConf
 	) throws D6LException {
 		
-		super.setConf( conf, algoConf, inGraph, outGraph, benchPackage );
+		super.setConf( conf, algoConf );
 
 	}
 	
@@ -166,7 +166,7 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 			bomHeadLot.setPrimaryTarget( bomHeadObject );
 			
 			// allocate bom head to lot
-			bomHeadObject.setIdPackage( bomHeadLot.getId() );
+			bomHeadObject.setPackage( bomHeadLot );
 			
 		}
 	}
@@ -198,13 +198,13 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 			boolean aFixHasBeenDone = false;
 			
 			// set of parent objects BOM ID
-			Set<Integer> setParentBomIds = new HashSet<>();
+			Set<D6LPackage> setParentBoms = new HashSet<>();
 			
 			// browse bom heads
 			for ( D6LVertex bomHead: bomHeadEntities ) {
 				
 				aFixHasBeenDone = 
-				    finalizeBomsForBomHead( aFixHasBeenDone, setParentBomIds, bomHead );
+				    finalizeBomsForBomHead( aFixHasBeenDone, setParentBoms, bomHead );
 					
 			}
 			
@@ -215,14 +215,14 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 	}
 
     private boolean finalizeBomsForBomHead( boolean aFixHasBeenDone,
-                                            Set<Integer> setParentBomIds, D6LVertex bomHead )
+                                            Set<D6LPackage> setParentBoms, D6LVertex bomHead )
         throws D6LException
     {
         
         boolean new_aFixHasBeenDone = aFixHasBeenDone;
         
         // clear set of parent objects BOM ID
-        setParentBomIds.clear();
+        setParentBoms.clear();
         
         // get parent objects
     	Set<D6LEdge> bomHeadParentLinks = inGraph.incomingEdgesOf( bomHead );
@@ -231,22 +231,22 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
     		// get parent entity
     		D6LVertex parentEntity = inGraph.getEdgeSource( link );
     		// store bom ID if same bench
-   			setParentBomIds.add( parentEntity.getIdPackage() );
+   			setParentBoms.add( parentEntity.getPackage() );
     		
     	}
         
         // only one parent bom ID and parent bom ID != current bom ID?
-        if ( setParentBomIds.size() == 1 ) {
+        if ( setParentBoms.size() == 1 ) {
         	// get unique id
-        	int parentBomId = setParentBomIds.iterator().next();
+        	D6LPackage parentBom = setParentBoms.iterator().next();
         	// different from current bomID
-        	if ( parentBomId != bomHead.getIdPackage() ) {
+        	if ( parentBom != bomHead.getPackage() ) {
         		
         		// yes, a repair is needed
         	    new_aFixHasBeenDone = true;
         		
         		// this bom head can be 'crushed' in current bench scope
-        		replaceBomId( bomHead, parentBomId );
+        		replaceBomId( bomHead, parentBom );
         		
         	}
         }
@@ -294,7 +294,7 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
     	while ( iterator.hasNext() ) {
     		D6LEntityIF entity = iterator.next();
     		
-    		if ( entity.getIdPackage() == D6LPackage.TECH_ID_UNALLOCATED ) {
+    		if ( entity.getPackage() == D6LPackage.UNALLOCATED ) {
     			throw new D6LException( 
     				MessageFormat.format( "Unallocated entity {0}", entity.getId() )
     			);

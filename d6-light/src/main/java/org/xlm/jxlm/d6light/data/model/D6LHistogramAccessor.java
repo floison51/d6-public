@@ -1,14 +1,8 @@
+package org.xlm.jxlm.d6light.data.model;
 
-
-package org.xlm.jxlm.d6light.data.measures;
-
-import java.text.MessageFormat;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
-import org.xlm.jxlm.d6light.data.exception.D6LError;
-import org.xlm.jxlm.d6light.data.measures.D6LHistogramEntry.HistoKeyEnum;
+import org.xlm.jxlm.d6light.data.measures.D6LHistogramEntry;
 
 /**
  * Accessor for EntityDirectedLinkStats
@@ -18,8 +12,9 @@ import org.xlm.jxlm.d6light.data.measures.D6LHistogramEntry.HistoKeyEnum;
 public class D6LHistogramAccessor
 {
 
+	/*
 	private static final AtomicInteger seqId = new AtomicInteger();
-	
+	*/
     /* Master accessors */
 	Map<Integer,D6LHistogramEntry> mapById;
     
@@ -27,6 +22,7 @@ public class D6LHistogramAccessor
      * Constructor, opens all primary and secondary indices.
      * @param store Store
      */
+	/*
     public D6LHistogramAccessor()
     {
 
@@ -52,5 +48,5 @@ public class D6LHistogramAccessor
 	public D6LHistogramEntry getById( int id ) {
 		return mapById.get( id );
 	}
-    
+    */
 }

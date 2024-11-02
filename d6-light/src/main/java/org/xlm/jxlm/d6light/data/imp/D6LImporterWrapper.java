@@ -49,7 +49,13 @@ public class D6LImporterWrapper {
 				
 				// Set vertex factory
 				gmlImp.setVertexFactory(
-					id -> new D6LVertex( id )
+					id -> {
+						D6LVertex v = new D6LVertex( id );
+						
+						// Persist
+						
+						return v;
+					}
 				);
 				
 				break;

@@ -65,13 +65,8 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
 	}
 
 	@Override
-	public final void execute( 
-		Graph<D6LVertex,D6LEdge> inGraph,
-		Graph<D6LPackage,D6LEdge> outGraph
-	) throws D6LException
+	public final void execute() throws D6LException
 	{
-		this.inGraph = inGraph;
-		this.outGraph = outGraph;
 		
         doPrepare( true );
         doRun( true );

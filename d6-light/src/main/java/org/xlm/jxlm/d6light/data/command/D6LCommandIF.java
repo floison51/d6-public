@@ -18,11 +18,7 @@
 
 package org.xlm.jxlm.d6light.data.command;
 
-import org.jgrapht.Graph;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
-import org.xlm.jxlm.d6light.data.model.D6LEdge;
-import org.xlm.jxlm.d6light.data.model.D6LPackage;
-import org.xlm.jxlm.d6light.data.model.D6LVertex;
 
 /**
  * Command interface
@@ -45,10 +41,7 @@ public interface D6LCommandIF {
 	 * @throws X6Exception 
 	 * @throws D6NotAllocatedException 
 	 */
-	public void execute( 
-		Graph<D6LVertex,D6LEdge> inGraph, 
-		Graph<D6LPackage, D6LEdge> outGraph 
-	) throws D6LException;
+	public void execute() throws D6LException;
 
 	/**
 	 * Get conf ID read from D6 configuration file, example : &lt;algoRef refId="bom-algo"/&gt;

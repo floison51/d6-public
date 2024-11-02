@@ -18,13 +18,9 @@
 
 package org.xlm.jxlm.d6light.data.algo;
 
-import org.jgrapht.Graph;
 import org.xlm.jxlm.d6light.data.conf.AbstractAlgoType;
 import org.xlm.jxlm.d6light.data.conf.D6LightDataConf;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
-import org.xlm.jxlm.d6light.data.model.D6LEdge;
-import org.xlm.jxlm.d6light.data.model.D6LPackage;
-import org.xlm.jxlm.d6light.data.model.D6LVertex;
 import org.xlm.jxlm.d6light.data.packkage.D6LPackageTypeEnum;
 
 /**
@@ -47,9 +43,7 @@ public interface D6LAlgoIF {
      * @throws D6LException
      */
 	public void setConf( 
-		D6LightDataConf conf, AbstractAlgoType algoConf, 
-		Graph<D6LVertex,D6LEdge> inGraph, Graph<D6LPackage,D6LEdge> outGraph,
-		D6LPackage benchPackage
+		D6LightDataConf conf, AbstractAlgoType algoConf
 	) throws D6LException;
 
 	/**
