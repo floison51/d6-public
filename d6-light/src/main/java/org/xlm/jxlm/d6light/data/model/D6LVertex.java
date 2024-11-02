@@ -18,25 +18,69 @@
 
 package org.xlm.jxlm.d6light.data.model;
 
+import java.util.Objects;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.SequenceGenerator;
+
+@Entity
 public class D6LVertex extends D6LAbstractEntity {
 
-	D6LVertex( int id ) {
-		super( id );
+	@Id
+	@SequenceGenerator( name="D6LVertexSeq", sequenceName="seq_D6LVertex", initialValue = 0, allocationSize=0)
+	private int id;
+	
+	@ManyToOne( targetEntity = D6LPackage.class )
+	protected D6LPackage packkage = D6LPackage.UNALLOCATED;
+
+	// For persistence
+	public D6LVertex() {
+		super();
+	}
+	
+	// For graph import
+	public D6LVertex( int id ) {
+		super();
+		this.id = id;
+	}
+
+	@Override
+	public D6LPackage getPackage() {
+		return packkage;
+	}
+
+	@Override
+	public void setPackage( D6LPackage packkage ) {
+		this.packkage = packkage;
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(id);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		D6LVertex other = (D6LVertex) obj;
+		return id == other.id;
+	}
+
+	public int getId() {
+		return id;
 	}
 
 	@Override
 	public String toString() {
-		return "D6Vertex [id=" + id + ", label=" + label + "]";
+		return "D6LVertex [id=" + id + ", idPackage=" + packkage.getId() + "]";
 	}
 
-	@Override
-	public int getIdPackage() {
-		return idPackage;
-	}
 
-	@Override
-	public void setIdPackage(int idPackage) {
-		this.idPackage = idPackage;
-	}
-	
 }

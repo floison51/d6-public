@@ -117,7 +117,7 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 			D6LVertex bomHeadVertex = db.daoEntityRegistry.getVertex( idBomHeadVertex );
 			
 			// process only unallocated boms
-			if ( bomHeadVertex.getIdPackage() == D6LPackage.TECH_ID_UNALLOCATED ) {
+			if ( bomHeadVertex.getPackage() == D6LPackage.UNALLOCATED ) {
 				bomHeadVertices.add( bomHeadVertex );
 			}
 			
@@ -139,7 +139,7 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 			
 			// recurse BOM children by threads
 			RecurseBomPseudoRunnable recurseBomRunnable = 
-				new RecurseBomPseudoRunnable( bomHeadEntity, bomHeadEntity.getIdPackage() );
+				new RecurseBomPseudoRunnable( bomHeadEntity, bomHeadEntity.getPackage() );
 			
 			recurseBomRunnable.run();
 			
@@ -257,7 +257,7 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 
 
 	private void replaceBomId( 
-	    D6LVertex currentBomHead, int toBomId
+	    D6LVertex currentBomHead, D6LPackage toBomId
 	) throws D6LException {
 		
 		// select entities allocated to currentBomId for bench
@@ -269,15 +269,15 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 			
 			D6LEntityIF entity = iterator.next();
 			
-			if ( entity.getIdPackage() == currentBomHead.getIdPackage() ) {
+			if ( entity.getPackage() == currentBomHead.getPackage() ) {
 				
-				entity.setIdPackage( toBomId );
+				entity.setPackage( toBomId );
 				
 			}
 		}
 		
 		// change bom head
-		currentBomHead.setIdPackage( toBomId );
+		currentBomHead.setPackage( toBomId );
 		
 	}
 
@@ -309,12 +309,12 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 	private class RecurseBomPseudoRunnable {
 
 		private D6LVertex bomHeadEntity;
-		private int bomId;
+		private D6LPackage bom;
 		
-		public RecurseBomPseudoRunnable( D6LVertex bomHeadEntity, int bomId ) {
+		public RecurseBomPseudoRunnable( D6LVertex bomHeadEntity, D6LPackage bom ) {
 			super();
 			this.bomHeadEntity = bomHeadEntity;
-			this.bomId = bomId;
+			this.bom = bom;
 		}
 
 		public void run() throws D6LException {
@@ -324,7 +324,7 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 
 			// recurse BOM
 			try {
-				recurseBom( bomId, bomHeadEntity, bomObjectContent );
+				recurseBom( bom, bomHeadEntity, bomObjectContent );
 			} catch ( Exception e ) {
 				throw new D6LException( e );
 			}
@@ -334,7 +334,7 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 		}
 		
 		private void recurseBom( 
-			int bomId, D6LVertex bomEntity, final Set<Integer> bomEntityContent
+			D6LPackage bom, D6LVertex bomEntity, final Set<Integer> bomEntityContent
 		) throws Exception {
 			
 			// Add current object to bom content
@@ -342,10 +342,10 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 			
 			// set bom ID to current object
 			
-			if ( bomEntity.getIdPackage() == D6LPackage.TECH_ID_UNALLOCATED ) {
+			if ( bomEntity.getPackage() == D6LPackage.UNALLOCATED ) {
 					
 				// not allocated yet
-				bomEntity.setIdPackage( bomId );
+				bomEntity.setPackage( bom );
 				
 			}
 			
@@ -356,7 +356,7 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 			for ( D6LEdge link: childrenLinks ) {
 				
 				// set bom to link
-				link.setIdPackage( bomId );
+				link.setPackage( bom );
 				
 				D6LVertex child = inGraph.getEdgeTarget( link );
 				
@@ -365,14 +365,14 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 				      ( bomEntityContent.contains( child.getId() ) )
 				      ||
 				      // already allocated?
-				      ( child.getIdPackage() != D6LPackage.TECH_ID_UNALLOCATED )
+				      ( child.getPackage() != D6LPackage.UNALLOCATED )
 				){
 					// yes, next child
 					continue;
 				}
 				
 				// recurse child
-				recurseBom( bomId, child, bomEntityContent );
+				recurseBom( bom, child, bomEntityContent );
 				
 			}
 			

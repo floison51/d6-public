@@ -18,27 +18,12 @@
 
 package org.xlm.jxlm.d6light.data.model;
 
-import java.util.Objects;
-
 public abstract class D6LAbstractEntity implements D6LEntityIF {
 
-	protected int id;
-	
 	protected String label;
 
-	protected int idPackage = D6LPackage.TECH_ID_UNALLOCATED;
-
-	protected D6LAbstractEntity( int id ) {
+	protected D6LAbstractEntity() {
 		super();
-		this.id = id;
-	}
-
-	public int getId() {
-		return id;
-	}
-
-	public void setId(int id) {
-		this.id = id;
 	}
 
 	public String getLabel() {
@@ -49,29 +34,4 @@ public abstract class D6LAbstractEntity implements D6LEntityIF {
 		this.label = label;
 	}
 
-	@Override
-	public int hashCode() {
-		return Objects.hash(id);
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		D6LAbstractEntity other = (D6LAbstractEntity) obj;
-		return id == other.id;
-	}
-
-	public int getIdPackage() {
-		return idPackage;
-	}
-
-	public void setIdPackage(int idPackage) {
-		this.idPackage = idPackage;
-	}
-	
 }

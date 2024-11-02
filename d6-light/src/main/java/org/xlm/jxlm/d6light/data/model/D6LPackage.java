@@ -18,32 +18,53 @@
 
 package org.xlm.jxlm.d6light.data.model;
 
+import org.hibernate.SessionFactory;
+import org.xlm.jxlm.d6light.data.exception.D6LError;
 import org.xlm.jxlm.d6light.data.packkage.D6LPackageSubtypeEnum;
 import org.xlm.jxlm.d6light.data.packkage.D6LPackageTypeEnum;
 
+import jakarta.persistence.Basic;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
+import jakarta.persistence.SequenceGenerator;
+
+@Entity
 public class D6LPackage extends D6LAbstractEntity {
 
 	public static final int TECH_ID_UNALLOCATED = -1;
 
 	/** Lot containing single objects **/
     public static final String 	TECH_NAME_SINGLE = "Single";
+
+	public static final D6LPackage UNALLOCATED = new D6LPackage( TECH_ID_UNALLOCATED, D6LPackageTypeEnum.TECHNICAL_PKG, null );
 	
-	private D6LPackageTypeEnum packageType;
-	private D6LPackageSubtypeEnum packageSubtype;
-	private String displayType;
+	@Id
+	@SequenceGenerator( name="D6LPackageSeq", sequenceName="seq_D6LPackage", initialValue = 0, allocationSize=0)
+	private int id;
+	
+	@Enumerated
+	@Basic(optional=false)
+    private D6LPackageTypeEnum packageType;
+
+	@Enumerated
+	@Basic(optional=true)
+    private D6LPackageSubtypeEnum packageSubtype;
+	
+    private String displayType;
 	
 	private String name;
 	
-	private D6LVertex primaryTarget;
+    //@OneToOne( fetch=FetchType.LAZY )
+    //private D6LVertex primaryTarget;
 	
-	private int idPackage;
-
-	D6LPackage( int id ) {
-		super( id );
+	public D6LPackage() {
+		super();
 	}
 
 	public D6LPackage( int id, D6LPackageTypeEnum type, D6LPackageSubtypeEnum displayType ) {
-		this( id );
+		super();
+		this.id = id;
 		this.packageType = type;
 		this.packageSubtype = displayType;
 	}
@@ -84,15 +105,7 @@ public class D6LPackage extends D6LAbstractEntity {
 	public void setName(String name) {
 		this.name = name;
 	}
-
-	public int getIdPackage() {
-		return idPackage;
-	}
-
-	public void setIdPackage(int idPackage) {
-		this.idPackage = idPackage;
-	}
-
+/*
 	public void setPrimaryTarget( D6LVertex vertex ) {
 		this.primaryTarget = vertex;
 	}
@@ -100,6 +113,30 @@ public class D6LPackage extends D6LAbstractEntity {
 	public D6LVertex getPrimaryTarget() {
 		return primaryTarget;
 	}
-
+*/	
+	public static void initDb( SessionFactory sessionFactory ) {
+		
+		// Create persisted objects
+		sessionFactory.inSession( 
+			session -> {
+				session.persist( UNALLOCATED );	
+			});
+		
+	}
 	
+	@Override
+	public int getId() {
+		return id;
+	}
+	
+	@Override
+	public D6LPackage getPackage() {
+		throw new D6LError( "Not supported in this flavor" );
+	}
+	
+	@Override
+	public void setPackage( D6LPackage packkage ) {
+		throw new D6LError( "Not supported in this flavor" );
+	}
+
 }

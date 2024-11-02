@@ -41,10 +41,6 @@ import org.jgrapht.Graph;
 import org.jgrapht.graph.AsUnmodifiableGraph;
 import org.jgrapht.graph.SimpleDirectedGraph;
 import org.jgrapht.nio.GraphImporter;
-import org.xlm.jxlm.d6light.data.algo.D6LAbstractAlgo;
-import org.xlm.jxlm.d6light.data.algo.D6LAbstractAlgoCommand;
-import org.xlm.jxlm.d6light.data.algo.D6LAlgoCommandIF;
-import org.xlm.jxlm.d6light.data.algo.D6LAlgoIF;
 import org.xlm.jxlm.d6light.data.conf.AbstractAlgoType;
 import org.xlm.jxlm.d6light.data.conf.D6LConfHelper;
 import org.xlm.jxlm.d6light.data.conf.D6LightDataConf;
@@ -55,7 +51,6 @@ import org.xlm.jxlm.d6light.data.imp.D6LImporterWrapper;
 import org.xlm.jxlm.d6light.data.model.D6LEdge;
 import org.xlm.jxlm.d6light.data.model.D6LPackage;
 import org.xlm.jxlm.d6light.data.model.D6LVertex;
-import org.xlm.jxlm.d6light.data.packkage.D6LPackageTypeEnum;
 
 /**
  * Main class for D6-light
@@ -83,12 +78,7 @@ public class D6LMain {
 
 	private D6LGraphFormatEnum graphFormat;
 
-	private Graph<D6LVertex, D6LEdge> inGraph;
-	private Graph<D6LPackage, D6LEdge> outGraph;
-
 	private D6LightDataConf d6lConf;
-	
-	private D6LDb db = D6LDb.getInstance();
 	
     /**
      * Default constructor
@@ -174,18 +164,21 @@ public class D6LMain {
     	this.graphFormat = D6LGraphFormatEnum.valueOf( strGraphFormat );
     	
     	// Initialize empty graph
-    	this.inGraph = new SimpleDirectedGraph<>( 
+    	Graph<D6LVertex,D6LEdge> inGraph = new SimpleDirectedGraph<>( 
     		D6LEdge.class
     	);
-    	this.outGraph = new SimpleDirectedGraph<>( 
+    	Graph<D6LPackage,D6LEdge> outGraph = new SimpleDirectedGraph<>( 
     		D6LEdge.class
     	);
     	
     	// Import graph
-    	importGraph( this.inGraph );
+    	importGraph( inGraph );
     	
     	// Freeze source graph
-    	this.inGraph = new AsUnmodifiableGraph<>( this.inGraph );
+    	inGraph = new AsUnmodifiableGraph<>( inGraph );
+    	
+    	// Init DB
+    	D6LDb.getInstance( inGraph, outGraph );
     	
     	// Algo
     	String idAlgo = cmd.getOptionValue( OPTION_ID_ALGO );
@@ -229,6 +222,7 @@ public class D6LMain {
 		}
 		
 		// Create a root target package
+		/*
 		D6LPackage benchPackage = db.daoEntityRegistry.newPackage( D6LPackageTypeEnum.BUSINESS_PKG, null );
 		outGraph.addVertex( benchPackage ); 
 		
@@ -246,7 +240,7 @@ public class D6LMain {
 		
 		// Run algo
 		cmdAlgo.execute( this.inGraph, this.outGraph );
-		
+		*/
 	}
 
 	protected void importGraph( Graph<D6LVertex, D6LEdge> graph ) throws D6LException {

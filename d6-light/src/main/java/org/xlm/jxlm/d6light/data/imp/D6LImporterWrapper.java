@@ -23,10 +23,8 @@ import java.text.MessageFormat;
 import org.jgrapht.nio.BaseEventDrivenImporter;
 import org.jgrapht.nio.GraphImporter;
 import org.jgrapht.nio.gml.GmlImporter;
-import org.xlm.jxlm.d6light.data.db.D6LDb;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
 import org.xlm.jxlm.d6light.data.model.D6LEdge;
-import org.xlm.jxlm.d6light.data.model.D6LEntityRegistry;
 import org.xlm.jxlm.d6light.data.model.D6LVertex;
 
 /**
@@ -41,8 +39,6 @@ public class D6LImporterWrapper {
 		GraphImporter<D6LVertex, D6LEdge> result = null;
 		BaseEventDrivenImporter<D6LVertex, D6LEdge> intermediate = null;
 		
-		D6LEntityRegistry entityRegistry = D6LDb.getInstance().daoEntityRegistry;
-
 		switch ( format ) {
 
 			case GML: {
@@ -53,7 +49,7 @@ public class D6LImporterWrapper {
 				
 				// Set vertex factory
 				gmlImp.setVertexFactory(
-					id -> entityRegistry.newVertex( id )
+					id -> new D6LVertex( id )
 				);
 				
 				break;

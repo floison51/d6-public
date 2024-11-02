@@ -1,10 +1,30 @@
 package org.xlm.jxlm.d6light.data.db;
 
+import static org.hibernate.cfg.JdbcSettings.FORMAT_SQL;
+import static org.hibernate.cfg.JdbcSettings.HIGHLIGHT_SQL;
+import static org.hibernate.cfg.JdbcSettings.PASS;
+import static org.hibernate.cfg.JdbcSettings.SHOW_SQL;
+import static org.hibernate.cfg.JdbcSettings.URL;
+import static org.hibernate.cfg.JdbcSettings.USER;
+
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
+import org.hibernate.query.SelectionQuery;
+import org.jgrapht.Graph;
+import org.xlm.jxlm.d6light.data.exception.D6LException;
 import org.xlm.jxlm.d6light.data.measures.D6LEntityDirectedLinkStatsAccessor;
 import org.xlm.jxlm.d6light.data.measures.D6LHistogramAccessor;
+import org.xlm.jxlm.d6light.data.model.D6LEdge;
 import org.xlm.jxlm.d6light.data.model.D6LEntityRegistry;
+import org.xlm.jxlm.d6light.data.model.D6LPackage;
+import org.xlm.jxlm.d6light.data.model.D6LVertex;
+import org.xlm.jxlm.d6light.data.packkage.D6LPackageTypeEnum;
+
 
 public class D6LDb {
+
+	public final Graph<D6LVertex, D6LEdge> inGraph;
+	public final Graph<D6LPackage, D6LEdge> outGraph;
 
 	public final D6LEntityRegistry daoEntityRegistry = 
 			new D6LEntityRegistry();
@@ -17,18 +37,103 @@ public class D6LDb {
 
 	private static D6LDb me = null;
 	
-	public static synchronized D6LDb getInstance() {
+	public static synchronized D6LDb getInstance( 
+		Graph<D6LVertex, D6LEdge> inGraph,
+		Graph<D6LPackage, D6LEdge> outGraph
+	) {
 		
 		if ( me == null ) {
-			me = new D6LDb();
+			me = new D6LDb( inGraph, outGraph );
 		}
 		
 		return me;
 		
 	}
+	
+	public static synchronized D6LDb getInstance() throws D6LException {
+			
+		if ( me == null ) {
+			throw new D6LException( "Database not configured" );
+		}
+		
+		return me;
+			
+	}
 
-	private D6LDb() {
+
+	private D6LDb(
+		Graph<D6LVertex, D6LEdge> inGraph,
+		Graph<D6LPackage, D6LEdge> outGraph
+	) {
 		super();
+		this.inGraph = inGraph;
+		this.outGraph = outGraph;
+		initDb();
 	}
 	
+	private SessionFactory sessionFactory;
+	
+	private void initDb() {
+		
+        sessionFactory = new Configuration()
+        		
+                .addAnnotatedClass( D6LVertex.class )
+                .addAnnotatedClass( D6LPackage.class )
+                
+                // use H2 in-memory database
+                .setProperty(URL, "jdbc:h2:mem:db1")
+                .setProperty(USER, "sa")
+                .setProperty(PASS, "")
+                
+                // use Agroal connection pool
+                .setProperty("hibernate.agroal.maxSize", 20)
+                
+                // display SQL in console
+                .setProperty(SHOW_SQL, true)
+                .setProperty(FORMAT_SQL, true)
+                .setProperty(HIGHLIGHT_SQL, true)
+                .buildSessionFactory();
+
+        // export the inferred database schema
+        sessionFactory.getSchemaManager().exportMappedObjects(true);
+        
+        // Init packages
+        D6LPackage.initDb( sessionFactory );
+
+        /*
+        // persist an entity
+        sessionFactory.inTransaction(session -> {
+        	
+        	D6LPackage p = new D6LPackage( 10, D6LPackageTypeEnum.BUSINESS_PKG, null );
+            session.persist( p );
+
+            D6LVertex v = new D6LVertex( 1 );
+        	v.setPackage( p );
+        	
+            session.persist( v );
+        });
+        
+        // query data using HQL
+        sessionFactory.inSession(session -> {
+        	SelectionQuery<D6LVertex> query = session.createSelectionQuery( "from D6LVertex", D6LVertex.class );
+            System.out.println( query.getResultList() );
+        });
+		*/
+        /*
+        // query data using criteria API
+        sessionFactory.inSession(session -> {
+            var builder = sessionFactory.getCriteriaBuilder();
+            var query = builder.createQuery(String.class);
+            var book = query.from(Book.class);
+            query.select(builder.concat(builder.concat(book.get(D6LVertex_.id), builder.literal(": "))));
+            System.out.println(session.createSelectionQuery(query).getSingleResult());
+        });
+        */
+    }
+	
+	public SessionFactory getSessionFactory() {
+		
+		return sessionFactory;
+	}
+
 }
