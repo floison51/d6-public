@@ -27,6 +27,7 @@ import java.util.Set;
 
 import javax.xml.bind.JAXBElement;
 
+import org.hibernate.Session;
 import org.xlm.jxlm.d6light.data.algo.D6LAbstractDividerAlgo;
 import org.xlm.jxlm.d6light.data.algo.D6LAlgoCommandIF;
 import org.xlm.jxlm.d6light.data.algo.topological.bom.D6LByDirectedLinkBomDivider;
@@ -222,10 +223,10 @@ public abstract class D6LAbstractTopologicalDivider
     }
 
 	@Override
-	public final void doRun( D6LAlgoCommandIF algoCommand ) throws D6LException {
+	public final void doRun( Session session, D6LAlgoCommandIF algoCommand ) throws D6LException {
 		
 		// delegate to algo
-		doAlgoRun( algoCommand );
+		doAlgoRun( session, algoCommand );
 		
 	}
 	
@@ -239,6 +240,6 @@ public abstract class D6LAbstractTopologicalDivider
 	 * @param txn
 	 * @param iPass
 	 */
-	protected abstract void doAlgoRun( D6LAlgoCommandIF algoCommand ) throws D6LException;
+	protected abstract void doAlgoRun( Session session, D6LAlgoCommandIF algoCommand ) throws D6LException;
 
 }

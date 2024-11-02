@@ -18,11 +18,12 @@
 
 package org.xlm.jxlm.d6light.data.measures;
 
+import org.hibernate.annotations.NaturalId;
 import org.xlm.jxlm.d6light.data.model.D6LVertex;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.SequenceGenerator;
 
 /**
@@ -37,7 +38,8 @@ public class D6LEntityDirectedLinkStats {
 	@SequenceGenerator( name="D6LMeasureSeq", sequenceName="seq_D6LMeasure", initialValue = 0, allocationSize=0)
 	private int id;
 	
-	@ManyToMany
+	@NaturalId
+	@OneToOne
     private D6LVertex vertex;
     
     /** Nb directed links from for entity bench **/
@@ -64,7 +66,7 @@ public class D6LEntityDirectedLinkStats {
      * @param idEntity idEntity
      * @param idBench idBench
      */
-	D6LEntityDirectedLinkStats( D6LVertex vertex ) {
+	public D6LEntityDirectedLinkStats( D6LVertex vertex ) {
 		this();
 		this.vertex = vertex;
 	}

@@ -21,6 +21,7 @@ package org.xlm.jxlm.d6light.data.algo.topological.bomsimplifier;
 import java.util.List;
 import java.util.Set;
 
+import org.hibernate.Session;
 import org.jgrapht.Graph;
 import org.xlm.jxlm.d6light.data.algo.D6LAlgoCommandIF;
 import org.xlm.jxlm.d6light.data.conf.AbstractBomSimplifierType;
@@ -132,6 +133,7 @@ public abstract class D6LAbstractBomSimplifier
 	 * @throws D6LException
 	 */
     public abstract boolean matchWithoutNumbers( 
+        Session session,
     	D6LAlgoCommandIF algoCommand, 
     	D6LEntityIF entity, D6LEntityDirectedLinkStats stat 
     ) throws D6LException;
@@ -145,6 +147,7 @@ public abstract class D6LAbstractBomSimplifier
      * @throws D6LException 
      */
     public abstract MatchResult match( 
+        Session session,
     	D6LAlgoCommandIF algoCommand, 
     	D6LVertex entity, boolean matchWithoutNumbersResult, D6LEntityDirectedLinkStats stat, 
     	D6LPackage singlePackage, List<D6LJobIF<D6LEntityIF>> postActions
@@ -158,6 +161,7 @@ public abstract class D6LAbstractBomSimplifier
      * @throws D6LException 
      */
     protected void moveSimplifiedTechnicalLotsToBusinessLot( 
+    	Session session
     ) throws D6LException {
         
         // Get sub-lot type
@@ -210,7 +214,7 @@ public abstract class D6LAbstractBomSimplifier
         // to be created?
         if ( outerSimplifiedLot == null ) {
             
-        	outerSimplifiedLot = createOuterSimplifiedLot( lotSubType, targetBusinessLot);
+        	outerSimplifiedLot = createOuterSimplifiedLot( session, lotSubType, targetBusinessLot);
             
         }
         
@@ -248,11 +252,17 @@ public abstract class D6LAbstractBomSimplifier
     }
 
 	private D6LPackage createOuterSimplifiedLot(
-			final D6LPackageSubtypeEnum lotSubType, D6LPackage targetBusinessLot) throws D6LException {
+	    Session session,
+		final D6LPackageSubtypeEnum lotSubType, D6LPackage targetBusinessLot
+	) throws D6LException {
 
 		D6LPackage outerSimplifiedLot;
-		outerSimplifiedLot = db.daoEntityRegistry.newPackage( D6LPackageTypeEnum.BUSINESS_PKG, lotSubType );
+		outerSimplifiedLot = new D6LPackage( D6LPackageTypeEnum.BUSINESS_PKG, lotSubType );
 		outerSimplifiedLot.setName( lotSubType.getLotName() );
+		
+		// Persist, add to graph
+		session.persist( outerSimplifiedLot );
+		db.outGraph.addVertex( outerSimplifiedLot );
 		
 		return outerSimplifiedLot;
 		
@@ -268,6 +278,8 @@ public abstract class D6LAbstractBomSimplifier
 	 */
     public class ReworkChildrenJob implements D6LJobIF<D6LEntityIF> {
 
+    	private final Session session;
+    	
          /** Algo command **/
         private final D6LAlgoCommandIF algoCommand;
         
@@ -277,8 +289,9 @@ public abstract class D6LAbstractBomSimplifier
         /** Single lot **/
         private final D6LPackage singleLot;
         
-        public ReworkChildrenJob( D6LAlgoCommandIF algoCommand, D6LVertex kit, D6LPackage singleLot ) {
+        public ReworkChildrenJob( Session session, D6LAlgoCommandIF algoCommand, D6LVertex kit, D6LPackage singleLot ) {
             super();
+            this.session = session;
             this.algoCommand = algoCommand;
             this.kit = kit;
             this.singleLot = singleLot;
@@ -297,7 +310,7 @@ public abstract class D6LAbstractBomSimplifier
                 
                 // Get stats
                 D6LEntityDirectedLinkStats childStats = 
-                	db.daoEntityStats.getByEntityId( child.getId() );
+                	db.daoEntityStats.getByEntity( session, child );
                 
                 if ( childStats != null ) {
                 	
@@ -330,7 +343,10 @@ public abstract class D6LAbstractBomSimplifier
      * @param nbDirectedLinksFromEntity
      * @param nbDirectedLinksToEntity
      */
-	public void createAndSaveHistogramEntry( D6LEntityIF entity, long nbDirectedLinksFromEntity, long nbDirectedLinksToEntity ) {
+	public void createAndSaveHistogramEntry( 
+		Session session, 
+		D6LEntityIF entity, long nbDirectedLinksFromEntity, long nbDirectedLinksToEntity 
+	) {
 		// Do nothing
 		
 	}

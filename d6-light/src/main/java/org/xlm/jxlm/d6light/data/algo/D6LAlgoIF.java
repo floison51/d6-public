@@ -18,6 +18,7 @@
 
 package org.xlm.jxlm.d6light.data.algo;
 
+import org.hibernate.Session;
 import org.xlm.jxlm.d6light.data.conf.AbstractAlgoType;
 import org.xlm.jxlm.d6light.data.conf.D6LightDataConf;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
@@ -65,14 +66,14 @@ public interface D6LAlgoIF {
 	 * @return algo conf
 	 * @throws D6LException
 	 */
-	public void doPrepare( D6LAlgoCommandIF algoCommand ) throws D6LException;
+	public void doPrepare( Session session, D6LAlgoCommandIF algoCommand ) throws D6LException;
 	
 	/**
 	 * Run algo
      * @param algoCommand
 	 * @throws D6LException
 	 */
-	public void doRun( D6LAlgoCommandIF algoCommand ) throws D6LException;
+	public void doRun( Session session, D6LAlgoCommandIF algoCommand ) throws D6LException;
 	
     /**
      * Get lot type produced with algo : Business or Technical or null if no lots are produced by algo

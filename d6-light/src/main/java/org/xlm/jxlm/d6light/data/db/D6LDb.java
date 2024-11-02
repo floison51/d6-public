@@ -26,8 +26,7 @@ public class D6LDb {
 	public final Graph<D6LVertex, D6LEdge> inGraph;
 	public final Graph<D6LPackage, D6LEdge> outGraph;
 
-	public final D6LEntityRegistry daoEntityRegistry = 
-			new D6LEntityRegistry();
+	public final D6LEntityRegistry daoEntityRegistry = new D6LEntityRegistry( this );
 
 	public final D6LEntityDirectedLinkStatsAccessor daoEntityStats = 
 			new D6LEntityDirectedLinkStatsAccessor();

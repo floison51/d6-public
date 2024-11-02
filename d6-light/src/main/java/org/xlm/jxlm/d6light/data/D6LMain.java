@@ -37,6 +37,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.appender.FileAppender;
+import org.hibernate.Session;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.AsUnmodifiableGraph;
 import org.jgrapht.graph.SimpleDirectedGraph;
@@ -237,9 +238,13 @@ public class D6LMain {
 			this.d6lConf
 		);
 		
-		// Run algo
-		cmdAlgo.execute();
-		
+		try (
+			// Create DB session
+			Session session = D6LDb.getInstance().getSessionFactory().openSession();
+		) {
+			// Run algo
+			cmdAlgo.execute( session );
+		}
 	}
 
 	protected void importGraph( Graph<D6LVertex, D6LEdge> graph ) throws D6LException {

@@ -20,12 +20,15 @@ package org.xlm.jxlm.d6light.data.algo.topological.bom;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
+import org.hibernate.Session;
 import org.jgrapht.Graph;
 import org.xlm.jxlm.d6light.data.algo.D6LAlgoCommandIF;
 import org.xlm.jxlm.d6light.data.algo.topological.D6LAbstractTopologicalDivider;
@@ -34,7 +37,6 @@ import org.xlm.jxlm.d6light.data.conf.D6LightDataConf;
 import org.xlm.jxlm.d6light.data.conf.ParamType;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
 import org.xlm.jxlm.d6light.data.model.D6LEdge;
-import org.xlm.jxlm.d6light.data.model.D6LEntityIF;
 import org.xlm.jxlm.d6light.data.model.D6LPackage;
 import org.xlm.jxlm.d6light.data.model.D6LVertex;
 import org.xlm.jxlm.d6light.data.packkage.D6LPackageSubtypeEnum;
@@ -84,14 +86,14 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 	
 
 	@Override
-	protected void doAlgoRun( D6LAlgoCommandIF algoCommand ) throws D6LException {
+	protected void doAlgoRun( Session session, D6LAlgoCommandIF algoCommand ) throws D6LException {
 		
 		// process boms for current bench
-		processBomsForBench();
+		processBomsForBench( session);
 					
         // Circuits are not allocated
 		// Fix this
-        allocateCircuitsToErrorLot();
+        allocateCircuitsToErrorLot( session );
         
 	}
 
@@ -101,21 +103,18 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 	 * @param bench Banch
 	 * @throws D6LException
 	 */
-	protected void processBomsForBench() throws D6LException {
+	protected void processBomsForBench( Session session ) throws D6LException {
 		
 		// find BOMs top objects
 		LOGGER.info( "Get Bill Of Material top objects" );
 		
     	// get boms for current bench
+    	Set<D6LVertex> allBomHeadVertices = db.daoEntityStats.getBomHeads( session );
+    	
     	List<D6LVertex> bomHeadVertices = new ArrayList<>();
     	
-    	Set<Integer> idBomHeadVertices = db.daoEntityStats.getBomHeads();
-    	
-		for ( int idBomHeadVertex: idBomHeadVertices ) {
+    	for ( D6LVertex bomHeadVertex: allBomHeadVertices ) {
 		   
-			// get vertex
-			D6LVertex bomHeadVertex = db.daoEntityRegistry.getVertex( idBomHeadVertex );
-			
 			// process only unallocated boms
 			if ( bomHeadVertex.getPackage() == D6LPackage.UNALLOCATED ) {
 				bomHeadVertices.add( bomHeadVertex );
@@ -129,7 +128,7 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 
 		// Lotize BOM heads
 		LOGGER.info( "Step 1 - Lotize BOM heads" );
-		lotizeBomHeads( bomHeadVertices );
+		lotizeBomHeads( session, bomHeadVertices );
 		
 		
 		// Lotize BOM head children
@@ -147,20 +146,21 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
         
 		// ok, this an optimisation to (losange case)
 		if ( isHandleDiamonds ) {
-			finalizeBoms( bomHeadVertices );
+			finalizeBoms( session, bomHeadVertices );
 		}
 		
 	}
 
 	private void lotizeBomHeads( 
-	    List<D6LVertex> bomHeadEntities
+		Session session, 
+	    Collection<D6LVertex> bomHeadEntities
 	) throws D6LException {
 		
 		// Browse BOM head objects
 		for ( D6LVertex bomHeadObject: bomHeadEntities ) {
 			
 			// Create BOM lot
-			D6LPackage bomHeadLot = getNewBom();
+			D6LPackage bomHeadLot = getNewBom( session );
 			
 			// set BOM head entity as primary lot target
 			bomHeadLot.setPrimaryTarget( bomHeadObject );
@@ -171,9 +171,13 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 		}
 	}
 
-	private D6LPackage getNewBom() throws D6LException {
+	private D6LPackage getNewBom( Session session ) throws D6LException {
 	    
-		D6LPackage bom = db.daoEntityRegistry.newPackage( producesLotType, D6LPackageSubtypeEnum.BOM );
+		D6LPackage bom = new D6LPackage(producesLotType, D6LPackageSubtypeEnum.BOM );
+		
+		// Persist, add to graph
+		session.persist( bom );
+		db.outGraph.addVertex( bom );
 		
 		return bom;
 		
@@ -187,6 +191,7 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 	 * @throws Exception 
 	 */
 	private void finalizeBoms( 
+		Session session,
 	    List<D6LVertex> bomHeadEntities
 	) throws D6LException {
 		
@@ -204,7 +209,7 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 			for ( D6LVertex bomHead: bomHeadEntities ) {
 				
 				aFixHasBeenDone = 
-				    finalizeBomsForBomHead( aFixHasBeenDone, setParentBoms, bomHead );
+				    finalizeBomsForBomHead( session, aFixHasBeenDone, setParentBoms, bomHead );
 					
 			}
 			
@@ -214,8 +219,11 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 		
 	}
 
-    private boolean finalizeBomsForBomHead( boolean aFixHasBeenDone,
-                                            Set<D6LPackage> setParentBoms, D6LVertex bomHead )
+    private boolean finalizeBomsForBomHead( 
+    	Session session,
+    	boolean aFixHasBeenDone,
+        Set<D6LPackage> setParentBoms, D6LVertex bomHead
+    )
         throws D6LException
     {
         
@@ -246,7 +254,7 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
         	    new_aFixHasBeenDone = true;
         		
         		// this bom head can be 'crushed' in current bench scope
-        		replaceBomId( bomHead, parentBom );
+        		replaceBomId( session, bomHead, parentBom );
         		
         	}
         }
@@ -257,23 +265,21 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 
 
 	private void replaceBomId( 
+		Session session,
 	    D6LVertex currentBomHead, D6LPackage toBomId
 	) throws D6LException {
 		
 		// select entities allocated to currentBomId for bench
 		
-		// Entities
-		Iterator<D6LEntityIF> iterator = db.daoEntityRegistry.entityIterator();
-		
-		while ( iterator.hasNext() ) {
-			
-			D6LEntityIF entity = iterator.next();
-			
-			if ( entity.getPackage() == currentBomHead.getPackage() ) {
-				
-				entity.setPackage( toBomId );
-				
-			}
+		// Vertices
+		try (
+			Stream<D6LVertex> sVertices = db.daoEntityRegistry.getVertices( session, currentBomHead.getPackage() );
+		) {
+			sVertices.forEach(
+				v -> {
+					v.setPackage( toBomId );
+				}
+			);
 		}
 		
 		// change bom head
@@ -287,20 +293,27 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
      * @throws D6LException 
      * @throws DatabaseException 
      */
-    private void allocateCircuitsToErrorLot() throws D6LException
+    private void allocateCircuitsToErrorLot( Session session ) throws D6LException
     {
         
-    	Iterator<D6LEntityIF> iterator = db.daoEntityRegistry.entityIterator();
-    	while ( iterator.hasNext() ) {
-    		D6LEntityIF entity = iterator.next();
     		
-    		if ( entity.getPackage() == D6LPackage.UNALLOCATED ) {
-    			throw new D6LException( 
-    				MessageFormat.format( "Unallocated entity {0}", entity.getId() )
-    			);
-    		}
+   		try (
+    		Stream<D6LVertex> unallocated = db.daoEntityRegistry.getVertices(session, D6LPackage.UNALLOCATED );
+    	) {
+   	  		final AtomicInteger count = new AtomicInteger();
+    		unallocated.forEach(
+    			v -> {
+    				LOGGER.error( MessageFormat.format( "Unallocated vertex {0}", v.getId() ) );
+    				count.incrementAndGet();
+    			}
+    		);
+    		
+        	if ( count.get() > 0 ) {
+        		throw new D6LException( count + " unallocated vertices" );
+        	}
+                    
     	}
-                
+    	
     }
 
     /**
@@ -381,7 +394,7 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 	}
 	
 	@Override
-	public void doPrepare( D6LAlgoCommandIF algoCommand ) throws D6LException {
+	public void doPrepare( Session session, D6LAlgoCommandIF algoCommand ) throws D6LException {
 		// No preparation
 	}
 

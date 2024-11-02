@@ -27,6 +27,7 @@ import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hibernate.Session;
 import org.xlm.jxlm.d6light.data.algo.D6LAbstractDividerAlgoCommand;
 import org.xlm.jxlm.d6light.data.algo.D6LDividerAlgoIF;
 import org.xlm.jxlm.d6light.data.algo.topological.bomsimplifier.D6LAbstractBomSimplifier;
@@ -62,12 +63,12 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 	}
 	
 	@Override
-	public void doPrepare( final boolean callAlgo ) throws D6LException {
+	public void doPrepare( Session session, final boolean callAlgo ) throws D6LException {
 		
 	    LOGGER.info( "Start prepare algo" );
 
 	    // Call ancestor but don't call algo because we do after
-		super.doPrepare( false );
+		super.doPrepare( session, false );
 		
 		/*
 		// Existing objects are allocated to Business lot, move them to Technical lot
@@ -114,6 +115,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 			
             // allocate single and/or simplify bom
             allocateSinglesAndBomSimplification( 
+            	session,
                 isSinglesAllocation,
                 topologicalDividerAlgo.isNeedBomSimplification()
             );
@@ -122,7 +124,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 
 		// Delegate to algo
     	if ( callAlgo ) {
-			getAlgo().doPrepare( this );
+			getAlgo().doPrepare( session, this );
     	}
 
         LOGGER.info( "End single allocation and BOM simplification" );
@@ -130,6 +132,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 	}
 
 	private void allocateSinglesAndBomSimplification( 
+		Session session,
 		boolean allocateSingles, 
 		boolean isNeedBomSimplification 
 	) throws D6LException {
@@ -153,7 +156,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
             
                 // Check 
             	D6LPackage bomSimplificationLot = 
-            		createBomSimplificationLot( dividerAlgo.getProducesLotType(), bomSimplifier );
+            		createBomSimplificationLot( session, dividerAlgo.getProducesLotType(), bomSimplifier );
         			
         		mapBomSimplificationLots.put( bomSimplifier.getKind(), bomSimplificationLot );
 
@@ -169,7 +172,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 		    // Use a thread safe method to get single lot
 		    // Because some threads may creating another single lot in the mean while...
 		    singleLot = db.daoEntityRegistry.getOrCreateSingleLot( 
-	    		dividerAlgo.getProducesLotType() 
+	    		session, dividerAlgo.getProducesLotType() 
 	    	);
 		}
 		
@@ -180,7 +183,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 	
 		// browse vertices belonging to bench
         LOGGER.info( "  vertices" );
-		for ( D6LVertex v : inGraph.vertexSet() ) {
+		for ( D6LVertex v : db.inGraph.vertexSet() ) {
 			
 			// select only unallocated objects
 			if ( v.getPackage() != D6LPackage.UNALLOCATED ) {
@@ -189,6 +192,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 			
 			// Do allocation and get post actions
 			List<D6LJobIF<D6LEntityIF>> curPostActions = allocateSingleAndBomSimplificationAndTopOfBom( 
+				session,
 				v, mapBomSimplificationLots, singleLot, idEntitiesProcessed
 			);
 			
@@ -203,15 +207,15 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
             
 		// allocate links to component lot, if both roles are in component lot
         LOGGER.info( "  edges" );
-		for ( D6LEdge link: inGraph.edgeSet() ) {
+		for ( D6LEdge link: db.inGraph.edgeSet() ) {
 			
 			// select only unallocated links
 			if ( link.getPackage() != D6LPackage.UNALLOCATED ) {
 				continue;
 			}
 			
-			D6LVertex roleA_entity = inGraph.getEdgeSource( link );
-			D6LVertex roleB_entity = inGraph.getEdgeTarget( link );
+			D6LVertex roleA_entity = db.inGraph.getEdgeSource( link );
+			D6LVertex roleB_entity = db.inGraph.getEdgeTarget( link );
 
             // remove components from benches
             for ( D6LPackage bomSimplificationLot : mapBomSimplificationLots.values() ) {
@@ -228,6 +232,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
                     // We de-allocated link from bench, that means that link stats for objectA and objectB have changed
                     // Rework stats
                     reworkStatsAndSingleLotForDirectedLinkToComponent( 
+                    	session,
                     	singleLot, roleA_entity, roleB_entity 
                     );
                     
@@ -237,11 +242,13 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
             
             // role A entity
             allocateSingleAndBomSimplificationAndTopOfBom(
+            	session,
 				roleA_entity, mapBomSimplificationLots, singleLot, idEntitiesProcessed
 			);
 			
             // role B entity
 			allocateSingleAndBomSimplificationAndTopOfBom( 
+            	session,
 				roleB_entity, mapBomSimplificationLots, singleLot, idEntitiesProcessed
 			);
 			
@@ -262,6 +269,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 	 * @throws D6LException
 	 */
 	private D6LPackage createBomSimplificationLot(
+		Session session,
 		D6LPackageTypeEnum defaultLotType, D6LAbstractBomSimplifier bomSimplifier
 	)
 		throws D6LException 
@@ -270,9 +278,12 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 		// Lot type
 		D6LPackageTypeEnum lotType = defaultLotType;
 		
-		D6LPackage bomSimplificationLot = db.daoEntityRegistry.newPackage( lotType, null );
-		
+		D6LPackage bomSimplificationLot = new D6LPackage( lotType );
 		setParameters( bomSimplifier, bomSimplificationLot );
+		
+		// Persist, add to graph
+		session.persist( bomSimplificationLot );
+		db.outGraph.addVertex( bomSimplificationLot );
 		
 		return bomSimplificationLot;
 		
@@ -320,7 +331,8 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 	 * @throws D6LException 
      */
     private void reworkStatsAndSingleLotForDirectedLinkToComponent( 
-        D6LPackage singleLot, D6LEntityIF roleA, D6LEntityIF roleB 
+    	Session session,
+        D6LPackage singleLot, D6LVertex roleA, D6LVertex roleB 
     ) throws D6LException
     {
 
@@ -328,7 +340,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
         
         // role A
         D6LEntityDirectedLinkStats roleA_stats = 
-        	db.daoEntityStats.getByEntityId( roleA.getId() );
+        	db.daoEntityStats.getByEntity( session, roleA );
         
         if ( roleA_stats != null ) {
             // we removed a link from role A
@@ -358,7 +370,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
         
         // role B
         D6LEntityDirectedLinkStats roleB_stats = 
-        	db.daoEntityStats.getByEntityId( roleB.getId() );
+        	db.daoEntityStats.getByEntity( session, roleB );
         
         if ( roleB_stats != null ) {
             // we removed a link to role B
@@ -389,6 +401,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
     }
 
     private List<D6LJobIF<D6LEntityIF>> allocateSingleAndBomSimplificationAndTopOfBom( 
+    	Session session,
 		D6LVertex entity, Map<BomSimplifierKindEnum,D6LPackage> mapBomSimplifierLots, 
 		D6LPackage singleLot, 
 		Set<Integer> idObjectsProcessed
@@ -412,7 +425,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 		}
 		
 		// find links from this entity
-    	Set<D6LEdge> directedLinksFromEntity = inGraph.incomingEdgesOf( entity );
+    	Set<D6LEdge> directedLinksFromEntity = db.inGraph.incomingEdgesOf( entity );
     	// count directed links from entity
     	int nbDirectedLinksFromEntity = directedLinksFromEntity.size();
     	// Graph is directed by constraint
@@ -420,7 +433,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
     	
     	// count directed links to entity
 		// find links from this entity
-    	Set<D6LEdge> directedLinksToEntity = inGraph.outgoingEdgesOf( entity );
+    	Set<D6LEdge> directedLinksToEntity = db.inGraph.outgoingEdgesOf( entity );
     	int nbDirectedLinksToEntity = directedLinksToEntity.size();
 
     	// count links to entity
@@ -428,11 +441,14 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
     	int nbLinksToEntity = nbDirectedLinksToEntity;
 
     	// Save numbers is a stat object
-    	D6LEntityDirectedLinkStats stat = db.daoEntityStats.newStats( entity.getId() );
+    	D6LEntityDirectedLinkStats stat = new D6LEntityDirectedLinkStats( entity );
     	stat.setNbDirectedLinksFromForBench( nbDirectedLinksFromEntity );
     	stat.setNbLinksFromForBench( nbLinksFromEntity );
     	stat.setNbDirectedLinksToForBench( nbDirectedLinksToEntity );
     	stat.setNbLinksToForBench( nbLinksToEntity );
+    	
+    	// Save
+    	session.persist( stat );
     	
 		// If it's a required parent sub-type enum, allocation is done further on
 		// if no links, entity is single
@@ -453,13 +469,16 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
     			if ( bomSimplifierLot != null ) {
 
     				boolean matchWithoutNumbersResult = bomSimplifier.matchWithoutNumbers( 
-    					this,
+    					session, this,
     					entity, stat 
     				);
     				
     				if ( matchWithoutNumbersResult ) {
 	    	            // Create histogram entry
-	    	            bomSimplifier.createAndSaveHistogramEntry( entity, nbDirectedLinksFromEntity, nbDirectedLinksToEntity );
+	    	            bomSimplifier.createAndSaveHistogramEntry( 
+	    	            	session, entity, 
+	    	            	nbDirectedLinksFromEntity, nbDirectedLinksToEntity 
+	    	            );
     				}
     				
     				// Is it a lot requiring to be put in simplifier lot?
@@ -478,7 +497,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 
    			        	 */
    			        	matchResult = bomSimplifier.match( 
-   			        		this, 
+   			        		session, this, 
    			        		entity, 
    			        		matchWithoutNumbersResult, stat, singleLot, postActions 
    			        	);
@@ -504,7 +523,8 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 	    	            	
 	    	            	// Create new lot
 	    	            	D6LPackage newLot = 
-	    	            		createBomSimplificationLot( 
+	    	            		createBomSimplificationLot(
+	    	            			session,
 	    	            			topologicalDividerAlgo.getProducesLotType(), bomSimplifier 
 	    	            		);
 	    	            	// Record it

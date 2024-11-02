@@ -82,6 +82,16 @@ public class D6LPackage extends D6LAbstractEntity {
 		this( id, type, null );
 	}
 
+	public D6LPackage( D6LPackageTypeEnum type, D6LPackageSubtypeEnum displayType ) {
+		super();
+		this.packageType = type;
+		this.packageSubtype = displayType;
+	}
+
+	public D6LPackage( D6LPackageTypeEnum type ) {
+		this( type, null );
+	}
+
 	@Override
 	public String toString() {
 		return "D6LPkg [id=" + id + ", label=" + label + "]";

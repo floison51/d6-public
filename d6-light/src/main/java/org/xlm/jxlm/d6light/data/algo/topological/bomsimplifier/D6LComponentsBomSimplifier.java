@@ -20,11 +20,13 @@ package org.xlm.jxlm.d6light.data.algo.topological.bomsimplifier;
 
 import java.util.List;
 
+import org.hibernate.Session;
 import org.xlm.jxlm.d6light.data.algo.D6LAlgoCommandIF;
 import org.xlm.jxlm.d6light.data.conf.BomSimplifierType;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
 import org.xlm.jxlm.d6light.data.job.D6LJobIF;
 import org.xlm.jxlm.d6light.data.measures.D6LEntityDirectedLinkStats;
+import org.xlm.jxlm.d6light.data.measures.D6LHistogramEntry;
 import org.xlm.jxlm.d6light.data.measures.D6LHistogramEntry.HistoKeyEnum;
 import org.xlm.jxlm.d6light.data.model.D6LEntityIF;
 import org.xlm.jxlm.d6light.data.model.D6LPackage;
@@ -58,6 +60,7 @@ public class D6LComponentsBomSimplifier extends D6LAbstractBomSimplifier
     
 	@Override
 	public boolean matchWithoutNumbers(
+		Session session,
 		D6LAlgoCommandIF algoCommand,
 		D6LEntityIF entity, D6LEntityDirectedLinkStats stat
 	)
@@ -79,6 +82,7 @@ public class D6LComponentsBomSimplifier extends D6LAbstractBomSimplifier
     
     @Override
     public MatchResult match( 
+    	Session session, 
     	D6LAlgoCommandIF algoCommand, 
     	D6LVertex entity, boolean matchWithoutNumbersResult, D6LEntityDirectedLinkStats stat, 
     	D6LPackage singlePackage, List<D6LJobIF<D6LEntityIF>> postActions 
@@ -94,15 +98,22 @@ public class D6LComponentsBomSimplifier extends D6LAbstractBomSimplifier
     }
 
 	@Override
-	public void createAndSaveHistogramEntry( D6LEntityIF entity, long nbDirectedLinksFromEntity,
+	public void createAndSaveHistogramEntry( 
+		Session session, D6LEntityIF entity, 
+		long nbDirectedLinksFromEntity,
 		long nbDirectedLinksToEntity
 	) {
 		
 		// Log component linksTo 
-		db.daoHistogram.newHistogramEntry( 
-			HistoKeyEnum.nbDirectedLinksToCompo, 
-			nbDirectedLinksToEntity 
-		);
+		D6LHistogramEntry histo = 
+			new D6LHistogramEntry( 
+				HistoKeyEnum.nbDirectedLinksToCompo, 
+				nbDirectedLinksToEntity 
+			);
+		
+		// Persist
+		session.persist( histo );
+
 	}
 
 }

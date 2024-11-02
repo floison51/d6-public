@@ -2,6 +2,15 @@
 
 package org.xlm.jxlm.d6light.data.model;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.hibernate.Session;
+import org.hibernate.query.SelectionQuery;
+import org.xlm.jxlm.d6light.data.measures.D6LEntityDirectedLinkStats;
+
 /**
  * Accessor for Berkeley DB persistent EntityDirectedLinkStats
  * @author Loison
@@ -10,30 +19,14 @@ package org.xlm.jxlm.d6light.data.model;
 public class D6LEntityDirectedLinkStatsAccessor
 {
 
-    /* Master accessors */
-	/*
-	Map<Integer,D6LEntityDirectedLinkStats> mapByEntityId;
-    */
-    /**
-     * Constructor, opens all primary and secondary indices.
-     * @param store Store
-     */
-	/*
-    public D6LEntityDirectedLinkStatsAccessor()
-    {
-
-    	mapByEntityId = new HashMap<>();
-    	
-    }
-
-	public D6LEntityDirectedLinkStats getByEntityId( int entityId ) {
-		return mapByEntityId.get( entityId );
+	public D6LEntityDirectedLinkStats getByEntity( Session session, D6LVertex vertex ) {
+		
+		D6LEntityDirectedLinkStats result = 
+			session.byNaturalId( D6LEntityDirectedLinkStats.class ).load();
+		
+		return result;
 	}
 
-	public Iterator<Entry<Integer,D6LEntityDirectedLinkStats>> getIterator() {
-		return mapByEntityId.entrySet().iterator();
-	}
-    */
     /**
      * Get Bom heads.<p/>
      * Bom Heads have more than 2 links directed to them.
@@ -42,29 +35,27 @@ public class D6LEntityDirectedLinkStatsAccessor
      * @param idBench idBench
      * @return
      */
-	/*
-    public Set<Integer> getBomHeads() {
-    	// Bom Heads have more than 2 links directed to them
+    public Set<D6LVertex> getBomHeads( Session session ) {
     	
-    	Set<Integer> result = new HashSet<>();
+    	// Bom Heads have more than 2 links directed to them
+    	SelectionQuery<D6LEntityDirectedLinkStats> query = session
+    		.createSelectionQuery( 
+    			"from D6LEntityDirectedLinkStats where nbDirectedLinks=0", 
+    			D6LEntityDirectedLinkStats.class 
+    		);
+    	
+    	List<D6LEntityDirectedLinkStats> stats = query.getResultList();
+    	
+    	Set<D6LVertex> result = new HashSet<>();
         
-    	for ( Entry<Integer,D6LEntityDirectedLinkStats> entry : mapByEntityId.entrySet() ) {
+    	for ( D6LEntityDirectedLinkStats stat : stats ) {
     		
-    		if ( entry.getValue().getNbDirectedLinksFromForBench() == 0 ) {
-    			result.add( entry.getKey() );
-    		}
+    		result.add( stat.getVertex() );
     	}
     	
     	return Collections.unmodifiableSet( result );
     }
 
-	public D6LEntityDirectedLinkStats newStats( int idEntity ) {
-		D6LEntityDirectedLinkStats stats = new D6LEntityDirectedLinkStats( idEntity );
-		mapByEntityId.put( idEntity, stats );
-		return stats;
-	}
-
-    */
     /**
      * Get top object-entity given a bench
      * @param txn Transaction

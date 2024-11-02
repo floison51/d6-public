@@ -4,7 +4,6 @@ import jakarta.persistence.Basic;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
 
 /**
@@ -26,7 +25,6 @@ public class D6LHistogramEntry {
 	@SequenceGenerator( name="D6LMeasureSeq", sequenceName="seq_D6LMeasure", initialValue = 0, allocationSize=0)
 	private int id;
 	
-	@ManyToOne
 	@Enumerated
 	@Basic(optional=false)
     private HistoKeyEnum histoKey;
@@ -38,9 +36,8 @@ public class D6LHistogramEntry {
 		super();
 	}
 	
-	D6LHistogramEntry( int id, HistoKeyEnum histoKey, long longValue ) {
+	public D6LHistogramEntry( HistoKeyEnum histoKey, long longValue ) {
 		super();
-		this.id = id;
 		this.histoKey = histoKey;
 		this.longValue = longValue;
 	}

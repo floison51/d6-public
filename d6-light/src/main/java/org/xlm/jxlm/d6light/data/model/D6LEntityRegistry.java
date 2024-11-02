@@ -18,119 +18,64 @@
 
 package org.xlm.jxlm.d6light.data.model;
 
+import java.util.List;
+import java.util.stream.Stream;
+
+import org.hibernate.Session;
+import org.hibernate.query.Query;
+import org.hibernate.query.SelectionQuery;
+import org.xlm.jxlm.d6light.data.db.D6LDb;
+import org.xlm.jxlm.d6light.data.exception.D6LException;
+import org.xlm.jxlm.d6light.data.packkage.D6LPackageSubtypeEnum;
+import org.xlm.jxlm.d6light.data.packkage.D6LPackageTypeEnum;
+
 public class D6LEntityRegistry {
-
-	/*
-	private Map<Integer,D6LEntityIF> registryIn = new HashMap<>();
 	
-	private static AtomicInteger seqVertex = new AtomicInteger();
-
-	private Map<Integer,D6LEntityIF> registryOut = new HashMap<>();
+	private final D6LDb db;
 	
-	private static AtomicInteger seqPackageVertex = new AtomicInteger();
-
-	private void registerVertex( D6LVertex v ) {
-
-		int id = v.getId();
-		
-		if ( registryIn.containsKey( id ) ) {
-			throw new D6LError( MessageFormat.format( "Duplicate id ${0}", id ) );
-		}
-		
-		registryIn.put( id, v );
-		
-	}
-	*/
-	/**
-	 * For import: id provided by importer
-	 * @param id
-	 * @return
-	 * @throws D6LError
-	 */
-	/*
-	public D6LVertex newVertex( int id ) throws D6LError {
-		
-		D6LVertex vertex = new D6LVertex( id );
-		registerVertex( vertex );
-		
-		return vertex;
-		
-	}
-	*/
-	/*
-	public D6LVertex newVertex() throws D6LError {
-		
-		return newVertex( seqVertex.getAndIncrement() );
-		
+	public D6LEntityRegistry( D6LDb db ) {
+		super();
+		this.db = db;
 	}
 
-	private void registerPackageVertex( D6LPackage pv ) {
-		
-		int id = pv.getId();
-		
-		if ( registryOut.containsKey( id ) ) {
-			throw new D6LError( MessageFormat.format( "Duplicate package id ${0}", id ) );
-		}
-		
-		registryOut.put( id,  pv );
-	}
-	
-	public D6LPackage newPackage( 
-		D6LPackageTypeEnum type, D6LPackageSubtypeEnum subtype 
-	) throws D6LError {
-		
-		D6LPackage packageVertex = 
-			new D6LPackage( 
-				seqPackageVertex.getAndIncrement(),
-				type, subtype
-			);
-		registerPackageVertex( packageVertex );
-		
-		return packageVertex;
-		
-	}
-
-	public D6LPackage getOrCreateSingleLot( D6LPackageTypeEnum packageType ) throws D6LException {
+	public D6LPackage getOrCreateSingleLot( Session session, D6LPackageTypeEnum packageType ) throws D6LException {
     
-		D6LPackage singleLot = getSingleLot();
+		D6LPackage singleLot = getSingleLot( session );
         
         // exists?
         if ( singleLot == null ) {
             
             singleLot = createSingleLot( 
+            	session,
             	packageType, D6LPackage.TECH_NAME_SINGLE
             );
+            
         }
         
         return singleLot;
  	}
 
 	protected D6LPackage createSingleLot( 
+		Session session, 
 		D6LPackageTypeEnum lotType, String lotName 
 	 ) throws D6LException {
 	  
         // create a single lot for current bench
-		D6LPackage singleLot = 
-			new D6LPackage( 
-				seqPackageVertex.getAndIncrement(), 
-				lotType, 
-				null 
-				
-			);
         // sub-type to identify component lot later on
-        singleLot.setPackageSubtype( D6LPackageSubtypeEnum.SINGLE_LOT );
-        // name
-        singleLot.setName( lotName );
- 
-        // Register
-		registerPackageVertex( singleLot );
-       
+		D6LPackage singleLot = new D6LPackage( lotType, D6LPackageSubtypeEnum.SINGLE_LOT ); 
+		
+        // Persist
+        session.persist( singleLot );
+        
+        // add to graph
+        db.outGraph.addVertex( singleLot );
+        
         return singleLot;
  
     }
-	*/
+	
     /**
-	 * Get single lot given a bench and a pass<p/>
+	 * Get single lot
 	 * @param txn
 	 * @param cursorConfig
 	 * @param idBench
@@ -138,42 +83,39 @@ public class D6LEntityRegistry {
 	 * @return
 	 * @throws X6Exception
 	 */
-	/*
-	public D6LPackage getSingleLot() throws D6LException {
+	public D6LPackage getSingleLot( Session session ) throws D6LException {
 		
 		// get single lots for current bench
 		
-		D6LPackage singleLotForBench = null;
+		D6LPackage singleLot = null;
 		
-		for ( D6LEntityIF outEntity : registryOut.values() ) {
-			
-			if ( outEntity instanceof D6LPackage ) {
-				
-				D6LPackage pv = ( D6LPackage ) outEntity;
-				
-				if ( pv.getPackageSubtype() == D6LPackageSubtypeEnum.SINGLE_LOT ) {
-					
-					if ( singleLotForBench != null ) {
-						throw new D6LException( "Found several Single packages" );
-					}
-					
-					singleLotForBench = pv;
-				}
-			}
+		SelectionQuery<D6LPackage> query = session
+			.createSelectionQuery( "from D6LPackage where packageSubtype=?1", D6LPackage.class )
+			.setParameter( 1, D6LPackageSubtypeEnum.SINGLE_LOT );
+		
+		List<D6LPackage> singlePackages = query.getResultList();
+
+		if ( singlePackages.size() > 1 ) {
+			throw new D6LException( "Found several Single packages" );
 		}
+
+		if ( singlePackages.size() == 1 ) {
+			// Found
+			singleLot = singlePackages.get( 0 );
+		}
+
+		return singleLot;
 		
-		return singleLotForBench;
+	}
+
+	public Stream<D6LVertex> getVertices( Session session, D6LPackage packkage ) {
+		
+		Query<D6LVertex> query = session
+			.createQuery( "from D6Vertex where packkage =%0", D6LVertex.class )
+			.setParameter( 0, packkage );
+		
+		return query.getResultStream();
 		
 	}
-
-	public D6LVertex getVertex( int id ) {
-		return (D6LVertex) registryIn.get( id );
-	}
-
-	public Iterator<D6LEntityIF> entityIterator() {
-		return registryIn.values().iterator();
-	}
-
-	*/
 
 }

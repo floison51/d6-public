@@ -18,6 +18,7 @@
 
 package org.xlm.jxlm.d6light.data.command;
 
+import org.hibernate.Session;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
 
 /**
@@ -41,7 +42,7 @@ public interface D6LCommandIF {
 	 * @throws X6Exception 
 	 * @throws D6NotAllocatedException 
 	 */
-	public void execute() throws D6LException;
+	public void execute( Session session ) throws D6LException;
 
 	/**
 	 * Get conf ID read from D6 configuration file, example : &lt;algoRef refId="bom-algo"/&gt;

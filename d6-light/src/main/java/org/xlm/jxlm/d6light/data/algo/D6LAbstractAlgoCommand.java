@@ -20,6 +20,7 @@ package org.xlm.jxlm.d6light.data.algo;
 
 import java.lang.reflect.Constructor;
 
+import org.hibernate.Session;
 import org.xlm.jxlm.d6light.data.command.D6LAbstractCommand;
 import org.xlm.jxlm.d6light.data.conf.D6LightDataConf;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
@@ -119,10 +120,10 @@ public abstract class D6LAbstractAlgoCommand
 	 * @throws D6LException
 	 */
 	@Override
-	protected void doPrepare( final boolean callAlgo ) throws D6LException {
+	protected void doPrepare( Session session, final boolean callAlgo ) throws D6LException {
 		
 		// Delegate to algo
-        getAlgo().doPrepare( this );
+        getAlgo().doPrepare( session, this );
         
 	}
 
@@ -130,7 +131,7 @@ public abstract class D6LAbstractAlgoCommand
 	 * Command based run
 	 * @throws D6LException
 	 */
-	protected void doRun( final boolean callAlgo ) throws D6LException {
+	protected void doRun( Session session, final boolean callAlgo ) throws D6LException {
 		
 		// delegate to algo
     	if ( callAlgo ) {
@@ -138,7 +139,7 @@ public abstract class D6LAbstractAlgoCommand
     	    D6LAlgoIF algo = getAlgo();
             
     	    // run
-    	    algo.doRun( this );
+    	    algo.doRun( session, this );
     	    
     	}
     	

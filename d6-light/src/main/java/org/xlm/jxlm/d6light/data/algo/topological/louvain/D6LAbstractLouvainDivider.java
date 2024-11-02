@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
+import org.hibernate.Session;
 import org.xlm.jxlm.d6light.data.algo.D6LAlgoCommandIF;
 import org.xlm.jxlm.d6light.data.algo.topological.D6LAbstractTopologicalDivider;
 import org.xlm.jxlm.d6light.data.conf.AbstractAlgoType;
@@ -56,7 +57,7 @@ public abstract class D6LAbstractLouvainDivider extends D6LAbstractTopologicalDi
 	}
 	
 	@Override
-	public final void doPrepare( D6LAlgoCommandIF algoCommand ) throws D6LException {
+	public final void doPrepare( Session session, D6LAlgoCommandIF algoCommand ) throws D6LException {
 		
 		// Clean specific bench folder
 		try {
@@ -120,7 +121,7 @@ public abstract class D6LAbstractLouvainDivider extends D6LAbstractTopologicalDi
 	}
 
 	@Override
-	protected void doAlgoRun( D6LAlgoCommandIF algoCommand ) throws D6LException {
+	protected void doAlgoRun( Session session, D6LAlgoCommandIF algoCommand ) throws D6LException {
 		
 		throw new D6LError( "TODO" );
 		/*

@@ -20,13 +20,10 @@ package org.xlm.jxlm.d6light.data.command;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jgrapht.Graph;
+import org.hibernate.Session;
 import org.xlm.jxlm.d6light.data.conf.D6LightDataConf;
 import org.xlm.jxlm.d6light.data.db.D6LDb;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
-import org.xlm.jxlm.d6light.data.model.D6LEdge;
-import org.xlm.jxlm.d6light.data.model.D6LPackage;
-import org.xlm.jxlm.d6light.data.model.D6LVertex;
 
 /**
  * Base abstract class for commands
@@ -39,9 +36,6 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
 	
 	/** Configuration **/
 	protected D6LightDataConf conf;
-	
-	protected Graph<D6LVertex,D6LEdge> inGraph;
-	protected Graph<D6LPackage,D6LEdge> outGraph;
 	
 	protected final D6LDb db = D6LDb.getInstance();
 	
@@ -65,27 +59,29 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
 	}
 
 	@Override
-	public final void execute() throws D6LException
+	public final void execute( Session session ) throws D6LException
 	{
 		
-        doPrepare( true );
-        doRun( true );
+        doPrepare( session, true );
+        doRun( session, true );
 		
 	}
 
 	/**
 	 * Prepare before execution
+	 * @param session 
 	 */
-	protected abstract void doPrepare( final boolean callAlgo ) throws D6LException;
+	protected abstract void doPrepare( Session session, final boolean callAlgo ) throws D6LException;
 
 	/**
 	 * Actual command execution
+	 * @param session 
 	 * 
 	 * @param txn
 	 * @throws X6Exception
 	 * @throws Exception
 	 */
-	protected abstract void doRun( final boolean callAlgo ) throws D6LException;
+	protected abstract void doRun( Session session, final boolean callAlgo ) throws D6LException;
 
 
     /**
