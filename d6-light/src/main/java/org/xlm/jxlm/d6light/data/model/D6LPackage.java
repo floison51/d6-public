@@ -18,6 +18,8 @@
 
 package org.xlm.jxlm.d6light.data.model;
 
+import java.util.Objects;
+
 import org.hibernate.SessionFactory;
 import org.jgrapht.Graph;
 import org.xlm.jxlm.d6light.data.exception.D6LError;
@@ -28,28 +30,25 @@ import jakarta.persistence.Basic;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
-import jakarta.persistence.SequenceGenerator;
 
 @Entity
 public class D6LPackage extends D6LAbstractEntity {
 
-	public static final int TECH_ID_UNALLOCATED = -1;
-	public static final int BIZ_ID_ROOT_BENCH = -2;
-
 	/** Lot containing single objects **/
     public static final String 	TECH_NAME_SINGLE = "Single";
 
-	public static final D6LPackage UNALLOCATED = new D6LPackage( TECH_ID_UNALLOCATED, D6LPackageTypeEnum.TECHNICAL_PKG );
+	public static final D6LPackage UNALLOCATED = new D6LPackage( D6LPackageTypeEnum.TECHNICAL_PKG );
 
 	// Create a root target package
 	public static final D6LPackage ROOT_BENCH_PACKAGE = 
-		new D6LPackage( BIZ_ID_ROOT_BENCH, D6LPackageTypeEnum.BUSINESS_PKG );
-	
+		new D6LPackage( D6LPackageTypeEnum.BUSINESS_PKG );
 
 	@Id
-	@SequenceGenerator( name="D6LPackageSeq", sequenceName="seq_D6LPackage", initialValue = 0, allocationSize=0)
+	@GeneratedValue( strategy = GenerationType.AUTO )
 	private int id;
 	
 	@Enumerated
@@ -140,7 +139,7 @@ public class D6LPackage extends D6LAbstractEntity {
 	public static void initDb( SessionFactory sessionFactory, Graph<D6LPackage, D6LEdge> outGraph ) {
 		
 		// Create persisted objects
-		sessionFactory.inSession( 
+		sessionFactory.inTransaction( 
 			session -> {
 				session.persist( UNALLOCATED );
 				session.persist( ROOT_BENCH_PACKAGE );
@@ -163,4 +162,21 @@ public class D6LPackage extends D6LAbstractEntity {
 		throw new D6LError( "Not supported in this flavor" );
 	}
 
+	@Override
+	public int hashCode() {
+		return Objects.hash(id);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		D6LPackage other = (D6LPackage) obj;
+		return id == other.id;
+	}
+	
 }

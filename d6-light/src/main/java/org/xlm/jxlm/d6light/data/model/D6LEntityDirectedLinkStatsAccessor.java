@@ -40,15 +40,15 @@ public class D6LEntityDirectedLinkStatsAccessor
     	// Bom Heads have more than 2 links directed to them
     	SelectionQuery<D6LEntityDirectedLinkStats> query = session
     		.createSelectionQuery( 
-    			"from D6LEntityDirectedLinkStats where nbDirectedLinks=0", 
+    			"from D6LEntityDirectedLinkStats where isBomHeadForBench=true", 
     			D6LEntityDirectedLinkStats.class 
     		);
     	
-    	List<D6LEntityDirectedLinkStats> stats = query.getResultList();
+    	List<D6LEntityDirectedLinkStats> statsBomHead = query.getResultList();
     	
     	Set<D6LVertex> result = new HashSet<>();
         
-    	for ( D6LEntityDirectedLinkStats stat : stats ) {
+    	for ( D6LEntityDirectedLinkStats stat : statsBomHead ) {
     		
     		result.add( stat.getVertex() );
     	}

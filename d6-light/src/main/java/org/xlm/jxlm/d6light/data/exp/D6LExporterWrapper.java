@@ -16,46 +16,49 @@
  *  along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html
 **/
 
-package org.xlm.jxlm.d6light.data.imp;
+package org.xlm.jxlm.d6light.data.exp;
 
 import java.text.MessageFormat;
 
-import org.jgrapht.nio.BaseEventDrivenImporter;
-import org.jgrapht.nio.GraphImporter;
-import org.jgrapht.nio.gml.GmlImporter;
+import org.jgrapht.nio.GraphExporter;
+import org.jgrapht.nio.gml.GmlExporter;
 import org.xlm.jxlm.d6light.data.D6LGraphFormatEnum;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
 import org.xlm.jxlm.d6light.data.model.D6LEdge;
-import org.xlm.jxlm.d6light.data.model.D6LVertex;
+import org.xlm.jxlm.d6light.data.model.D6LPackage;
 
 /**
  * Graph file importer
  */
-public class D6LImporterWrapper {
+public class D6LExporterWrapper {
 
-	public GraphImporter<D6LVertex, D6LEdge> getGraphImporterInstance( 
+	public GraphExporter<D6LPackage, D6LEdge> getGraphExporterInstance( 
 		D6LGraphFormatEnum format
 	) throws D6LException {
 
-		GraphImporter<D6LVertex, D6LEdge> result = null;
-		BaseEventDrivenImporter<D6LVertex, D6LEdge> intermediate = null;
+		GraphExporter<D6LPackage, D6LEdge> result = null;
+		//BaseEventDrivenExporter<D6LVertex, D6LEdge> intermediate = null;
 		
 		switch ( format ) {
 
 			case GML: {
 				
-				GmlImporter<D6LVertex, D6LEdge> gmlImp = new GmlImporter<>();
-				intermediate = gmlImp;
+				GmlExporter<D6LPackage, D6LEdge> gmlImp = new GmlExporter<>();
 				result = gmlImp;
+				/*
+				intermediate = gmlImp;
 				
 				// Set vertex factory
 				gmlImp.setVertexFactory(
 					id -> {
 						D6LVertex v = new D6LVertex( id );
+						
+						// Persist
+						
 						return v;
 					}
 				);
-				
+				*/
 				break;
 			}
 	
@@ -80,9 +83,9 @@ public class D6LImporterWrapper {
 					
 				}
 			);
+			
 		*/
-
-		return (GraphImporter<D6LVertex, D6LEdge>) result;
+		return (GraphExporter<D6LPackage, D6LEdge>) result;
 
 	}
 

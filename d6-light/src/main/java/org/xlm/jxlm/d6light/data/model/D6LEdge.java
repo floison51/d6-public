@@ -19,6 +19,7 @@
 package org.xlm.jxlm.d6light.data.model;
 
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jgrapht.graph.DefaultEdge;
 
@@ -30,6 +31,8 @@ import jakarta.persistence.SequenceGenerator;
 @Entity
 public class D6LEdge extends DefaultEdge implements D6LEntityIF {
 
+	private static AtomicInteger seqIdEdge = new AtomicInteger();
+	
 	/** Serial ID **/
 	private static final long serialVersionUID = -4376861182806887574L;
 	
@@ -44,12 +47,16 @@ public class D6LEdge extends DefaultEdge implements D6LEntityIF {
 
 	D6LEdge() {
 		super();
+		// Make sure id is unique, unless Set<D6LEdge> will not work
+		this.id = seqIdEdge.getAndIncrement();
 	}
-	
+
+	/*
 	D6LEdge( int id ) {
 		this();
 		this.id = id;
 	}
+	*/
 	
 	@Override
 	public int getId() {
@@ -77,7 +84,7 @@ public class D6LEdge extends DefaultEdge implements D6LEntityIF {
 
 	@Override
 	public String toString() {
-		return "D6OuterEdge [getSource()=" + getSource() + ", getTarget()=" + getTarget() + "]";
+		return "D6OLEdge [getSource()=" + getSource() + ", getTarget()=" + getTarget() + "]";
 	}
 
 	@Override
@@ -98,40 +105,4 @@ public class D6LEdge extends DefaultEdge implements D6LEntityIF {
 	}
 
 
-	/*
-	public D6OuterEdge( int id ) {
-		super();
-		this.innerEdge = new D6InnerEdge( id );
-	}
-	
-	public class D6InnerEdge extends D6AbstractEntity {
-
-		public D6InnerEdge( int id ) {
-			super( id );
-		}
-		
-	}
-	
-	private D6InnerEdge innerEdge;
-
-	@Override
-	public int getId() {
-		return innerEdge.getId();
-	}
-
-	@Override
-	public String getLabel() {
-		return innerEdge.getLabel();
-	}
-	
-	public void setId(int id) {
-		this.innerEdge.setId( id );
-	}
-
-	public void setLabel(String label) {
-		this.innerEdge.setLabel( label );
-	}
-	*/
-	
-	
 }

@@ -63,8 +63,15 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
 	{
 		
         doPrepare( session, true );
+        
+        // flush session
+        session.flush();
+        
         doRun( session, true );
 		
+        // flush session
+        session.flush();
+        
 	}
 
 	/**

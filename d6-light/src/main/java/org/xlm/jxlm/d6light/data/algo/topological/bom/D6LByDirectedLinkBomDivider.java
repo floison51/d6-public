@@ -90,10 +90,12 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 		
 		// process boms for current bench
 		processBomsForBench( session);
-					
+		session.flush();
+		
         // Circuits are not allocated
 		// Fix this
         allocateCircuitsToErrorLot( session );
+		session.flush();
         
 	}
 
@@ -116,7 +118,7 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
     	for ( D6LVertex bomHeadVertex: allBomHeadVertices ) {
 		   
 			// process only unallocated boms
-			if ( bomHeadVertex.getPackage() == D6LPackage.UNALLOCATED ) {
+			if ( D6LPackage.UNALLOCATED.equals( bomHeadVertex.getPackage() ) ) {
 				bomHeadVertices.add( bomHeadVertex );
 			}
 			
@@ -140,7 +142,7 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 			RecurseBomPseudoRunnable recurseBomRunnable = 
 				new RecurseBomPseudoRunnable( bomHeadEntity, bomHeadEntity.getPackage() );
 			
-			recurseBomRunnable.run();
+			recurseBomRunnable.run( session );
 			
 		}
         
@@ -164,16 +166,18 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 			
 			// set BOM head entity as primary lot target
 			bomHeadLot.setPrimaryTarget( bomHeadObject );
+			session.merge( bomHeadLot );
 			
 			// allocate bom head to lot
 			bomHeadObject.setPackage( bomHeadLot );
+			session.merge( bomHeadObject );
 			
 		}
 	}
 
 	private D6LPackage getNewBom( Session session ) throws D6LException {
 	    
-		D6LPackage bom = new D6LPackage(producesLotType, D6LPackageSubtypeEnum.BOM );
+		D6LPackage bom = new D6LPackage( producesLotType, D6LPackageSubtypeEnum.BOM );
 		
 		// Persist, add to graph
 		session.persist( bom );
@@ -278,12 +282,14 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 			sVertices.forEach(
 				v -> {
 					v.setPackage( toBomId );
+					session.merge( toBomId );
 				}
 			);
 		}
 		
 		// change bom head
 		currentBomHead.setPackage( toBomId );
+		session.merge( currentBomHead );
 		
 	}
 
@@ -330,14 +336,14 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 			this.bom = bom;
 		}
 
-		public void run() throws D6LException {
+		public void run( Session session ) throws D6LException {
 
 			// Init set of objects and links belonging to BOM
 			Set<Integer> bomObjectContent = new HashSet<>();
 
 			// recurse BOM
 			try {
-				recurseBom( bom, bomHeadEntity, bomObjectContent );
+				recurseBom( session, bom, bomHeadEntity, bomObjectContent );
 			} catch ( Exception e ) {
 				throw new D6LException( e );
 			}
@@ -347,6 +353,7 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 		}
 		
 		private void recurseBom( 
+			Session session,
 			D6LPackage bom, D6LVertex bomEntity, final Set<Integer> bomEntityContent
 		) throws Exception {
 			
@@ -355,11 +362,11 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 			
 			// set bom ID to current object
 			
-			if ( bomEntity.getPackage() == D6LPackage.UNALLOCATED ) {
+			if ( bomEntity.getPackage().getId() == D6LPackage.UNALLOCATED.getId() ) {
 					
 				// not allocated yet
 				bomEntity.setPackage( bom );
-				
+				session.merge( bomEntity );		
 			}
 			
 			// Get links to avoid modification into cursor to avoid leaving too much openened cursors
@@ -370,6 +377,7 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 				
 				// set bom to link
 				link.setPackage( bom );
+				session.merge( link );		
 				
 				D6LVertex child = inGraph.getEdgeTarget( link );
 				
@@ -378,14 +386,14 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 				      ( bomEntityContent.contains( child.getId() ) )
 				      ||
 				      // already allocated?
-				      ( child.getPackage() != D6LPackage.UNALLOCATED )
+				      ( child.getPackage().getId() != D6LPackage.UNALLOCATED.getId() )
 				){
 					// yes, next child
 					continue;
 				}
 				
 				// recurse child
-				recurseBom( bom, child, bomEntityContent );
+				recurseBom( session, bom, child, bomEntityContent );
 				
 			}
 			

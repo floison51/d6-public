@@ -200,6 +200,9 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 			
 		}
 		
+		// Flush DB
+		session.flush();
+		
 		// Execute post actions
         for ( D6LJobIF<D6LEntityIF> postAction : postActions ) {
             postAction.doJob( null );
@@ -425,7 +428,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 		}
 		
 		// find links from this entity
-    	Set<D6LEdge> directedLinksFromEntity = db.inGraph.incomingEdgesOf( entity );
+    	Set<D6LEdge> directedLinksFromEntity = db.inGraph.outgoingEdgesOf( entity );
     	// count directed links from entity
     	int nbDirectedLinksFromEntity = directedLinksFromEntity.size();
     	// Graph is directed by constraint
@@ -433,7 +436,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
     	
     	// count directed links to entity
 		// find links from this entity
-    	Set<D6LEdge> directedLinksToEntity = db.inGraph.outgoingEdgesOf( entity );
+    	Set<D6LEdge> directedLinksToEntity = db.inGraph.incomingEdgesOf( entity );
     	int nbDirectedLinksToEntity = directedLinksToEntity.size();
 
     	// count links to entity

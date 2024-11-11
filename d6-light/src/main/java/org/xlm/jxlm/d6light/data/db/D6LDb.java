@@ -97,13 +97,14 @@ public class D6LDb {
                 .buildSessionFactory();
 
         // export the inferred database schema
-        sessionFactory.getSchemaManager().exportMappedObjects(true);
+        sessionFactory.getSchemaManager().exportMappedObjects( true );
         
         // Init packages
         D6LPackage.initDb( sessionFactory, outGraph );
         
-        sessionFactory.inSession(
+        sessionFactory.inTransaction(
         	session -> {
+        		
 		        // Save vertices
 		        for ( D6LVertex v : inGraph.vertexSet() ) {
 		        	session.persist( v );
@@ -112,41 +113,13 @@ public class D6LDb {
 		        for ( D6LEdge e : inGraph.edgeSet() ) {
 		        	session.persist( e );
 		        }
-        	});
+		        
+        	}
+        );
         
-        /*
-        // persist an entity
-        sessionFactory.inTransaction(session -> {
-        	
-        	D6LPackage p = new D6LPackage( 10, D6LPackageTypeEnum.BUSINESS_PKG, null );
-            session.persist( p );
-
-            D6LVertex v = new D6LVertex( 1 );
-        	v.setPackage( p );
-        	
-            session.persist( v );
-        });
-        
-        // query data using HQL
-        sessionFactory.inSession(session -> {
-        	SelectionQuery<D6LVertex> query = session.createSelectionQuery( "from D6LVertex", D6LVertex.class );
-            System.out.println( query.getResultList() );
-        });
-		*/
-        /*
-        // query data using criteria API
-        sessionFactory.inSession(session -> {
-            var builder = sessionFactory.getCriteriaBuilder();
-            var query = builder.createQuery(String.class);
-            var book = query.from(Book.class);
-            query.select(builder.concat(builder.concat(book.get(D6LVertex_.id), builder.literal(": "))));
-            System.out.println(session.createSelectionQuery(query).getSingleResult());
-        });
-        */
     }
 	
 	public SessionFactory getSessionFactory() {
-		
 		return sessionFactory;
 	}
 

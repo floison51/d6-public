@@ -34,4 +34,5 @@ public abstract class D6LAbstractEntity implements D6LEntityIF {
 		this.label = label;
 	}
 
+	
 }

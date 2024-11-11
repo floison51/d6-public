@@ -111,8 +111,8 @@ public class D6LEntityRegistry {
 	public Stream<D6LVertex> getVertices( Session session, D6LPackage packkage ) {
 		
 		Query<D6LVertex> query = session
-			.createQuery( "from D6Vertex where packkage =%0", D6LVertex.class )
-			.setParameter( 0, packkage );
+			.createQuery( "from D6LVertex where packkage =?1", D6LVertex.class )
+			.setParameter( 1, packkage );
 		
 		return query.getResultStream();
 		

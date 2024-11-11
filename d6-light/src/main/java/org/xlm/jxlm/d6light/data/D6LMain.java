@@ -37,10 +37,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.appender.FileAppender;
-import org.hibernate.Session;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.AsUnmodifiableGraph;
 import org.jgrapht.graph.SimpleDirectedGraph;
+import org.jgrapht.nio.GraphExporter;
 import org.jgrapht.nio.GraphImporter;
 import org.xlm.jxlm.d6light.data.algo.D6LAbstractAlgo;
 import org.xlm.jxlm.d6light.data.algo.D6LAbstractAlgoCommand;
@@ -50,8 +50,9 @@ import org.xlm.jxlm.d6light.data.conf.AbstractAlgoType;
 import org.xlm.jxlm.d6light.data.conf.D6LConfHelper;
 import org.xlm.jxlm.d6light.data.conf.D6LightDataConf;
 import org.xlm.jxlm.d6light.data.db.D6LDb;
+import org.xlm.jxlm.d6light.data.exception.D6LError;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
-import org.xlm.jxlm.d6light.data.imp.D6LGraphFormatEnum;
+import org.xlm.jxlm.d6light.data.exp.D6LExporterWrapper;
 import org.xlm.jxlm.d6light.data.imp.D6LImporterWrapper;
 import org.xlm.jxlm.d6light.data.model.D6LEdge;
 import org.xlm.jxlm.d6light.data.model.D6LPackage;
@@ -74,6 +75,9 @@ public class D6LMain {
 	/** Option graph file input **/
 	public static final String OPTION_GRAPH_IN = "graphIn";
 	
+	/** Option graph file output **/
+	public static final String OPTION_GRAPH_OUT = "graphOut";
+	
 	/** Option graph format **/
 	public static final String OPTION_GRAPH_FORMAT = "graphFormat";
 
@@ -81,10 +85,12 @@ public class D6LMain {
 
 	private File graphInFile;
 
+	private File graphOutFile;
+	
 	private D6LGraphFormatEnum graphFormat;
 
 	private D6LightDataConf d6lConf;
-	
+
     /**
      * Default constructor
      */
@@ -147,7 +153,7 @@ public class D6LMain {
     private void processCmd( CommandLine cmd ) throws D6LException {
 		
     	// Get conf file
-    	this.d6ConfFile = getFileFromOption( cmd, OPTION_CONF );
+    	this.d6ConfFile = getFileFromOption( cmd, OPTION_CONF, true );
     	
     	// Read conf
     	// Get JAXB config
@@ -159,9 +165,13 @@ public class D6LMain {
     		D6LException.handleException( ioe );
     	}
     	
-    	// Get graph file
-    	this.graphInFile = getFileFromOption( cmd, OPTION_GRAPH_IN );
+    	// Get graph in file
+    	this.graphInFile = getFileFromOption( cmd, OPTION_GRAPH_IN, true );
 
+    	// Get graph out file
+    	this.graphOutFile = getFileFromOption( cmd, OPTION_GRAPH_OUT, false );
+    	this.graphOutFile.getParentFile().mkdirs();
+    	
     	// Get graph format
     	String strGraphFormat = cmd.getOptionValue( OPTION_GRAPH_FORMAT );
     	
@@ -190,6 +200,9 @@ public class D6LMain {
     	
     	// Go!
     	runAlgo( idAlgo );
+    	
+    	// Output
+    	outputGraph( D6LDb.getInstance().outGraph );
     	
 	}
 
@@ -238,13 +251,21 @@ public class D6LMain {
 			this.d6lConf
 		);
 		
-		try (
-			// Create DB session
-			Session session = D6LDb.getInstance().getSessionFactory().openSession();
-		) {
-			// Run algo
-			cmdAlgo.execute( session );
-		}
+		// Create DB transaction
+		D6LDb.getInstance().getSessionFactory().inTransaction( 
+			session -> {
+				
+				try {
+					
+					// Run algo
+					cmdAlgo.execute( session );
+					
+				} catch ( D6LException e ) {
+					D6LError.handleThrowable( e );
+				}
+			}
+		);
+
 	}
 
 	protected void importGraph( Graph<D6LVertex, D6LEdge> graph ) throws D6LException {
@@ -259,9 +280,46 @@ public class D6LMain {
     	// Import graph
     	importer.importGraph( graph, graphInFile );
     	
+    	/*
+    	// Check
+    	System.out.println( graph.edgeSet() );
+    	
+    	GraphMLExporter<D6LVertex, D6LEdge> graphExporter = new GraphMLExporter<>();
+    	graphExporter.setExportVertexLabels( true );
+    	
+    	graphExporter.setVertexAttributeProvider(
+    		v -> {
+    			
+    			Map<String,Attribute> map = new HashMap<>();
+    			
+    			StringBuilder label = new StringBuilder();
+    			label.append( Integer.toString( v.getId() ) ).append( '\n' );
+    			label.append( v.getLabel() );
+    				
+    			map.put( graphExporter.getVertexLabelAttributeName() , DefaultAttribute.createAttribute( label.toString()) );
+    			
+    			return map;
+    		}
+    	);
+    	
+    	graphExporter.exportGraph( graph, new File( "target/check.graphml" ) );
+    	*/
 	}
 
-	private File getFileFromOption( CommandLine cmd, String option ) throws D6LException {
+	private void outputGraph(Graph<D6LPackage, D6LEdge> graph ) throws D6LException {
+
+		// Exporter wrapper
+    	D6LExporterWrapper exporterWrapper = new D6LExporterWrapper();
+    	
+    	// Get graph importer according to format
+    	GraphExporter<D6LPackage, D6LEdge> exporter =  
+    		exporterWrapper.getGraphExporterInstance( graphFormat );
+    	
+    	// Export graph
+    	exporter.exportGraph( graph, graphOutFile );
+	}
+
+	private File getFileFromOption( CommandLine cmd, String option, boolean isCheck ) throws D6LException {
 		
 		String path = cmd.getOptionValue( option );
  
@@ -269,12 +327,16 @@ public class D6LMain {
     	File file = new File( path );
     	
     	// Check
-    	if ( !file.exists() ) {
-    		throw new D6LException( MessageFormat.format( "File {0} doesn't exist.", file ) );
-    	}
-
-    	if ( !file.canRead() ) {
-    		throw new D6LException( MessageFormat.format( "File {0} is not readable.", file ) );
+    	if ( isCheck ) {
+    		
+	    	if ( !file.exists() ) {
+	    		throw new D6LException( MessageFormat.format( "File {0} doesn't exist.", file ) );
+	    	}
+	
+	    	if ( !file.canRead() ) {
+	    		throw new D6LException( MessageFormat.format( "File {0} is not readable.", file ) );
+	    	}
+	    	
     	}
     	
     	return file;
@@ -303,6 +365,11 @@ public class D6LMain {
 		graphInOption.setRequired( true );
 		graphInOption.setArgName( "Input graph file" );
 		options.addOption( graphInOption );
+	
+		Option graphOutOption = new Option( OPTION_GRAPH_OUT, true, "Output graph file" );
+		graphOutOption.setRequired( true );
+		graphOutOption.setArgName( "Output graph file" );
+		options.addOption( graphOutOption );
 	
 		Option graphFormatOption = new Option( OPTION_GRAPH_FORMAT, true, "Graph format" );
 		graphFormatOption.setRequired( true );

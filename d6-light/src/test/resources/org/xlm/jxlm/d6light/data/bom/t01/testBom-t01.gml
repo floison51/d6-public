@@ -22,7 +22,7 @@ graph
 		]
 		LabelGraphics
 		[
-			text	"1"
+			text	"0"
 			fontSize	12
 			fontName	"Dialog"
 			model	"null"
@@ -48,7 +48,7 @@ graph
 		]
 		LabelGraphics
 		[
-			text	"2"
+			text	"1"
 			fontSize	12
 			fontName	"Dialog"
 			model	"null"
@@ -74,7 +74,7 @@ graph
 		]
 		LabelGraphics
 		[
-			text	"3"
+			text	"2"
 			fontSize	12
 			fontName	"Dialog"
 			model	"null"
@@ -97,7 +97,7 @@ graph
 		]
 		LabelGraphics
 		[
-			text	"4"
+			text	"3"
 			fontSize	12
 			fontName	"Dialog"
 			model	"null"
@@ -120,7 +120,7 @@ graph
 		]
 		LabelGraphics
 		[
-			text	"5"
+			text	"4"
 			fontSize	12
 			fontName	"Dialog"
 			model	"null"

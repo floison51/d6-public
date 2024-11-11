@@ -16,7 +16,7 @@
  *  along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html
 **/
 
-package org.xlm.jxlm.d6light.data.imp;
+package org.xlm.jxlm.d6light.data;
 
 /**
  * Supported graph import formats
