@@ -18,13 +18,11 @@
 
 package org.xlm.jxlm.d6light.data.measures;
 
-import org.hibernate.annotations.NaturalId;
 import org.xlm.jxlm.d6light.data.model.D6LVertex;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
-import jakarta.persistence.SequenceGenerator;
 
 /**
  * Directed links per bench stats per entity
@@ -35,27 +33,17 @@ import jakarta.persistence.SequenceGenerator;
 public class D6LEntityDirectedLinkStats {
 
 	@Id
-	@SequenceGenerator( name="D6LMeasureSeq", sequenceName="seq_D6LMeasure", initialValue = 0, allocationSize=0)
-	private int id;
-	
-	@NaturalId
 	@OneToOne
     private D6LVertex vertex;
     
     /** Nb directed links from for entity bench **/
-    private int nbDirectedLinksFromForBench = -1;
-    
-    /** Nb links from for entity bench **/
-     private int nbLinksFromForBench = -1;
+    private int nbDirectedLinks = -1;
     
     /** Nb directed links to for entity bench **/
-    private int nbDirectedLinksToForBench = -1;
-    
-    /** Nb links to for entity bench **/
-    private int nbLinksToForBench = -1;
+    private int nbDirectedLinksTo = -1;
     
     /** BOM heads have 0 or more than 2 links directed to them **/
-    private boolean isBomHeadForBench = false;
+    private boolean isBomHead = false;
     
     D6LEntityDirectedLinkStats() {
     	super();
@@ -76,76 +64,42 @@ public class D6LEntityDirectedLinkStats {
 	}
 
 	public int getNbDirectedLinksFromForBench() {
-		return nbDirectedLinksFromForBench;
+		return nbDirectedLinks;
 	}
 
 	public void setNbDirectedLinksFromForBench(int nbDirectedLinksFromForBench) {
-		this.nbDirectedLinksFromForBench = nbDirectedLinksFromForBench;
+		this.nbDirectedLinks = nbDirectedLinksFromForBench;
 	}
 
     public void incNbDirectedLinksFromForBench( int incDirectedLinksFromForBench ) {
         
-        this.nbDirectedLinksFromForBench += incDirectedLinksFromForBench;
-        if ( this.nbDirectedLinksFromForBench < 0 ) {
-            this.nbDirectedLinksFromForBench = 0;
+        this.nbDirectedLinks += incDirectedLinksFromForBench;
+        if ( this.nbDirectedLinks < 0 ) {
+            this.nbDirectedLinks = 0;
         }
     }
 
-	public int getNbDirectedLinksToForBench() {
-		return nbDirectedLinksToForBench;
+	public int getNbDirectedLinksTo() {
+		return nbDirectedLinksTo;
 	}
 
-	public void setNbDirectedLinksToForBench( int nbDirectedLinksToForBench ) {
-		this.nbDirectedLinksToForBench = nbDirectedLinksToForBench;
+	public void setNbDirectedLinksTo( int nbDirectedLinksTo ) {
+		this.nbDirectedLinksTo = nbDirectedLinksTo;
 		// bom head?
-		this.isBomHeadForBench = ( nbDirectedLinksToForBench == 0 ) || ( nbDirectedLinksToForBench >= 2 );
+		this.isBomHead = ( nbDirectedLinksTo == 0 ) || ( nbDirectedLinksTo >= 2 );
 	}
 
-    public void incNbDirectedLinksToForBench( int incDirectedLinksToForBench ) {
-        this.nbDirectedLinksToForBench += incDirectedLinksToForBench;
-        if ( this.nbDirectedLinksToForBench < 0 ) {
-            this.nbDirectedLinksToForBench = 0;
+    public void incNbDirectedLinksTo( int incDirectedLinksTo ) {
+        this.nbDirectedLinksTo += incDirectedLinksTo;
+        if ( this.nbDirectedLinksTo < 0 ) {
+            this.nbDirectedLinksTo = 0;
         }
         // bom head?
-        this.isBomHeadForBench = ( nbDirectedLinksToForBench == 0 ) || ( nbDirectedLinksToForBench >= 2 );
+        this.isBomHead = ( nbDirectedLinksTo == 0 ) || ( nbDirectedLinksTo >= 2 );
     }
 
-	public boolean isBomHeadForBench() {
-		return isBomHeadForBench;
-	}
-
-	public int getNbLinksFromForBench() {
-		return nbLinksFromForBench;
-	}
-
-	public void setNbLinksFromForBench(int nbLinksFromForBench) {
-		this.nbLinksFromForBench = nbLinksFromForBench;
-	}
-
-    public void incNbLinksFromForBench(int incNbLinksFromForBench) {
-        this.nbLinksFromForBench += incNbLinksFromForBench;
-        if ( this.nbLinksFromForBench < 0 ) {
-            this.nbLinksFromForBench = 0;
-        }
-    }
-
-	public int getNbLinksToForBench() {
-		return nbLinksToForBench;
-	}
-
-	public void setNbLinksToForBench(int nbLinksToForBench) {
-		this.nbLinksToForBench = nbLinksToForBench;
-	}
-	
-    public void incNbLinksToForBench(int incNbLinksToForBench) {
-        this.nbLinksToForBench += incNbLinksToForBench;
-        if ( this.nbLinksToForBench < 0 ) {
-            this.nbLinksToForBench = 0;
-        }
-    }
-
-	public int getId() {
-		return id;
+	public boolean isBomHead() {
+		return isBomHead;
 	}
 
 }

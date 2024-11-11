@@ -165,9 +165,10 @@
 		  <systemProperties>
 			<!-- For server-side automated test: no graphic environement (avoid errors on graphers) -->
 			<property><name>java.awt.headless</name><value>true</value></property>
-		    <!-- enable this section to debug test goal -->
-		    <!-- <argLine>-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8002</argLine> -->
-
+		    <!-- To debug test goal : 
+			    mvn -Dmaven.surefire.debug test 
+				and open debugger on port 5005 
+			-->
 		  </systemProperties>
 		</configuration>
 	  </plugin>
