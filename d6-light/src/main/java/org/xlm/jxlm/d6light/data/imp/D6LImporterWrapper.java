@@ -19,52 +19,53 @@
 package org.xlm.jxlm.d6light.data.imp;
 
 import java.text.MessageFormat;
+import java.util.function.Function;
 
 import org.jgrapht.nio.BaseEventDrivenImporter;
 import org.jgrapht.nio.GraphImporter;
 import org.jgrapht.nio.gml.GmlImporter;
 import org.xlm.jxlm.d6light.data.D6LGraphFormatEnum;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
-import org.xlm.jxlm.d6light.data.model.D6LEdge;
-import org.xlm.jxlm.d6light.data.model.D6LVertex;
+import org.xlm.jxlm.d6light.data.model.D6LEntityIF;
 
 /**
  * Graph file importer
  */
-public class D6LImporterWrapper {
+public class D6LImporterWrapper<V extends D6LEntityIF, E> {
+	
+	private Function<Integer, V> vertexFactory;
 
-	public GraphImporter<D6LVertex, D6LEdge> getGraphImporterInstance( 
+	public D6LImporterWrapper( Function<Integer, V> vertexFactory ) {
+		super();
+		this.vertexFactory = vertexFactory;
+	}
+
+	public GraphImporter<V,E> getGraphImporterInstance( 
 		D6LGraphFormatEnum format
 	) throws D6LException {
 
-		GraphImporter<D6LVertex, D6LEdge> result = null;
-		BaseEventDrivenImporter<D6LVertex, D6LEdge> intermediate = null;
+		GraphImporter<V,E> result = null;
+		BaseEventDrivenImporter<V,E> intermediate = null;
 		
 		switch ( format ) {
 
 			case GML: {
 				
-				GmlImporter<D6LVertex, D6LEdge> gmlImp = new GmlImporter<>();
+				GmlImporter<V,E> gmlImp = new GmlImporter<>();
 				intermediate = gmlImp;
 				result = gmlImp;
 				
 				// Set vertex factory
-				gmlImp.setVertexFactory(
-					id -> {
-						D6LVertex v = new D6LVertex( id );
-						return v;
-					}
-				);
+				gmlImp.setVertexFactory( vertexFactory );
 				
 				break;
 			}
 	
 			default: {
-				throw new D6LException(MessageFormat.format("Unknown import format ''{0}''.", format.name()));
+				throw new D6LException(MessageFormat.format( "Unknown import format ''{0}''.", format.name() ) );
 			}
 		}
 
-		/*
 		// Set label consumer
 		intermediate.addVertexAttributeConsumer( 
 				( pair_V_attrName, attribute ) -> {
@@ -80,9 +81,8 @@ public class D6LImporterWrapper {
 					
 				}
 			);
-		*/
 
-		return (GraphImporter<D6LVertex, D6LEdge>) result;
+		return result;
 
 	}
 

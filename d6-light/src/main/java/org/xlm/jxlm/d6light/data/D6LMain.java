@@ -271,7 +271,9 @@ public class D6LMain {
 	protected void importGraph( Graph<D6LVertex, D6LEdge> graph ) throws D6LException {
 		
 		// Importer wrapper
-    	D6LImporterWrapper importerWrapper = new D6LImporterWrapper();
+    	D6LImporterWrapper<D6LVertex, D6LEdge> importerWrapper = new D6LImporterWrapper<>(
+    		id -> new D6LVertex( id )
+    	);
     	
     	// Get graph importer according to format
     	GraphImporter<D6LVertex, D6LEdge> importer =  
@@ -280,30 +282,6 @@ public class D6LMain {
     	// Import graph
     	importer.importGraph( graph, graphInFile );
     	
-    	/*
-    	// Check
-    	System.out.println( graph.edgeSet() );
-    	
-    	GraphMLExporter<D6LVertex, D6LEdge> graphExporter = new GraphMLExporter<>();
-    	graphExporter.setExportVertexLabels( true );
-    	
-    	graphExporter.setVertexAttributeProvider(
-    		v -> {
-    			
-    			Map<String,Attribute> map = new HashMap<>();
-    			
-    			StringBuilder label = new StringBuilder();
-    			label.append( Integer.toString( v.getId() ) ).append( '\n' );
-    			label.append( v.getLabel() );
-    				
-    			map.put( graphExporter.getVertexLabelAttributeName() , DefaultAttribute.createAttribute( label.toString()) );
-    			
-    			return map;
-    		}
-    	);
-    	
-    	graphExporter.exportGraph( graph, new File( "target/check.graphml" ) );
-    	*/
 	}
 
 	private void outputGraph(Graph<D6LPackage, D6LEdge> graph ) throws D6LException {

@@ -28,4 +28,6 @@ public interface D6LEntityIF {
 
 	void setPackage( D6LPackage packkage );
 
+	void setLabel( String label );
+
 }
