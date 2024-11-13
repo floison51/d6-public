@@ -40,7 +40,7 @@ public interface D6LCommandIF {
 	 * @param outGraph 
 	 * @return
 	 * @throws X6Exception 
-	 * @throws D6NotAllocatedException 
+	 * @throws D6LNotAllocatedException 
 	 */
 	public void execute( Session session ) throws D6LException;
 

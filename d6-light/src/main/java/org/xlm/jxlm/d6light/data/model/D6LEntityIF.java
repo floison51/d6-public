@@ -24,9 +24,11 @@ public interface D6LEntityIF {
 	
 	String getLabel();
 	
-	D6LPackage getPackage();
+	String getDisplay();
+	
+	D6LPackageEntityIF getPackageEntity();
 
-	void setPackage( D6LPackage packkage );
+	void setPackageEntity( D6LPackageEntityIF packkageEntity );
 
 	void setLabel( String label );
 

@@ -37,7 +37,7 @@ public abstract class D6LAbstractAlgoCommand
 {
 
     private D6LAlgoIF algo;
-
+    
 	/**
      * Default constructor
      */
@@ -141,6 +141,19 @@ public abstract class D6LAbstractAlgoCommand
     	    // run
     	    algo.doRun( session, this );
     	    
+    	    // Finalize single entities
+    	    finalizeSingleEntities( session );
+    	    
+	    	// Allocation finalisation
+            allocateLinksAndProcessBusinessLotDependencies( session );
+            processBusinessLotDependencies( session );
+			
+			// finalize lots: count nb objects and links
+			// delete empty lots, check children lots
+            finalizeLots( session );
+
+	    	doCheckAfter( session );
+	    	
     	}
     	
 	}

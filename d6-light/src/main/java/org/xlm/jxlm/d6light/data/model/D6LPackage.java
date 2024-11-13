@@ -36,7 +36,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
 
 @Entity
-public class D6LPackage extends D6LAbstractEntity {
+public class D6LPackage extends D6LAbstractEntity implements D6LPackageEntityIF {
 
 	/** Lot containing single objects **/
     public static final String 	TECH_NAME_SINGLE = "Single";
@@ -66,6 +66,8 @@ public class D6LPackage extends D6LAbstractEntity {
     @OneToOne( fetch=FetchType.LAZY )
     private D6LVertex primaryTarget;
 	
+    private D6LPackageData data = new D6LPackageData( this );
+    
 	public D6LPackage() {
 		super();
 	}
@@ -136,7 +138,7 @@ public class D6LPackage extends D6LAbstractEntity {
 		return primaryTarget;
 	}
 	
-	public static void initDb( SessionFactory sessionFactory, Graph<D6LPackage, D6LEdge> outGraph ) {
+	public static void initDb( SessionFactory sessionFactory, Graph<D6LPackage, D6LPackageEdge> outGraph ) {
 		
 		// Create persisted objects
 		sessionFactory.inTransaction( 
@@ -153,15 +155,20 @@ public class D6LPackage extends D6LAbstractEntity {
 	}
 	
 	@Override
-	public D6LPackage getPackage() {
+	public D6LPackageEntityIF getPackageEntity() {
 		throw new D6LError( "Not supported in this flavor" );
 	}
 	
 	@Override
-	public void setPackage( D6LPackage packkage ) {
+	public void setPackageEntity( D6LPackageEntityIF packageEntity ) {
 		throw new D6LError( "Not supported in this flavor" );
 	}
 
+	@Override
+	public D6LPackageData getData() {
+		return data;
+	}
+	
 	@Override
 	public int hashCode() {
 		return Objects.hash(id);
@@ -178,5 +185,5 @@ public class D6LPackage extends D6LAbstractEntity {
 		D6LPackage other = (D6LPackage) obj;
 		return id == other.id;
 	}
-	
+
 }

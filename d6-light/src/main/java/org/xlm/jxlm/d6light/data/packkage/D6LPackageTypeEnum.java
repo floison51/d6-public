@@ -29,7 +29,8 @@ public enum D6LPackageTypeEnum {
 	
 	TECHNICAL_PKG( "Technical" ),
 	TECHNICAL_PKG_DEPENDENCY( "TechnicalDep" ), 
-	BUSINESS_PKG( "Business" ),
+	BUSINESS_PKG( "Business" ), 
+	BUSINESS_PKG_DEPENDENCY( "BusinessDep" ),
 	;
 
 	private final String kind;

@@ -19,50 +19,65 @@
 package org.xlm.jxlm.d6light.data.model;
 
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jgrapht.graph.DefaultEdge;
+import org.xlm.jxlm.d6light.data.exception.D6LError;
+import org.xlm.jxlm.d6light.data.packkage.D6LPackageTypeEnum;
 
 import jakarta.persistence.Basic;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
 
 @Entity
-public class D6LEdge extends DefaultEdge implements D6LEntityIF, D6EdgeIF {
+public class D6LPackageEdge extends DefaultEdge implements D6LPackageEntityIF, D6EdgeIF {
 
-	private static AtomicInteger seqIdEdge = new AtomicInteger();
-	
 	/** Serial ID **/
 	private static final long serialVersionUID = -4376861182806887574L;
 	
 	@Id
-	@SequenceGenerator( name="D6LEdgeSeq", sequenceName="seq_D6LEdge", initialValue = 0, allocationSize=0)
+	@SequenceGenerator( name="D6LPackageEdgeSeq", sequenceName="seq_D6LPackageEdge", initialValue = 0, allocationSize=0)
 	private int id;
 	
 	private String label;
 	
 	@Enumerated
 	@Basic(optional=false)
+    private D6LPackageTypeEnum packageType;
+
 	private D6LLinkDirectionEnum linkDirection;
 	
-	@ManyToOne( targetEntity = D6LPackage.class )
-	protected D6LPackageEntityIF packageEntity = D6LPackage.UNALLOCATED;
-
-	D6LEdge() {
+    private D6LPackageData data = new D6LPackageData( this );
+    
+	D6LPackageEdge() {
 		super();
-		// Make sure id is unique, unless Set<D6LEdge> will not work
-		this.id = seqIdEdge.getAndIncrement();
 	}
 
-	/*
-	D6LEdge( int id ) {
-		this();
-		this.id = id;
+    /**
+     * Constructor for lots
+     * @param type
+     * @param displayType
+     */
+	public D6LPackageEdge( D6LPackageTypeEnum packageType ) {
+		super();
+		this.packageType = packageType;
+		
+		// if lot dependency, set default link direction
+		switch ( this.packageType ) {
+			case BUSINESS_PKG_DEPENDENCY:
+			case TECHNICAL_PKG_DEPENDENCY: {
+				// default to not directed link
+				linkDirection = D6LLinkDirectionEnum.NotDirected;
+				break;
+			}
+			default: {
+				// null direction
+				linkDirection = null;
+			}
+		}
+		
 	}
-	*/
 	
 	@Override
 	public int getId() {
@@ -76,12 +91,12 @@ public class D6LEdge extends DefaultEdge implements D6LEntityIF, D6EdgeIF {
 
 	@Override
 	public D6LPackageEntityIF getPackageEntity() {
-		return packageEntity;
+		throw new D6LError( "Not supported in this flavor" );
 	}
-
+	
 	@Override
 	public void setPackageEntity( D6LPackageEntityIF packageEntity ) {
-		this.packageEntity = packageEntity;
+		throw new D6LError( "Not supported in this flavor" );
 	}
 
 	public void setLabel(String label) {
@@ -91,6 +106,11 @@ public class D6LEdge extends DefaultEdge implements D6LEntityIF, D6EdgeIF {
 	@Override
 	public String getDisplay() {
 		return getLabel();
+	}
+
+	@Override
+	public D6LPackageData getData() {
+		return data;
 	}
 
 	@Override
@@ -104,7 +124,7 @@ public class D6LEdge extends DefaultEdge implements D6LEntityIF, D6EdgeIF {
 
 	@Override
 	public String toString() {
-		return "D6LEdge [getSource()=" + getSource() + ", getTarget()=" + getTarget() + "]";
+		return "D6LPackageEdge [getSource()=" + getSource() + ", getTarget()=" + getTarget() + "]";
 	}
 
 	@Override
@@ -120,7 +140,7 @@ public class D6LEdge extends DefaultEdge implements D6LEntityIF, D6EdgeIF {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		D6LEdge other = (D6LEdge) obj;
+		D6LPackageEdge other = (D6LPackageEdge) obj;
 		return id == other.id;
 	}
 

@@ -24,26 +24,25 @@ import org.jgrapht.nio.GraphExporter;
 import org.jgrapht.nio.gml.GmlExporter;
 import org.xlm.jxlm.d6light.data.D6LGraphFormatEnum;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
-import org.xlm.jxlm.d6light.data.model.D6LEdge;
-import org.xlm.jxlm.d6light.data.model.D6LPackage;
+import org.xlm.jxlm.d6light.data.model.D6LEntityIF;
 
 /**
  * Graph file importer
  */
-public class D6LExporterWrapper {
+public class D6LExporterWrapper<V extends D6LEntityIF, E> {
 
-	public GraphExporter<D6LPackage, D6LEdge> getGraphExporterInstance( 
+	public GraphExporter<V,E> getGraphExporterInstance( 
 		D6LGraphFormatEnum format
 	) throws D6LException {
 
-		GraphExporter<D6LPackage, D6LEdge> result = null;
+		GraphExporter<V,E> result = null;
 		//BaseEventDrivenExporter<D6LVertex, D6LEdge> intermediate = null;
 		
 		switch ( format ) {
 
 			case GML: {
 				
-				GmlExporter<D6LPackage, D6LEdge> gmlImp = new GmlExporter<>();
+				GmlExporter<V,E> gmlImp = new GmlExporter<>();
 				result = gmlImp;
 				/*
 				intermediate = gmlImp;
@@ -85,7 +84,7 @@ public class D6LExporterWrapper {
 			);
 			
 		*/
-		return (GraphExporter<D6LPackage, D6LEdge>) result;
+		return (GraphExporter<V,E>) result;
 
 	}
 

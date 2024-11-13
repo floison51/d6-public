@@ -18,13 +18,14 @@ import org.xlm.jxlm.d6light.data.model.D6LEntityDirectedLinkStatsAccessor;
 import org.xlm.jxlm.d6light.data.model.D6LEntityRegistry;
 import org.xlm.jxlm.d6light.data.model.D6LHistogramAccessor;
 import org.xlm.jxlm.d6light.data.model.D6LPackage;
+import org.xlm.jxlm.d6light.data.model.D6LPackageEdge;
 import org.xlm.jxlm.d6light.data.model.D6LVertex;
 
 
 public class D6LDb {
 
 	public final Graph<D6LVertex, D6LEdge> inGraph;
-	public final Graph<D6LPackage, D6LEdge> outGraph;
+	public final Graph<D6LPackage, D6LPackageEdge> outGraph;
 
 	public final D6LEntityRegistry daoEntityRegistry = new D6LEntityRegistry( this );
 
@@ -38,7 +39,7 @@ public class D6LDb {
 	
 	public static synchronized D6LDb getInstance( 
 		Graph<D6LVertex, D6LEdge> inGraph,
-		Graph<D6LPackage, D6LEdge> outGraph
+		Graph<D6LPackage, D6LPackageEdge> outGraph
 	) {
 		
 		if ( me == null ) {
@@ -62,7 +63,7 @@ public class D6LDb {
 
 	private D6LDb(
 		Graph<D6LVertex, D6LEdge> inGraph,
-		Graph<D6LPackage, D6LEdge> outGraph
+		Graph<D6LPackage, D6LPackageEdge> outGraph
 	) {
 		super();
 		this.inGraph = inGraph;
