@@ -18,16 +18,13 @@
 
 package org.xlm.jxlm.d6light.data.command;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
-import org.xlm.jxlm.audit.d6.data.command.D6NotAllocatedException;
-import org.xlm.jxlm.audit.d6.data.lot.D6LotLink;
-import org.xlm.jxlm.audit.x6.common.X6Exception;
-import org.xlm.jxlm.audit.x6.common.data.lot.D6LotTypeEnum;
 import org.xlm.jxlm.d6light.data.conf.D6LightDataConf;
 import org.xlm.jxlm.d6light.data.db.D6LDb;
 import org.xlm.jxlm.d6light.data.exception.D6LError;
@@ -60,6 +57,8 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
     /** cache for single lots **/
     private D6LPackage cacheSinglePackage = null;
 	
+	protected List<String> listFatalErrors = null;
+
 	/**
 	 * Default constructor
 	 */
@@ -80,7 +79,7 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
 	}
 
 	@Override
-	public final void execute( Session session ) throws D6LException
+	public final void execute( Session session ) throws D6LException, D6LNotAllocatedException
 	{
 		
         doPrepare( session, true );
@@ -152,7 +151,7 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
             }
             
         	// assign to single lot
-        	vertex.setPackage( cacheSinglePackage );
+        	vertex.setPackageEntity( cacheSinglePackage );
         	
         	// save entity
         	session.merge( vertex );
@@ -160,7 +159,7 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
         }
     }
 
-	private void allocateLinksAndProcessBusinessLotDependencies( Session session )
+	protected void allocateLinksAndProcessBusinessLotDependencies( Session session )
 			throws D6LNotAllocatedException, D6LException 
 		{
 			// first build business lot dependencies driven by objects and links
@@ -178,14 +177,8 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
 				// be optimistic
 				finished = true;
 				
-				// we need lot level to be set 
-				setLotLevelAndChildrenNbsAndPassLeaf( txn, false );
-		
 				// browse lot starting from highest level (leaves)
-				finished = buildBusinessLotDependencies( txn, finished );
-				
-				// Deal with level 1 lots links with different roles levels
-				tuneLinksWithDifferentRoleLevels( txn );
+				finished = buildBusinessLotDependencies( session, finished );
 				
 			}
 
@@ -198,7 +191,7 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
 	 * @param iPass
 	 * @param iLinkLevel
 	 * @throws D6NotAllocatedException
-	 * @throws X6Exception
+	 * @throws D6LException
 	 */
 	public void allocateLinksAndProcessLotDependenciesFromLinks( Session session ) 
 		throws D6LNotAllocatedException, D6LException 
@@ -233,8 +226,8 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
             
             
         	// check if we have a lot dependency
-        	long entityA_lotId = entityA.getPackage().getId();
-        	long entityB_lotId = entityB.getPackage().getId();
+        	long entityA_lotId = entityA.getPackageEntity().getId();
+        	long entityB_lotId = entityB.getPackageEntity().getId();
         	
         	// check they are allocated
         	if ( entityA_lotId == D6LPackage.UNALLOCATED.getId() ) {
@@ -251,7 +244,7 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
         	if ( entityA_lotId == entityB_lotId ) {
         		
         		// Assign package A or B to link
-       			link.setPackageEntity( entityA.getPackage() );
+       			link.setPackageEntity( entityA.getPackageEntity() );
        			
         	} else {
         		
@@ -261,7 +254,8 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
         		D6LPackageEdge lotDependency = getOrCreatePackageDependency(
         			session,
         			link, 
-        			entityA.getPackage(), entityB.getPackage()
+        			( D6LPackage ) entityA.getPackageEntity(), 
+        			( D6LPackage ) entityB.getPackageEntity()
         		);
 
     			// set link lot to lot dependency
@@ -287,12 +281,13 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
     	// browse lot dependencies
     	for ( D6LPackageEdge lotDependency : db.outGraph.edgeSet() ) {
     		
-    		/*
     		// it is a dependency implying a Business Lot dependency?
     		D6LPackage lotDependencyA = db.outGraph.getEdgeSource( lotDependency );
     		long idBusinessLotA = lotDependencyA.getId();
 
-    		D6LotIF lotDependencyB = D6AbstractLot.getAbstractLot( db, txn, lotDependency.getIdLotRoleB() );							
+    		D6LPackage lotDependencyB = db.outGraph.getEdgeTarget( lotDependency );
+    		
+    		/*
     		long idBusinessLotB = lotDependencyB.getIdLot();
     		if ( ( idBusinessLotB == D6LPackage.ID_NO_LOT ) && ( level != 1 ) ) {
     			throw new D6LException(
@@ -300,81 +295,75 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
     					+ lotDependencyB.getId() + " ( "
     					+ lotDependencyB.getType( db ) + " )");
     		}
-
+			*/
+    		/*
     		if ( ( idBusinessLotA != D6LPackage.ID_NO_LOT ) && ( idBusinessLotB != D6LPackage.ID_NO_LOT ) && ( idBusinessLotA != idBusinessLotB ) ) {
     			// we have a business lot dependency
-    		*/	
     			newFinished = processBusinessLotDependency( 
     			    session, newFinished, 
     			    lotDependency, 
     			    lotDependencyA, idBusinessLotA, lotDependencyB, idBusinessLotB 
     			);
 
-    		/*
     		}
-    		*/
+			*/
+    		
+			newFinished = processBusinessPackageDependency( 
+			    session, newFinished, 
+			    lotDependency, lotDependencyA, 
+			    lotDependencyA, lotDependencyB, lotDependencyB 
+			);
+			
         }
+    	
         return newFinished;
     }
 
-	    private boolean processBusinessLotDependency( 
-	        Session session, boolean finished, D6LPackageEntityIF lotDependency, D6LPackageEntityIF lotDependencyA,
-	        long idBusinessLotA, D6LPackageEntityIF lotDependencyB, long idBusinessLotB 
-	    )
-	        throws D6LException
-	    {
-	        
-	        boolean newFinished = finished;
-	        
-	        // existing?
-	        D6LotLink businessLotDependency = getExistingLotDependency( txn, idBusinessLotA, idBusinessLotB, false );
-	        if ( businessLotDependency == null ) {
-	        	
-	        	// not finished
-	            newFinished = false;
-	        	
-	        	// create it
-	        	businessLotDependency = new D6LotLink(
-	        		D6LotTypeEnum.BUSINESS_LOT_DEPENDENCY, null, iPass,
-	        		idBusinessLotA, idBusinessLotB, 
-	        		lotDependencyA.getLinkLevel(), lotDependencyB.getLinkLevel()
-	        	);
-	        	
-	        	// parent is business lot common parent
-	        	D6LPackage lot_A = db.daoLots.byId.get( txn, idBusinessLotA, null );
-	        	D6LPackage lot_B = db.daoLots.byId.get( txn, idBusinessLotA, null );
-	        	
-	        	if ( 
-	        	      ( lot_A != null ) && ( lot_B != null ) 
-	        	      &&
-	        	      // same parent?
-	        	      ( lot_A.getIdLotParent() == lot_B.getIdLotParent() )
-	        	) {
-	        		businessLotDependency.setIdLotParent( lot_A.getIdLotParent() );
-	        	}
-	        	
-	        	// set direction from link
-	        	businessLotDependency.setLinkDirection( lotDependency.getLinkDirection() );
+    private boolean processBusinessPackageDependency( 
+        Session session, boolean finished, 
+        D6LPackageEdge lotDependency, D6LPackageEntityIF lotDependencyA,
+        D6LPackage lot_A, D6LPackageEntityIF lotDependencyB, D6LPackage lot_B 
+    )
+        throws D6LException
+    {
+        
+        boolean newFinished = finished;
+        
+        // existing?
+        D6LPackageEdge businessLotDependency = getExistingPackageDependency( session, lot_A, lot_B, false );
+        if ( businessLotDependency == null ) {
+        	
+        	// not finished
+            newFinished = false;
+        	
+        	// create it
+        	businessLotDependency = new D6LPackageEdge(
+        		D6LPackageTypeEnum.BUSINESS_PKG_DEPENDENCY
+        	);
+        	
+        	// Add to graph
+        	db.outGraph.addEdge( lot_A, lot_B, businessLotDependency );
+        	
+        	// set direction from link
+        	businessLotDependency.setLinkDirection( lotDependency.getLinkDirection() );
 
-	        	// save it
-	        	businessLotDependency.save( db, txn );
-	        }
-	        
-	        // parent is businessLotDependency
-	        lotDependency.setIdLotParent( businessLotDependency.getId() );
-	        
-	        // save it
-	        lotDependency.save( db, txn );
-	        return newFinished;
-	    }
-		
-		protected void addFatalError( String message ) throws D6LException {
-			if ( listFatalErrors != null ) {
-				listFatalErrors.add( message );
-			} else {
-				throw new D6LException( message );
-			}
+        	// save it
+        	businessLotDependency.save( session );
+        }
+        
+        // save it
+        lotDependency.save( session );
+        
+        return newFinished;
+    }
+	
+	protected void addFatalError( String message ) throws D6LException {
+		if ( listFatalErrors != null ) {
+			listFatalErrors.add( message );
+		} else {
+			throw new D6LException( message );
 		}
+	}
 
 	private D6LPackageEdge getOrCreatePackageDependency(
         Session session,
@@ -427,7 +416,7 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
 	 * @param pkgFrom
 	 * @param pkgTo
 	 * @return
-	 * @throws X6Exception 
+	 * @throws D6LException 
 	 */
 	public D6LPackageEdge getExistingPackageDependency( 
 	    Session session, D6LPackage pkgFrom, D6LPackage pkgTo, 
@@ -479,6 +468,123 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
 		return lotLink;
 	}
 
+	protected void finalizePackages( 
+		Session session
+	) throws D6LException {
+		
+        LOGGER.info( "********** Start finalize lots" );
+		
+		// count objects and links for technical lots
+
+		// only for last finalization because it is very costly
+		
+	    LOGGER.info( "Cummulative sums - may be long" );
+	    /*
+		// all lots - non cummulative sums
+        LOGGER.info( "Last finalization - sum entities per lots" );
+        SumEntitiesRunnable sumEntitiesRunnable_0 = 
+            new SumEntitiesRunnable( db, txn, true, cmdRuntimeConfig.isSeparateFromToLotLinks );
+        
+        startThread( sumEntitiesRunnable_0 );
+  		
+        LOGGER.info( "Last finalization - sum entities per lot links" );  
+        SumEntitiesRunnable sumEntitiesRunnable_1 = 
+            new SumEntitiesRunnable( db, txn, false, cmdRuntimeConfig.isSeparateFromToLotLinks );
+        
+        startThread( sumEntitiesRunnable_1 );
+         */
+		// all lots - cummulate sums
+        LOGGER.info( "Cummulative sums" );
+        
+        LOGGER.info( "Levels for lots" );
+        		
+        LOGGER.info( "********** End finalize lots" );
+        
+	}
+
+	/**
+	 * Thread to sum entities per lot and lot link
+	 * 
+	 * @author Loison
+	 */
+	class SumEntities
+	{
+	
+	    private Session session;
+	
+	    private boolean isLot;
+	    
+	    private boolean isSeparateFromToLinks;
+	
+	    public SumEntities( 
+	    	Session session, boolean isLot, boolean isSeparateFromToLotLinks
+	    ) {
+	        super();
+	        this.session = session;
+	        this.isLot = isLot;
+	        this.isSeparateFromToLinks = isSeparateFromToLotLinks;
+	    }
+	
+	    public void run() throws D6LException
+	    {
+            if ( isLot ) {
+                sumEntitiesPerLot( session );
+            } else {
+                sumEntitiesPerLotLinks( session );
+            }
+	
+	    }
+	
+	    private void sumEntitiesPerLot( Session session )
+	        throws D6LException
+	    {
+            db.daoEntityRegistry.getPackages( session )
+            	.forEach(
+            		pkg -> {
+    	                D6LPackageData data = pkg.getData();
+            			if ( !data.isFrozenForNbs() ) {
+    	                	
+    	                    // Nb objects
+    	                    long nbObjects = db.daoEntityRegistry.getVertices( session, pkg ).count();
+    	                    long nbLinks   = db.daoEntityRegistry.getEdges( session, pkg ).count();
+    	    
+    	                    data.setNbObjects( (int) nbObjects );
+    	                    data.setNbLinks( (int) nbLinks );
+    	                    
+    	                    
+    	                    // update lot
+    	                    pkg.save( session );
+            			}
+            		}
+            	);
+	    }
+	    
+	    private void sumEntitiesPerLotLinks( Session session ) {
+
+            db.daoEntityRegistry.getPackageEdges( session )
+	        	.forEach(
+	        		pkgEdge -> {
+		                D6LPackageData data = pkgEdge.getData();
+	        			if ( !data.isFrozenForNbs() ) {
+		                	
+		                    // Nb objects
+		                    long nbObjects = db.daoEntityRegistry.getVertices( session, pkgEdge ).count();
+		                    long nbLinks   = db.daoEntityRegistry.getEdges( session, pkgEdge ).count();
+		    
+		                    data.setNbObjects( (int) nbObjects );
+		                    data.setNbLinks( (int) nbLinks );
+		                    
+		                    
+		                    // update lot
+		                    pkgEdge.save( session );
+	        			}
+	        		}
+	        	);
+	    }
+	    
+    }
+	
+    
 	/**
 	 * Prepare before execution
 	 * @param session 
@@ -491,9 +597,10 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
 	 * 
 	 * @param txn
 	 * @throws D6LException
+	 * @throws D6LNotAllocatedException 
 	 * @throws Exception
 	 */
-	protected abstract void doRun( Session session, final boolean callAlgo ) throws D6LException;
+	protected abstract void doRun( Session session, final boolean callAlgo ) throws D6LException, D6LNotAllocatedException;
 
 
     /**

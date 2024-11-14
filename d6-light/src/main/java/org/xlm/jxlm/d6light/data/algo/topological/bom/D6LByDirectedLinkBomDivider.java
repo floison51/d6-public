@@ -118,7 +118,7 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
     	for ( D6LVertex bomHeadVertex: allBomHeadVertices ) {
 		   
 			// process only unallocated boms
-			if ( D6LPackage.UNALLOCATED.equals( bomHeadVertex.getPackage() ) ) {
+			if ( D6LPackage.UNALLOCATED.getId() == bomHeadVertex.getPackageEntity().getId() ) {
 				bomHeadVertices.add( bomHeadVertex );
 			}
 			
@@ -140,7 +140,10 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 			
 			// recurse BOM children by threads
 			RecurseBomPseudoRunnable recurseBomRunnable = 
-				new RecurseBomPseudoRunnable( bomHeadEntity, bomHeadEntity.getPackage() );
+				new RecurseBomPseudoRunnable( 
+					bomHeadEntity, 
+					( D6LPackage) bomHeadEntity.getPackageEntity() 
+				);
 			
 			recurseBomRunnable.run( session );
 			

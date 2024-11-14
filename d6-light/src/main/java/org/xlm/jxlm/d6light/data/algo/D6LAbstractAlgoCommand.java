@@ -22,8 +22,11 @@ import java.lang.reflect.Constructor;
 
 import org.hibernate.Session;
 import org.xlm.jxlm.d6light.data.command.D6LAbstractCommand;
+import org.xlm.jxlm.d6light.data.command.D6LNotAllocatedException;
+import org.xlm.jxlm.d6light.data.command.Stats;
 import org.xlm.jxlm.d6light.data.conf.D6LightDataConf;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
+import org.xlm.jxlm.d6light.data.model.D6LPackage;
 import org.xlm.jxlm.d6light.data.util.D6LUtil;
 
 /**
@@ -131,7 +134,9 @@ public abstract class D6LAbstractAlgoCommand
 	 * Command based run
 	 * @throws D6LException
 	 */
-	protected void doRun( Session session, final boolean callAlgo ) throws D6LException {
+	protected void doRun( Session session, final boolean callAlgo ) 
+		throws D6LException, D6LNotAllocatedException 
+	{
 		
 		// delegate to algo
     	if ( callAlgo ) {
@@ -146,18 +151,103 @@ public abstract class D6LAbstractAlgoCommand
     	    
 	    	// Allocation finalisation
             allocateLinksAndProcessBusinessLotDependencies( session );
-            processBusinessLotDependencies( session );
-			
+ 			
 			// finalize lots: count nb objects and links
 			// delete empty lots, check children lots
-            finalizeLots( session );
+            finalizePackages( session );
 
-	    	doCheckAfter( session );
+    		Stats allStats = new Stats();
+	    	doCheckAfter( session, LOGGER.isDebugEnabled(), allStats );
 	    	
     	}
     	
 	}
 	
+	/*
+	 * Check after algo execution : check all entities are allocated
+	 * 
+	 * @param txn
+	 * @param stats
+	 * @param isDebug
+	 * @throws X6Exception 
+	 */
+	protected void doCheckAfter( Session session, boolean debugOnError, Stats stats ) throws D6LException {
+		
+		// count lots
+		stats.nbObjects = db.inGraph.vertexSet().size();
+		stats.nbLinks   = db.inGraph.edgeSet().size();
+
+		// check allocation is OK
+		stats.nbEntityErrors        = (int) db.daoEntityRegistry.getVertices( session, D6LPackage.UNALLOCATED ).count();
+		stats.nbEntityLinkErrors    = (int) db.daoEntityRegistry.getEdges( session, D6LPackage.UNALLOCATED ).count();
+		
+		if ( debugOnError && (stats.nbEntityErrors != 0) ) {
+			
+			// debug unallocated objects
+			LOGGER.fatal( "Unallocated entities:" );
+			if ( LOGGER.isDebugEnabled() ) {
+				
+				// objects
+				doCheckAfterDebugObjects( session );
+				
+			}
+		}
+
+		// debug unallocated links
+		if ( debugOnError && (stats.nbEntityLinkErrors != 0) ) {
+			// debug unallocated links
+			LOGGER.fatal( "Unallocated entity links:" );
+			if ( LOGGER.isDebugEnabled() ) {
+				doCheckAfterDebugLinks( session );
+
+			}
+		}
+
+		if ( stats.nbEntityErrors != 0 ) {
+			String message = stats.nbEntityErrors + " unallocated entities";
+			LOGGER.fatal( message );
+			addFatalError( message );
+		}
+		if ( stats.nbEntityLinkErrors != 0 ) {
+			String message = stats.nbEntityLinkErrors + " unallocated entity links";
+			LOGGER.fatal( message );
+			addFatalError( message );
+		}
+		if ( stats.nbEntityUniLinkErrors != 0 ) {
+			String message = stats.nbEntityUniLinkErrors + " unallocated entity uni links";
+			LOGGER.fatal( message );
+			addFatalError( message );
+		}
+
+	}
+
+    private void doCheckAfterDebugLinks( Session session )
+    {
+    	db.daoEntityRegistry.getEdges( session, D6LPackage.UNALLOCATED )
+    		.forEach(
+    			link -> {
+            		LOGGER.debug( "Link " + link.getId()
+            			+ " roleA: "
+            			+ db.inGraph.getEdgeSource( link ) + " roleB: "
+            			+ db.inGraph.getEdgeTarget( link )
+            		);
+    			}
+    		);
+    }
+
+    private void doCheckAfterDebugObjects( Session session )
+    {
+    	db.daoEntityRegistry.getVertices( session, D6LPackage.UNALLOCATED )
+		.forEach(
+			lot -> {
+        		LOGGER.debug("Lot " + lot.getId()
+        				+ " name: "
+        				+ lot.getDisplay()
+        		);
+			}
+		);
+    }
+
 	@Override
 	public D6LAlgoIF getAlgo() {
 		return this.algo;

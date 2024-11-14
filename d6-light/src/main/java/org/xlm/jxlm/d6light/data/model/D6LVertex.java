@@ -32,8 +32,8 @@ public class D6LVertex extends D6LAbstractEntity {
 	@SequenceGenerator( name="D6LVertexSeq", sequenceName="seq_D6LVertex", initialValue = 0, allocationSize=0)
 	private int id;
 	
-	@ManyToOne( targetEntity = D6LPackage.class )
-	protected D6LPackage packkage = D6LPackage.UNALLOCATED;
+	@ManyToOne( targetEntity = D6LPackageEntityIF.class )
+	protected D6LPackageEntityIF packageEntity = D6LPackage.UNALLOCATED;
 
 	// For persistence
 	public D6LVertex() {
@@ -47,13 +47,23 @@ public class D6LVertex extends D6LAbstractEntity {
 	}
 
 	@Override
-	public D6LPackage getPackage() {
-		return packkage;
+	public D6LPackageEntityIF getPackageEntity() {
+		return packageEntity;
 	}
 
 	@Override
+	public D6LPackage getPackage() {
+		return ( D6LPackage ) packageEntity;
+	}
+
+	@Override
+	public void setPackageEntity( D6LPackageEntityIF packageEntity ) {
+		this.packageEntity = packageEntity;
+	}
+	
+	@Override
 	public void setPackage( D6LPackage packkage ) {
-		this.packkage = packkage;
+		this.packageEntity = packkage;
 	}
 	
 	@Override
@@ -79,7 +89,7 @@ public class D6LVertex extends D6LAbstractEntity {
 
 	@Override
 	public String toString() {
-		return "D6LVertex [id=" + id + ", idPackage=" + packkage.getId() + "]";
+		return "D6LVertex [id=" + id + ", idPackage=" + packageEntity.getId() + "]";
 	}
 
 

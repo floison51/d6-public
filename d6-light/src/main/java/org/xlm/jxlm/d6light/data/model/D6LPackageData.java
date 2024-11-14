@@ -282,4 +282,12 @@ public class D6LPackageData {
 		
 	}
 
+	public boolean isFrozenForNbs() {
+		return isFrozenForNbs;
+	}
+
+	public void setFrozenForNbs(boolean isFrozenForNbs) {
+		this.isFrozenForNbs = isFrozenForNbs;
+	}
+
 }

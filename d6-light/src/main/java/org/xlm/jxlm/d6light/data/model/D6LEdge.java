@@ -21,6 +21,7 @@ package org.xlm.jxlm.d6light.data.model;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.hibernate.Session;
 import org.jgrapht.graph.DefaultEdge;
 
 import jakarta.persistence.Basic;
@@ -31,7 +32,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
 
 @Entity
-public class D6LEdge extends DefaultEdge implements D6LEntityIF, D6EdgeIF {
+public class D6LEdge extends DefaultEdge implements D6LEntityIF, D6LEdgeIF {
 
 	private static AtomicInteger seqIdEdge = new AtomicInteger();
 	
@@ -48,7 +49,7 @@ public class D6LEdge extends DefaultEdge implements D6LEntityIF, D6EdgeIF {
 	@Basic(optional=false)
 	private D6LLinkDirectionEnum linkDirection;
 	
-	@ManyToOne( targetEntity = D6LPackage.class )
+	@ManyToOne( targetEntity = D6LPackageEntityIF.class )
 	protected D6LPackageEntityIF packageEntity = D6LPackage.UNALLOCATED;
 
 	D6LEdge() {
@@ -80,8 +81,18 @@ public class D6LEdge extends DefaultEdge implements D6LEntityIF, D6EdgeIF {
 	}
 
 	@Override
+	public D6LPackage getPackage() {
+		return (D6LPackage) packageEntity;
+	}
+
+	@Override
 	public void setPackageEntity( D6LPackageEntityIF packageEntity ) {
 		this.packageEntity = packageEntity;
+	}
+
+	@Override
+	public void setPackage( D6LPackage packkage ) {
+		this.packageEntity = packkage;
 	}
 
 	public void setLabel(String label) {
@@ -122,6 +133,14 @@ public class D6LEdge extends DefaultEdge implements D6LEntityIF, D6EdgeIF {
 			return false;
 		D6LEdge other = (D6LEdge) obj;
 		return id == other.id;
+	}
+
+	@Override
+	public void save( Session session ) {
+		
+		// Save entity
+		session.merge( this );
+		
 	}
 
 }

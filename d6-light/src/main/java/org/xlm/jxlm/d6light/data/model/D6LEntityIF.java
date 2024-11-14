@@ -18,7 +18,7 @@
 
 package org.xlm.jxlm.d6light.data.model;
 
-public interface D6LEntityIF {
+public interface D6LEntityIF extends D6LSaveableIF {
 	
 	int getId();
 	
@@ -31,5 +31,11 @@ public interface D6LEntityIF {
 	void setPackageEntity( D6LPackageEntityIF packkageEntity );
 
 	void setLabel( String label );
+
+	/** Only for vertices **/
+	D6LPackage getPackage();
+
+	/** Only for vertices **/
+	void setPackage( D6LPackage packkage );
 
 }

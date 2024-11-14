@@ -108,14 +108,53 @@ public class D6LEntityRegistry {
 		
 	}
 
-	public Stream<D6LVertex> getVertices( Session session, D6LPackage packkage ) {
+	protected Stream<? extends D6LEntityIF> getClazz( Session session, Class<? extends D6LEntityIF> clazz, D6LPackageEntityIF pkgEntity ) {
 		
-		Query<D6LVertex> query = session
-			.createQuery( "from D6LVertex where packkage =?1", D6LVertex.class )
-			.setParameter( 1, packkage );
+		// from D6LVertice
+		StringBuilder sbQuery = new StringBuilder( "from " + clazz.getSimpleName() );
+		
+		if ( pkgEntity != null ) {
+			// from D6LVertice where packageEntity=?1
+			sbQuery.append( " where packageEntity=?1" );
+		}
+		
+		Query<? extends D6LEntityIF> query = session.createQuery( sbQuery.toString(), clazz );
+		
+		if ( pkgEntity != null ) {
+			query.setParameter( 1, pkgEntity );
+		}		
 		
 		return query.getResultStream();
-		
+	}
+	
+	@SuppressWarnings("unchecked")
+	public Stream<D6LVertex> getVertices( Session session ) {
+		return (Stream<D6LVertex>) getClazz( session, D6LVertex.class, null );
+	}
+
+	@SuppressWarnings("unchecked")
+	public Stream<D6LVertex> getVertices( Session session, D6LPackageEntityIF pkgEntity ) {
+		return (Stream<D6LVertex>) getClazz( session, D6LVertex.class, pkgEntity );
+	}
+
+	@SuppressWarnings("unchecked")
+	public Stream<D6LEdge> getEdges( Session session ) {
+		return (Stream<D6LEdge>) getClazz( session, D6LEdge.class, null );
+	}
+
+	@SuppressWarnings("unchecked")
+	public Stream<D6LEdge> getEdges( Session session, D6LPackageEntityIF pkgEntity ) {
+		return (Stream<D6LEdge>) getClazz( session, D6LEdge.class, pkgEntity );
+	}
+
+	@SuppressWarnings("unchecked")
+	public Stream<D6LPackage> getPackages( Session session ) {
+		return (Stream<D6LPackage>) getClazz( session, D6LPackage.class, null );
+	}
+
+	@SuppressWarnings("unchecked")
+	public Stream<D6LPackageEdge> getPackageEdges( Session session ) {
+		return (Stream<D6LPackageEdge>) getClazz( session, D6LPackageEdge.class, null );
 	}
 
 }

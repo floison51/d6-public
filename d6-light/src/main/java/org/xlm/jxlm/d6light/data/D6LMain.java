@@ -46,6 +46,7 @@ import org.xlm.jxlm.d6light.data.algo.D6LAbstractAlgo;
 import org.xlm.jxlm.d6light.data.algo.D6LAbstractAlgoCommand;
 import org.xlm.jxlm.d6light.data.algo.D6LAlgoCommandIF;
 import org.xlm.jxlm.d6light.data.algo.D6LAlgoIF;
+import org.xlm.jxlm.d6light.data.command.D6LNotAllocatedException;
 import org.xlm.jxlm.d6light.data.conf.AbstractAlgoType;
 import org.xlm.jxlm.d6light.data.conf.D6LConfHelper;
 import org.xlm.jxlm.d6light.data.conf.D6LightDataConf;
@@ -255,13 +256,12 @@ public class D6LMain {
 		// Create DB transaction
 		D6LDb.getInstance().getSessionFactory().inTransaction( 
 			session -> {
-				
 				try {
-					
 					// Run algo
 					cmdAlgo.execute( session );
-					
 				} catch ( D6LException e ) {
+					D6LError.handleThrowable( e );
+				} catch ( D6LNotAllocatedException e ) {
 					D6LError.handleThrowable( e );
 				}
 			}

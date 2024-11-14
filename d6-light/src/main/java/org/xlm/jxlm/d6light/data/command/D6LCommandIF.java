@@ -42,7 +42,7 @@ public interface D6LCommandIF {
 	 * @throws X6Exception 
 	 * @throws D6LNotAllocatedException 
 	 */
-	public void execute( Session session ) throws D6LException;
+	public void execute( Session session ) throws D6LException, D6LNotAllocatedException;
 
 	/**
 	 * Get conf ID read from D6 configuration file, example : &lt;algoRef refId="bom-algo"/&gt;

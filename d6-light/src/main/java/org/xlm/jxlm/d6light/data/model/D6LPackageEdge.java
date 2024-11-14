@@ -20,6 +20,7 @@ package org.xlm.jxlm.d6light.data.model;
 
 import java.util.Objects;
 
+import org.hibernate.Session;
 import org.jgrapht.graph.DefaultEdge;
 import org.xlm.jxlm.d6light.data.exception.D6LError;
 import org.xlm.jxlm.d6light.data.packkage.D6LPackageTypeEnum;
@@ -31,7 +32,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.SequenceGenerator;
 
 @Entity
-public class D6LPackageEdge extends DefaultEdge implements D6LPackageEntityIF, D6EdgeIF {
+public class D6LPackageEdge extends DefaultEdge implements D6LPackageEntityIF, D6LEdgeIF {
 
 	/** Serial ID **/
 	private static final long serialVersionUID = -4376861182806887574L;
@@ -99,6 +100,16 @@ public class D6LPackageEdge extends DefaultEdge implements D6LPackageEntityIF, D
 		throw new D6LError( "Not supported in this flavor" );
 	}
 
+	@Override
+	public D6LPackage getPackage() {
+		throw new D6LError( "Not supported in this flavor" );
+	}
+
+	@Override
+	public void setPackage( D6LPackage packkage ) {
+		throw new D6LError( "Not supported in this flavor" );
+	}
+
 	public void setLabel(String label) {
 		this.label = label;
 	}
@@ -143,5 +154,14 @@ public class D6LPackageEdge extends DefaultEdge implements D6LPackageEntityIF, D
 		D6LPackageEdge other = (D6LPackageEdge) obj;
 		return id == other.id;
 	}
+	
+	@Override
+	public void save( Session session ) {
+		
+		// Save entity
+		session.merge( this );
+		
+	}
+
 
 }

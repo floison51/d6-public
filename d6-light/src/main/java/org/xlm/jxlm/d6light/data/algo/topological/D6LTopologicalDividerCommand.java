@@ -213,7 +213,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 		for ( D6LEdge link: db.inGraph.edgeSet() ) {
 			
 			// select only unallocated links
-			if ( link.getPackage() != D6LPackage.UNALLOCATED ) {
+			if ( link.getPackageEntity().getId() != D6LPackage.UNALLOCATED.getId() ) {
 				continue;
 			}
 			

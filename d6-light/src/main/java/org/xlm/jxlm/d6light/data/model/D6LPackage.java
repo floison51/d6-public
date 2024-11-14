@@ -165,6 +165,16 @@ public class D6LPackage extends D6LAbstractEntity implements D6LPackageEntityIF 
 	}
 
 	@Override
+	public D6LPackage getPackage() {
+		throw new D6LError( "Not supported in this flavor" );
+	}
+
+	@Override
+	public void setPackage( D6LPackage packkage ) {
+		throw new D6LError( "Not supported in this flavor" );
+	}
+
+	@Override
 	public D6LPackageData getData() {
 		return data;
 	}

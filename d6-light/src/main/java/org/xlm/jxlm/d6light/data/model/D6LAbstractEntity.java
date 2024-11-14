@@ -18,6 +18,8 @@
 
 package org.xlm.jxlm.d6light.data.model;
 
+import org.hibernate.Session;
+
 public abstract class D6LAbstractEntity implements D6LEntityIF {
 
 	protected String label;
@@ -37,5 +39,14 @@ public abstract class D6LAbstractEntity implements D6LEntityIF {
 	public String getDisplay() {
 		return getLabel();
 	}
+
+	@Override
+	public void save( Session session ) {
+		
+		// Save entity
+		session.merge( this );
+		
+	}
+	
 	
 }
