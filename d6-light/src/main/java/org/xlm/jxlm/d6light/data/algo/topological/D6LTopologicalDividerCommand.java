@@ -39,9 +39,10 @@ import org.xlm.jxlm.d6light.data.conf.TopologicalDividerType;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
 import org.xlm.jxlm.d6light.data.job.D6LJobIF;
 import org.xlm.jxlm.d6light.data.measures.D6LEntityDirectedLinkStats;
+import org.xlm.jxlm.d6light.data.model.D6LAbstractPackageEntity;
 import org.xlm.jxlm.d6light.data.model.D6LEdge;
 import org.xlm.jxlm.d6light.data.model.D6LEntityIF;
-import org.xlm.jxlm.d6light.data.model.D6LPackage;
+import org.xlm.jxlm.d6light.data.model.D6LPackageVertex;
 import org.xlm.jxlm.d6light.data.model.D6LVertex;
 import org.xlm.jxlm.d6light.data.packkage.D6LPackageSubtypeEnum;
 import org.xlm.jxlm.d6light.data.packkage.D6LPackageTypeEnum;
@@ -144,7 +145,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
         D6LDividerAlgoIF dividerAlgo = (D6LDividerAlgoIF) getAlgo();
         
 		// create Bom simplification lots lot for current bench and pass
-        Map<BomSimplifierKindEnum,D6LPackage> mapBomSimplificationLots = new HashMap<>();
+        Map<BomSimplifierKindEnum,D6LAbstractPackageEntity> mapBomSimplificationLots = new HashMap<>();
         
         if ( isNeedBomSimplification && ( dividerAlgo instanceof D6LTopologicalDividerIF )) {
             
@@ -155,7 +156,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
             for ( D6LAbstractBomSimplifier bomSimplifier : listBomSimplifiers ) {
             
                 // Check 
-            	D6LPackage bomSimplificationLot = 
+            	D6LAbstractPackageEntity bomSimplificationLot = 
             		createBomSimplificationLot( session, dividerAlgo.getProducesLotType(), bomSimplifier );
         			
         		mapBomSimplificationLots.put( bomSimplifier.getKind(), bomSimplificationLot );
@@ -165,7 +166,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
         }
 	
 		// find single lot for current bench
-        D6LPackage singleLot = null;
+        D6LAbstractPackageEntity singleLot = null;
 		
 		if ( allocateSingles ) {		
 			
@@ -186,7 +187,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 		for ( D6LVertex v : db.inGraph.vertexSet() ) {
 			
 			// select only unallocated objects
-			if ( v.getPackage() != D6LPackage.UNALLOCATED ) {
+			if ( v.getPackage() != D6LPackageVertex.UNALLOCATED ) {
 				continue;
 			}
 			
@@ -213,7 +214,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 		for ( D6LEdge link: db.inGraph.edgeSet() ) {
 			
 			// select only unallocated links
-			if ( link.getPackageEntity().getId() != D6LPackage.UNALLOCATED.getId() ) {
+			if ( link.getPackageEntity().getId() != D6LPackageVertex.UNALLOCATED.getId() ) {
 				continue;
 			}
 			
@@ -221,7 +222,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 			D6LVertex roleB_entity = db.inGraph.getEdgeTarget( link );
 
             // remove components from benches
-            for ( D6LPackage bomSimplificationLot : mapBomSimplificationLots.values() ) {
+            for ( D6LAbstractPackageEntity bomSimplificationLot : mapBomSimplificationLots.values() ) {
             
                 // role B in component lot?
                 if ( 
@@ -271,7 +272,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 	 * @return
 	 * @throws D6LException
 	 */
-	private D6LPackage createBomSimplificationLot(
+	private D6LAbstractPackageEntity createBomSimplificationLot(
 		Session session,
 		D6LPackageTypeEnum defaultLotType, D6LAbstractBomSimplifier bomSimplifier
 	)
@@ -281,7 +282,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 		// Lot type
 		D6LPackageTypeEnum lotType = defaultLotType;
 		
-		D6LPackage bomSimplificationLot = new D6LPackage( lotType );
+		D6LPackageVertex bomSimplificationLot = new D6LPackageVertex( lotType );
 		setParameters( bomSimplifier, bomSimplificationLot );
 		
 		// Persist, add to graph
@@ -293,7 +294,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 	}
 	
 	private void setParameters(
-		D6LAbstractBomSimplifier bomSimplifier, D6LPackage bomSimplificationLot
+		D6LAbstractBomSimplifier bomSimplifier, D6LAbstractPackageEntity bomSimplificationLot
 	)
 		throws D6LException 
 	{
@@ -335,7 +336,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
      */
     private void reworkStatsAndSingleLotForDirectedLinkToComponent( 
     	Session session,
-        D6LPackage singleLot, D6LVertex roleA, D6LVertex roleB 
+        D6LAbstractPackageEntity singleLot, D6LVertex roleA, D6LVertex roleB 
     ) throws D6LException
     {
 
@@ -405,8 +406,8 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 
     private List<D6LJobIF<D6LEntityIF>> allocateSingleAndBomSimplificationAndTopOfBom( 
     	Session session,
-		D6LVertex entity, Map<BomSimplifierKindEnum,D6LPackage> mapBomSimplifierLots, 
-		D6LPackage singleLot, 
+		D6LVertex entity, Map<BomSimplifierKindEnum,D6LAbstractPackageEntity> mapBomSimplifierLots, 
+		D6LAbstractPackageEntity singleLot, 
 		Set<Integer> idObjectsProcessed
 	) throws D6LException {
 		
@@ -416,7 +417,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
         List<D6LJobIF<D6LEntityIF>> postActions = new ArrayList<>();
         
         // check only unallocated objects
-		if ( entity.getPackage() != D6LPackage.UNALLOCATED ) {
+		if ( entity.getPackage() != D6LPackageVertex.UNALLOCATED ) {
 			// already processed
 			return postActions;
 		}
@@ -467,7 +468,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 			for ( D6LAbstractBomSimplifier bomSimplifier : topologicalDividerAlgo.getListBomSimplifiers() ) {
 			    
 			    // Get bom simplifier lot
-			    D6LPackage bomSimplifierLot = mapBomSimplifierLots.get( bomSimplifier.getKind() );
+			    D6LAbstractPackageEntity bomSimplifierLot = mapBomSimplifierLots.get( bomSimplifier.getKind() );
 			    
     			if ( bomSimplifierLot != null ) {
 
@@ -525,7 +526,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 	    	            if ( !bomSimplifier.isSingleExtractorLot() ) {
 	    	            	
 	    	            	// Create new lot
-	    	            	D6LPackage newLot = 
+	    	            	D6LAbstractPackageEntity newLot = 
 	    	            		createBomSimplificationLot(
 	    	            			session,
 	    	            			topologicalDividerAlgo.getProducesLotType(), bomSimplifier 

@@ -38,16 +38,16 @@ public class D6LEntityRegistry {
 		this.db = db;
 	}
 
-	public D6LPackage getOrCreateSingleLot( Session session, D6LPackageTypeEnum packageType ) throws D6LException {
+	public D6LAbstractPackageEntity getOrCreateSingleLot( Session session, D6LPackageTypeEnum packageType ) throws D6LException {
     
-		D6LPackage singleLot = getSingleLot( session );
+		D6LAbstractPackageEntity singleLot = getSingleLot( session );
         
         // exists?
         if ( singleLot == null ) {
             
             singleLot = createSingleLot( 
             	session,
-            	packageType, D6LPackage.TECH_NAME_SINGLE
+            	packageType, D6LAbstractPackageEntity.TECH_NAME_SINGLE
             );
             
         }
@@ -55,14 +55,14 @@ public class D6LEntityRegistry {
         return singleLot;
  	}
 
-	protected D6LPackage createSingleLot( 
+	protected D6LAbstractPackageEntity createSingleLot( 
 		Session session, 
 		D6LPackageTypeEnum lotType, String lotName 
 	 ) throws D6LException {
 	  
         // create a single lot for current bench
         // sub-type to identify component lot later on
-		D6LPackage singleLot = new D6LPackage( lotType, D6LPackageSubtypeEnum.SINGLE_LOT ); 
+		D6LPackageVertex singleLot = new D6LPackageVertex( lotType, D6LPackageSubtypeEnum.SINGLE_LOT ); 
 		
         // Persist
         session.persist( singleLot );
@@ -83,17 +83,19 @@ public class D6LEntityRegistry {
 	 * @return
 	 * @throws X6Exception
 	 */
-	public D6LPackage getSingleLot( Session session ) throws D6LException {
+	public D6LAbstractPackageEntity getSingleLot( Session session ) throws D6LException {
 		
 		// get single lots for current bench
 		
-		D6LPackage singleLot = null;
+		D6LAbstractPackageEntity singleLot = null;
 		
-		SelectionQuery<D6LPackage> query = session
-			.createSelectionQuery( "from D6LPackage where packageSubtype=?1", D6LPackage.class )
-			.setParameter( 1, D6LPackageSubtypeEnum.SINGLE_LOT );
+		SelectionQuery<D6LAbstractPackageEntity> query = 
+			session
+				.createSelectionQuery( "from D6LPackageEntity where packageSubtype=?1 and kind=?2", D6LAbstractPackageEntity.class )
+				.setParameter( 1, D6LPackageSubtypeEnum.SINGLE_LOT )
+				.setParameter( 2, D6LEntityKindEnum.vertex );
 		
-		List<D6LPackage> singlePackages = query.getResultList();
+		List<D6LAbstractPackageEntity> singlePackages = query.getResultList();
 
 		if ( singlePackages.size() > 1 ) {
 			throw new D6LException( "Found several Single packages" );
@@ -108,7 +110,7 @@ public class D6LEntityRegistry {
 		
 	}
 
-	protected Stream<? extends D6LEntityIF> getClazz( Session session, Class<? extends D6LEntityIF> clazz, D6LPackageEntityIF pkgEntity ) {
+	protected Stream<? extends D6LEntityIF> queryByClassAndPackage( Session session, Class<? extends D6LEntityIF> clazz, D6LPackageEntityIF pkgEntity ) {
 		
 		// from D6LVertice
 		StringBuilder sbQuery = new StringBuilder( "from " + clazz.getSimpleName() );
@@ -129,32 +131,32 @@ public class D6LEntityRegistry {
 	
 	@SuppressWarnings("unchecked")
 	public Stream<D6LVertex> getVertices( Session session ) {
-		return (Stream<D6LVertex>) getClazz( session, D6LVertex.class, null );
+		return (Stream<D6LVertex>) queryByClassAndPackage( session, D6LVertex.class, null );
 	}
 
 	@SuppressWarnings("unchecked")
 	public Stream<D6LVertex> getVertices( Session session, D6LPackageEntityIF pkgEntity ) {
-		return (Stream<D6LVertex>) getClazz( session, D6LVertex.class, pkgEntity );
+		return (Stream<D6LVertex>) queryByClassAndPackage( session, D6LVertex.class, pkgEntity );
 	}
 
 	@SuppressWarnings("unchecked")
 	public Stream<D6LEdge> getEdges( Session session ) {
-		return (Stream<D6LEdge>) getClazz( session, D6LEdge.class, null );
+		return (Stream<D6LEdge>) queryByClassAndPackage( session, D6LEdge.class, null );
 	}
 
 	@SuppressWarnings("unchecked")
 	public Stream<D6LEdge> getEdges( Session session, D6LPackageEntityIF pkgEntity ) {
-		return (Stream<D6LEdge>) getClazz( session, D6LEdge.class, pkgEntity );
+		return (Stream<D6LEdge>) queryByClassAndPackage( session, D6LEdge.class, pkgEntity );
 	}
 
 	@SuppressWarnings("unchecked")
-	public Stream<D6LPackage> getPackages( Session session ) {
-		return (Stream<D6LPackage>) getClazz( session, D6LPackage.class, null );
+	public Stream<D6LAbstractPackageEntity> getPackages( Session session ) {
+		return (Stream<D6LAbstractPackageEntity>) queryByClassAndPackage( session, D6LAbstractPackageEntity.class, null );
 	}
 
 	@SuppressWarnings("unchecked")
-	public Stream<D6LPackageEdge> getPackageEdges( Session session ) {
-		return (Stream<D6LPackageEdge>) getClazz( session, D6LPackageEdge.class, null );
+	public Stream<D6LAbstractPackageEntity> getPackageEdges( Session session ) {
+		return (Stream<D6LAbstractPackageEntity>) queryByClassAndPackage( session, D6LAbstractPackageEntity.class, null );
 	}
 
 }

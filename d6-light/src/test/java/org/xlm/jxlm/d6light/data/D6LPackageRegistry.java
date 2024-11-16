@@ -12,28 +12,29 @@ import org.jgrapht.graph.SimpleGraph;
 import org.jgrapht.nio.GraphImporter;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
 import org.xlm.jxlm.d6light.data.imp.D6LImporterWrapper;
+import org.xlm.jxlm.d6light.data.model.D6LAbstractPackageEntity;
 import org.xlm.jxlm.d6light.data.model.D6LEdge;
-import org.xlm.jxlm.d6light.data.model.D6LPackage;
+import org.xlm.jxlm.d6light.data.model.D6LPackageVertex;
 import org.xlm.jxlm.d6light.data.packkage.D6LPackageTypeEnum;
 
 public class D6LPackageRegistry {
 	
 	private Logger LOGGER = D6LAbstractDataTestCase.LOGGER;
 	
-    private Map<Integer,D6LPackage> indexPackages = new HashMap<>();
+    private Map<Integer,D6LAbstractPackageEntity> indexPackages = new HashMap<>();
     private Map<Integer,D6LEdge>    indexPackageLinks = new HashMap<>();
     
-	private Graph<D6LPackage, D6LEdge> gPackages = new SimpleGraph<>( D6LEdge.class );
+	private Graph<D6LAbstractPackageEntity, D6LEdge> gPackages = new SimpleGraph<>( D6LEdge.class );
 	
 	public D6LPackageRegistry( File graphFile, D6LGraphFormatEnum gFormat ) throws Exception {
 		
 		// Import graph
-		D6LImporterWrapper<D6LPackage, D6LEdge> importWrapper = 
+		D6LImporterWrapper<D6LAbstractPackageEntity, D6LEdge> importWrapper = 
 			new D6LImporterWrapper<>(
-				id -> new D6LPackage( id, D6LPackageTypeEnum.TECHNICAL_PKG )
+				id -> new D6LPackageVertex( id, D6LPackageTypeEnum.TECHNICAL_PKG )
 			);
 		
-		GraphImporter<D6LPackage, D6LEdge> importer = importWrapper.getGraphImporterInstance( gFormat ); 
+		GraphImporter<D6LAbstractPackageEntity, D6LEdge> importer = importWrapper.getGraphImporterInstance( gFormat ); 
 			
 		importer.importGraph( gPackages, graphFile );
 		// Index packages
@@ -42,13 +43,13 @@ public class D6LPackageRegistry {
 	}
 	
 	
-	private void indexPackagesAndLinks( Graph<D6LPackage, D6LEdge> gPackages ) throws D6LException {
+	private void indexPackagesAndLinks( Graph<D6LAbstractPackageEntity, D6LEdge> gPackages ) throws D6LException {
 		
         // Index packages
-        for ( D6LPackage pkg : gPackages.vertexSet() ) {
+        for ( D6LAbstractPackageEntity pkg : gPackages.vertexSet() ) {
         	
         	// vertex
-        	D6LPackage lotDuplicate = indexPackages.put( pkg.getId(), pkg );
+        	D6LAbstractPackageEntity lotDuplicate = indexPackages.put( pkg.getId(), pkg );
             if ( lotDuplicate != null ) {
                 throw new D6LException( "Duplicated package id " + pkg.getId() );
             }
@@ -84,10 +85,10 @@ public class D6LPackageRegistry {
 	}
 
 	private boolean checkLotIsomorphism(
-			Graph<D6LPackage, D6LEdge> g1, Graph<D6LPackage, D6LEdge> g2 
+			Graph<D6LAbstractPackageEntity, D6LEdge> g1, Graph<D6LAbstractPackageEntity, D6LEdge> g2 
 	) {
 		
-		VF2GraphIsomorphismInspector<D6LPackage, D6LEdge> isoInspector = 
+		VF2GraphIsomorphismInspector<D6LAbstractPackageEntity, D6LEdge> isoInspector = 
 			new VF2GraphIsomorphismInspector<>( g1, g2 );
 		
 		return isoInspector.isomorphismExists();

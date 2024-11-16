@@ -36,8 +36,9 @@ import org.xlm.jxlm.d6light.data.conf.AbstractAlgoType;
 import org.xlm.jxlm.d6light.data.conf.D6LightDataConf;
 import org.xlm.jxlm.d6light.data.conf.ParamType;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
+import org.xlm.jxlm.d6light.data.model.D6LAbstractPackageEntity;
 import org.xlm.jxlm.d6light.data.model.D6LEdge;
-import org.xlm.jxlm.d6light.data.model.D6LPackage;
+import org.xlm.jxlm.d6light.data.model.D6LPackageVertex;
 import org.xlm.jxlm.d6light.data.model.D6LVertex;
 import org.xlm.jxlm.d6light.data.packkage.D6LPackageSubtypeEnum;
 import org.xlm.jxlm.d6light.data.packkage.D6LPackageTypeEnum;
@@ -118,7 +119,7 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
     	for ( D6LVertex bomHeadVertex: allBomHeadVertices ) {
 		   
 			// process only unallocated boms
-			if ( D6LPackage.UNALLOCATED.getId() == bomHeadVertex.getPackageEntity().getId() ) {
+			if ( D6LPackageVertex.UNALLOCATED.getId() == bomHeadVertex.getPackageEntity().getId() ) {
 				bomHeadVertices.add( bomHeadVertex );
 			}
 			
@@ -142,7 +143,7 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 			RecurseBomPseudoRunnable recurseBomRunnable = 
 				new RecurseBomPseudoRunnable( 
 					bomHeadEntity, 
-					( D6LPackage) bomHeadEntity.getPackageEntity() 
+					( D6LAbstractPackageEntity) bomHeadEntity.getPackageEntity() 
 				);
 			
 			recurseBomRunnable.run( session );
@@ -165,7 +166,7 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 		for ( D6LVertex bomHeadObject: bomHeadEntities ) {
 			
 			// Create BOM lot
-			D6LPackage bomHeadLot = getNewBom( session );
+			D6LAbstractPackageEntity bomHeadLot = getNewBom( session );
 			
 			// set BOM head entity as primary lot target
 			bomHeadLot.setPrimaryTarget( bomHeadObject );
@@ -178,9 +179,9 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 		}
 	}
 
-	private D6LPackage getNewBom( Session session ) throws D6LException {
+	private D6LAbstractPackageEntity getNewBom( Session session ) throws D6LException {
 	    
-		D6LPackage bom = new D6LPackage( producesLotType, D6LPackageSubtypeEnum.BOM );
+		D6LPackageVertex bom = new D6LPackageVertex( producesLotType, D6LPackageSubtypeEnum.BOM );
 		
 		// Persist, add to graph
 		session.persist( bom );
@@ -210,7 +211,7 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 			boolean aFixHasBeenDone = false;
 			
 			// set of parent objects BOM ID
-			Set<D6LPackage> setParentBoms = new HashSet<>();
+			Set<D6LAbstractPackageEntity> setParentBoms = new HashSet<>();
 			
 			// browse bom heads
 			for ( D6LVertex bomHead: bomHeadEntities ) {
@@ -229,7 +230,7 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
     private boolean finalizeBomsForBomHead( 
     	Session session,
     	boolean aFixHasBeenDone,
-        Set<D6LPackage> setParentBoms, D6LVertex bomHead
+        Set<D6LAbstractPackageEntity> setParentBoms, D6LVertex bomHead
     )
         throws D6LException
     {
@@ -253,7 +254,7 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
         // only one parent bom ID and parent bom ID != current bom ID?
         if ( setParentBoms.size() == 1 ) {
         	// get unique id
-        	D6LPackage parentBom = setParentBoms.iterator().next();
+        	D6LAbstractPackageEntity parentBom = setParentBoms.iterator().next();
         	// different from current bomID
         	if ( parentBom != bomHead.getPackage() ) {
         		
@@ -273,7 +274,7 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 
 	private void replaceBomId( 
 		Session session,
-	    D6LVertex currentBomHead, D6LPackage toBomId
+	    D6LVertex currentBomHead, D6LAbstractPackageEntity toBomId
 	) throws D6LException {
 		
 		// select entities allocated to currentBomId for bench
@@ -307,7 +308,7 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
         
     		
    		try (
-    		Stream<D6LVertex> unallocated = db.daoEntityRegistry.getVertices(session, D6LPackage.UNALLOCATED );
+    		Stream<D6LVertex> unallocated = db.daoEntityRegistry.getVertices(session, D6LPackageVertex.UNALLOCATED );
     	) {
    	  		final AtomicInteger count = new AtomicInteger();
     		unallocated.forEach(
@@ -331,9 +332,9 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 	private class RecurseBomPseudoRunnable {
 
 		private D6LVertex bomHeadEntity;
-		private D6LPackage bom;
+		private D6LAbstractPackageEntity bom;
 		
-		public RecurseBomPseudoRunnable( D6LVertex bomHeadEntity, D6LPackage bom ) {
+		public RecurseBomPseudoRunnable( D6LVertex bomHeadEntity, D6LAbstractPackageEntity bom ) {
 			super();
 			this.bomHeadEntity = bomHeadEntity;
 			this.bom = bom;
@@ -357,7 +358,7 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 		
 		private void recurseBom( 
 			Session session,
-			D6LPackage bom, D6LVertex bomEntity, final Set<Integer> bomEntityContent
+			D6LAbstractPackageEntity bom, D6LVertex bomEntity, final Set<Integer> bomEntityContent
 		) throws Exception {
 			
 			// Add current object to bom content
@@ -365,7 +366,7 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 			
 			// set bom ID to current object
 			
-			if ( bomEntity.getPackage().getId() == D6LPackage.UNALLOCATED.getId() ) {
+			if ( bomEntity.getPackage().getId() == D6LPackageVertex.UNALLOCATED.getId() ) {
 					
 				// not allocated yet
 				bomEntity.setPackage( bom );
@@ -389,7 +390,7 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 				      ( bomEntityContent.contains( child.getId() ) )
 				      ||
 				      // already allocated?
-				      ( child.getPackage().getId() != D6LPackage.UNALLOCATED.getId() )
+				      ( child.getPackage().getId() != D6LPackageVertex.UNALLOCATED.getId() )
 				){
 					// yes, next child
 					continue;

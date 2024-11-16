@@ -29,9 +29,10 @@ import org.xlm.jxlm.d6light.data.db.D6LDb;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
 import org.xlm.jxlm.d6light.data.job.D6LJobIF;
 import org.xlm.jxlm.d6light.data.measures.D6LEntityDirectedLinkStats;
+import org.xlm.jxlm.d6light.data.model.D6LAbstractPackageEntity;
 import org.xlm.jxlm.d6light.data.model.D6LEdge;
 import org.xlm.jxlm.d6light.data.model.D6LEntityIF;
-import org.xlm.jxlm.d6light.data.model.D6LPackage;
+import org.xlm.jxlm.d6light.data.model.D6LPackageVertex;
 import org.xlm.jxlm.d6light.data.model.D6LVertex;
 import org.xlm.jxlm.d6light.data.packkage.D6LPackageSubtypeEnum;
 import org.xlm.jxlm.d6light.data.packkage.D6LPackageTypeEnum;
@@ -54,7 +55,7 @@ public abstract class D6LAbstractBomSimplifier
 	     * @return
 	     * @throws D6LException 
 	     */
-		public static BomSimplifierKindEnum valueOf( D6LPackageSubtypeEnum lotSubTypeEnum ) throws D6LException {
+		public static BomSimplifierKindEnum valueOfSubType( D6LPackageSubtypeEnum lotSubTypeEnum ) throws D6LException {
 			
 			switch( lotSubTypeEnum ) {
 				case COMPONENT_LOT : {
@@ -77,7 +78,7 @@ public abstract class D6LAbstractBomSimplifier
     
 	private final Graph<D6LVertex, D6LEdge> inGraph = db.inGraph;
 	
-	private final D6LPackage benchLot = D6LPackage.ROOT_BENCH_PACKAGE; 
+	private final D6LPackageVertex benchLot = D6LPackageVertex.ROOT_BENCH_PACKAGE; 
 	
     private D6LAbstractBomSimplifier( 
         boolean singleExtractorLot
@@ -150,7 +151,7 @@ public abstract class D6LAbstractBomSimplifier
         Session session,
     	D6LAlgoCommandIF algoCommand, 
     	D6LVertex entity, boolean matchWithoutNumbersResult, D6LEntityDirectedLinkStats stat, 
-    	D6LPackage singlePackage, List<D6LJobIF<D6LEntityIF>> postActions
+    	D6LAbstractPackageEntity singlePackage, List<D6LJobIF<D6LEntityIF>> postActions
     ) throws D6LException;
    
     /**
@@ -173,10 +174,10 @@ public abstract class D6LAbstractBomSimplifier
         }
         
         // create or get business component lot
-        D6LPackage outerSimplifiedLot = null;
+        D6LAbstractPackageEntity outerSimplifiedLot = null;
         
         // get parent lot until we get a Business Lot
-        D6LPackage targetBusinessLot = benchLot;
+        D6LAbstractPackageEntity targetBusinessLot = benchLot;
         
         /*
         do {
@@ -251,13 +252,13 @@ public abstract class D6LAbstractBomSimplifier
         */
     }
 
-	private D6LPackage createOuterSimplifiedLot(
+	private D6LPackageVertex createOuterSimplifiedLot(
 	    Session session,
-		final D6LPackageSubtypeEnum lotSubType, D6LPackage targetBusinessLot
+		final D6LPackageSubtypeEnum lotSubType, D6LAbstractPackageEntity targetBusinessLot
 	) throws D6LException {
 
-		D6LPackage outerSimplifiedLot;
-		outerSimplifiedLot = new D6LPackage( D6LPackageTypeEnum.BUSINESS_PKG, lotSubType );
+		D6LPackageVertex outerSimplifiedLot;
+		outerSimplifiedLot = new D6LPackageVertex( D6LPackageTypeEnum.BUSINESS_PKG, lotSubType );
 		outerSimplifiedLot.setName( lotSubType.getLotName() );
 		
 		// Persist, add to graph
@@ -287,9 +288,9 @@ public abstract class D6LAbstractBomSimplifier
         private final D6LVertex kit;
         
         /** Single lot **/
-        private final D6LPackage singleLot;
+        private final D6LAbstractPackageEntity singleLot;
         
-        public ReworkChildrenJob( Session session, D6LAlgoCommandIF algoCommand, D6LVertex kit, D6LPackage singleLot ) {
+        public ReworkChildrenJob( Session session, D6LAlgoCommandIF algoCommand, D6LVertex kit, D6LAbstractPackageEntity singleLot ) {
             super();
             this.session = session;
             this.algoCommand = algoCommand;

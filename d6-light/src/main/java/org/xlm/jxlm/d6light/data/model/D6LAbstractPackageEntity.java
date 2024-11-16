@@ -20,32 +20,22 @@ package org.xlm.jxlm.d6light.data.model;
 
 import java.util.Objects;
 
-import org.hibernate.SessionFactory;
-import org.jgrapht.Graph;
 import org.xlm.jxlm.d6light.data.exception.D6LError;
 import org.xlm.jxlm.d6light.data.packkage.D6LPackageSubtypeEnum;
 import org.xlm.jxlm.d6light.data.packkage.D6LPackageTypeEnum;
 
 import jakarta.persistence.Basic;
-import jakarta.persistence.Entity;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.MappedSuperclass;
 
-@Entity
-public class D6LPackage extends D6LAbstractEntity implements D6LPackageEntityIF {
+@MappedSuperclass
+public abstract class D6LAbstractPackageEntity extends D6LAbstractEntity implements D6LPackageEntityIF {
 
 	/** Lot containing single objects **/
     public static final String 	TECH_NAME_SINGLE = "Single";
-
-	public static final D6LPackage UNALLOCATED = new D6LPackage( D6LPackageTypeEnum.TECHNICAL_PKG );
-
-	// Create a root target package
-	public static final D6LPackage ROOT_BENCH_PACKAGE = 
-		new D6LPackage( D6LPackageTypeEnum.BUSINESS_PKG );
 
 	@Id
 	@GeneratedValue( strategy = GenerationType.AUTO )
@@ -63,33 +53,32 @@ public class D6LPackage extends D6LAbstractEntity implements D6LPackageEntityIF 
 	
 	private String name;
 	
-    @OneToOne( fetch=FetchType.LAZY )
-    private D6LVertex primaryTarget;
-	
-    private D6LPackageData data = new D6LPackageData( this );
-    
-	public D6LPackage() {
+    //@OneToOne( fetch=FetchType.LAZY )
+    //private D6LPackageData data;
+
+	public D6LAbstractPackageEntity() {
 		super();
+		//this.data = new D6LPackageData( this );
 	}
 
-	public D6LPackage( int id, D6LPackageTypeEnum type, D6LPackageSubtypeEnum displayType ) {
-		super();
+	public D6LAbstractPackageEntity( int id, D6LPackageTypeEnum type, D6LPackageSubtypeEnum displayType ) {
+		this();
 		this.id = id;
 		this.packageType = type;
 		this.packageSubtype = displayType;
 	}
 
-	public D6LPackage( int id, D6LPackageTypeEnum type ) {
+	public D6LAbstractPackageEntity( int id, D6LPackageTypeEnum type ) {
 		this( id, type, null );
 	}
 
-	public D6LPackage( D6LPackageTypeEnum type, D6LPackageSubtypeEnum displayType ) {
-		super();
+	public D6LAbstractPackageEntity( D6LPackageTypeEnum type, D6LPackageSubtypeEnum displayType ) {
+		this();
 		this.packageType = type;
 		this.packageSubtype = displayType;
 	}
 
-	public D6LPackage( D6LPackageTypeEnum type ) {
+	public D6LAbstractPackageEntity( D6LPackageTypeEnum type ) {
 		this( type, null );
 	}
 
@@ -130,25 +119,6 @@ public class D6LPackage extends D6LAbstractEntity implements D6LPackageEntityIF 
 		this.name = name;
 	}
 
-	public void setPrimaryTarget( D6LVertex vertex ) {
-		this.primaryTarget = vertex;
-	}
-
-	public D6LVertex getPrimaryTarget() {
-		return primaryTarget;
-	}
-	
-	public static void initDb( SessionFactory sessionFactory, Graph<D6LPackage, D6LPackageEdge> outGraph ) {
-		
-		// Create persisted objects
-		sessionFactory.inTransaction( 
-			session -> {
-				session.persist( UNALLOCATED );
-				session.persist( ROOT_BENCH_PACKAGE );
-			});
-		
-	}
-	
 	@Override
 	public int getId() {
 		return id;
@@ -165,18 +135,19 @@ public class D6LPackage extends D6LAbstractEntity implements D6LPackageEntityIF 
 	}
 
 	@Override
-	public D6LPackage getPackage() {
+	public D6LAbstractPackageEntity getPackage() {
 		throw new D6LError( "Not supported in this flavor" );
 	}
 
 	@Override
-	public void setPackage( D6LPackage packkage ) {
+	public void setPackage( D6LAbstractPackageEntity packkage ) {
 		throw new D6LError( "Not supported in this flavor" );
 	}
 
 	@Override
 	public D6LPackageData getData() {
-		return data;
+		//return data;
+		return null;
 	}
 	
 	@Override
@@ -192,7 +163,7 @@ public class D6LPackage extends D6LAbstractEntity implements D6LPackageEntityIF 
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		D6LPackage other = (D6LPackage) obj;
+		D6LAbstractPackageEntity other = (D6LAbstractPackageEntity) obj;
 		return id == other.id;
 	}
 

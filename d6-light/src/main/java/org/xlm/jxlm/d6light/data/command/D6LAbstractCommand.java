@@ -29,13 +29,13 @@ import org.xlm.jxlm.d6light.data.conf.D6LightDataConf;
 import org.xlm.jxlm.d6light.data.db.D6LDb;
 import org.xlm.jxlm.d6light.data.exception.D6LError;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
+import org.xlm.jxlm.d6light.data.model.D6LAbstractPackageEntity;
 import org.xlm.jxlm.d6light.data.model.D6LEdge;
 import org.xlm.jxlm.d6light.data.model.D6LEntityRegistry;
 import org.xlm.jxlm.d6light.data.model.D6LLinkDirectionEnum;
-import org.xlm.jxlm.d6light.data.model.D6LPackage;
 import org.xlm.jxlm.d6light.data.model.D6LPackageData;
 import org.xlm.jxlm.d6light.data.model.D6LPackageEdge;
-import org.xlm.jxlm.d6light.data.model.D6LPackageEntityIF;
+import org.xlm.jxlm.d6light.data.model.D6LPackageVertex;
 import org.xlm.jxlm.d6light.data.model.D6LVertex;
 import org.xlm.jxlm.d6light.data.packkage.D6LPackageSubtypeEnum;
 import org.xlm.jxlm.d6light.data.packkage.D6LPackageTypeEnum;
@@ -55,7 +55,7 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
 	protected final D6LDb db = D6LDb.getInstance();
 	
     /** cache for single lots **/
-    private D6LPackage cacheSinglePackage = null;
+    private D6LAbstractPackageEntity cacheSinglePackage = null;
 	
 	protected List<String> listFatalErrors = null;
 
@@ -105,7 +105,7 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
 		
 		// Browse unallocated objects
 		try (
-			Stream<D6LVertex> unallocatedVertices = daoEntities.getVertices( session, D6LPackage.UNALLOCATED );
+			Stream<D6LVertex> unallocatedVertices = daoEntities.getVertices( session, D6LPackageVertex.UNALLOCATED );
 		) {
 			unallocatedVertices.forEach(
 				vertex -> {
@@ -143,7 +143,9 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
             // Try cache
             if ( cacheSinglePackage == null ) {
 
-            	cacheSinglePackage = new D6LPackage( D6LPackageTypeEnum.BUSINESS_PKG, D6LPackageSubtypeEnum.SINGLE_LOT );
+            	cacheSinglePackage = new D6LPackageVertex( 
+            		D6LPackageTypeEnum.BUSINESS_PKG, D6LPackageSubtypeEnum.SINGLE_LOT 
+            	);
             	
             	// persist it
             	session.persist( cacheSinglePackage );
@@ -201,7 +203,7 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
 		LOGGER.info( "Process Lot Dependencies from entity links" );
 		
 		// Special package for new links between existing objects
-		D6LPackage newExistingLinkLot = null;
+		D6LAbstractPackageEntity newExistingLinkLot = null;
 		
 		newExistingLinkLot = allocateLinksAndProcessLotDependenciesFromLinks( 
 			session, newExistingLinkLot, db.inGraph.edgeSet() 
@@ -209,13 +211,13 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
 		
 	}
 
-    private D6LPackage allocateLinksAndProcessLotDependenciesFromLinks( 
-        Session session, D6LPackage existingLinkLot,
+    private D6LAbstractPackageEntity allocateLinksAndProcessLotDependenciesFromLinks( 
+        Session session, D6LAbstractPackageEntity existingLinkLot,
         Set<D6LEdge> entityLinks 
     )
         throws D6LException, D6LNotAllocatedException
     {
-        D6LPackage newExistingLinkLot = existingLinkLot;
+        D6LAbstractPackageEntity newExistingLinkLot = existingLinkLot;
         
         for ( D6LEdge link : entityLinks ) {
             
@@ -230,14 +232,14 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
         	long entityB_lotId = entityB.getPackageEntity().getId();
         	
         	// check they are allocated
-        	if ( entityA_lotId == D6LPackage.UNALLOCATED.getId() ) {
+        	if ( entityA_lotId == D6LPackageVertex.UNALLOCATED.getId() ) {
         		throw new D6LNotAllocatedException( 
-        			"Entity " + entityA.getDisplay() + " is not allocated", D6LPackage.UNALLOCATED
+        			"Entity " + entityA.getDisplay() + " is not allocated", D6LPackageVertex.UNALLOCATED
         		);
         	}
-        	if ( entityB_lotId == D6LPackage.UNALLOCATED.getId() ) {
+        	if ( entityB_lotId == D6LPackageVertex.UNALLOCATED.getId() ) {
         		throw new D6LNotAllocatedException( 
-        			"Entity " + entityB.getDisplay() + " is not allocated", D6LPackage.UNALLOCATED
+        			"Entity " + entityB.getDisplay() + " is not allocated", D6LPackageVertex.UNALLOCATED
         		);
         	}
 
@@ -254,12 +256,12 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
         		D6LPackageEdge lotDependency = getOrCreatePackageDependency(
         			session,
         			link, 
-        			( D6LPackage ) entityA.getPackageEntity(), 
-        			( D6LPackage ) entityB.getPackageEntity()
+        			( D6LPackageVertex ) entityA.getPackageEntity(), 
+        			( D6LPackageVertex ) entityB.getPackageEntity()
         		);
 
     			// set link lot to lot dependency
-    			link.setPackageEntity( lotDependency );
+    			link.setPackageEntity( lotDependency.getPackageEntity() );
         			
         	}
 
@@ -279,13 +281,13 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
         boolean newFinished = finished;
         
     	// browse lot dependencies
-    	for ( D6LPackageEdge lotDependency : db.outGraph.edgeSet() ) {
+    	for ( D6LPackageEdge lotDependencyEdge : db.outGraph.edgeSet() ) {
     		
     		// it is a dependency implying a Business Lot dependency?
-    		D6LPackage lotDependencyA = db.outGraph.getEdgeSource( lotDependency );
+    		D6LPackageVertex lotDependencyA = db.outGraph.getEdgeSource( lotDependencyEdge );
     		long idBusinessLotA = lotDependencyA.getId();
 
-    		D6LPackage lotDependencyB = db.outGraph.getEdgeTarget( lotDependency );
+    		D6LPackageVertex lotDependencyB = db.outGraph.getEdgeTarget( lotDependencyEdge );
     		
     		/*
     		long idBusinessLotB = lotDependencyB.getIdLot();
@@ -310,7 +312,7 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
     		
 			newFinished = processBusinessPackageDependency( 
 			    session, newFinished, 
-			    lotDependency, lotDependencyA, 
+			    lotDependencyEdge, lotDependencyA, 
 			    lotDependencyA, lotDependencyB, lotDependencyB 
 			);
 			
@@ -321,8 +323,8 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
 
     private boolean processBusinessPackageDependency( 
         Session session, boolean finished, 
-        D6LPackageEdge lotDependency, D6LPackageEntityIF lotDependencyA,
-        D6LPackage lot_A, D6LPackageEntityIF lotDependencyB, D6LPackage lot_B 
+        D6LPackageEdge lotDependency, D6LPackageVertex lotDependencyA,
+        D6LPackageVertex lot_A, D6LAbstractPackageEntity lotDependencyB, D6LPackageVertex lot_B 
     )
         throws D6LException
     {
@@ -367,7 +369,7 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
 
 	private D6LPackageEdge getOrCreatePackageDependency(
         Session session,
-		D6LEdge link, D6LPackage pck_A, D6LPackage pck_B
+		D6LEdge link, D6LPackageVertex pck_A, D6LPackageVertex pck_B
 	)
 		throws D6LException 
 	{
@@ -419,7 +421,7 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
 	 * @throws D6LException 
 	 */
 	public D6LPackageEdge getExistingPackageDependency( 
-	    Session session, D6LPackage pkgFrom, D6LPackage pkgTo, 
+	    Session session, D6LPackageVertex pkgFrom, D6LPackageVertex pkgTo, 
 	    boolean isCountDirectedLotLinks
 	) throws D6LException {
 		

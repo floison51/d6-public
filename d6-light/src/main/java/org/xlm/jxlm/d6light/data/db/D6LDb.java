@@ -13,19 +13,22 @@ import org.jgrapht.Graph;
 import org.xlm.jxlm.d6light.data.exception.D6LError;
 import org.xlm.jxlm.d6light.data.measures.D6LEntityDirectedLinkStats;
 import org.xlm.jxlm.d6light.data.measures.D6LHistogramEntry;
+import org.xlm.jxlm.d6light.data.model.D6LAbstractEntity;
+import org.xlm.jxlm.d6light.data.model.D6LAbstractPackageEntity;
 import org.xlm.jxlm.d6light.data.model.D6LEdge;
 import org.xlm.jxlm.d6light.data.model.D6LEntityDirectedLinkStatsAccessor;
 import org.xlm.jxlm.d6light.data.model.D6LEntityRegistry;
 import org.xlm.jxlm.d6light.data.model.D6LHistogramAccessor;
-import org.xlm.jxlm.d6light.data.model.D6LPackage;
+import org.xlm.jxlm.d6light.data.model.D6LPackageData;
 import org.xlm.jxlm.d6light.data.model.D6LPackageEdge;
+import org.xlm.jxlm.d6light.data.model.D6LPackageVertex;
 import org.xlm.jxlm.d6light.data.model.D6LVertex;
 
 
 public class D6LDb {
 
 	public final Graph<D6LVertex, D6LEdge> inGraph;
-	public final Graph<D6LPackage, D6LPackageEdge> outGraph;
+	public final Graph<D6LPackageVertex, D6LPackageEdge> outGraph;
 
 	public final D6LEntityRegistry daoEntityRegistry = new D6LEntityRegistry( this );
 
@@ -39,7 +42,7 @@ public class D6LDb {
 	
 	public static synchronized D6LDb getInstance( 
 		Graph<D6LVertex, D6LEdge> inGraph,
-		Graph<D6LPackage, D6LPackageEdge> outGraph
+		Graph<D6LPackageVertex, D6LPackageEdge> outGraph
 	) {
 		
 		if ( me == null ) {
@@ -63,7 +66,7 @@ public class D6LDb {
 
 	private D6LDb(
 		Graph<D6LVertex, D6LEdge> inGraph,
-		Graph<D6LPackage, D6LPackageEdge> outGraph
+		Graph<D6LPackageVertex, D6LPackageEdge> outGraph
 	) {
 		super();
 		this.inGraph = inGraph;
@@ -77,12 +80,17 @@ public class D6LDb {
 		
         sessionFactory = new Configuration()
         		
+                .addAnnotatedClass( D6LAbstractEntity.class )
                 .addAnnotatedClass( D6LVertex.class )
-                .addAnnotatedClass( D6LPackage.class )
                 .addAnnotatedClass( D6LEdge.class )
                 .addAnnotatedClass( D6LHistogramEntry.class )
                 .addAnnotatedClass( D6LEntityDirectedLinkStats.class )
-                
+
+                .addAnnotatedClass( D6LAbstractPackageEntity.class )
+                .addAnnotatedClass( D6LPackageData.class )
+                .addAnnotatedClass( D6LPackageVertex.class )
+                .addAnnotatedClass( D6LPackageEdge.class )
+
                 // use H2 in-memory database
                 .setProperty(URL, "jdbc:h2:mem:db1")
                 .setProperty(USER, "sa")
@@ -101,7 +109,7 @@ public class D6LDb {
         sessionFactory.getSchemaManager().exportMappedObjects( true );
         
         // Init packages
-        D6LPackage.initDb( sessionFactory, outGraph );
+        D6LPackageVertex.initDb( sessionFactory, outGraph );
         
         sessionFactory.inTransaction(
         	session -> {

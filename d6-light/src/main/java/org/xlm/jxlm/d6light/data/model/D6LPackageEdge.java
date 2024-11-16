@@ -18,110 +18,39 @@
 
 package org.xlm.jxlm.d6light.data.model;
 
-import java.util.Objects;
-
-import org.hibernate.Session;
-import org.jgrapht.graph.DefaultEdge;
-import org.xlm.jxlm.d6light.data.exception.D6LError;
+import org.xlm.jxlm.d6light.data.packkage.D6LPackageSubtypeEnum;
 import org.xlm.jxlm.d6light.data.packkage.D6LPackageTypeEnum;
 
 import jakarta.persistence.Basic;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
-import jakarta.persistence.SequenceGenerator;
 
 @Entity
-public class D6LPackageEdge extends DefaultEdge implements D6LPackageEntityIF, D6LEdgeIF {
+public class D6LPackageEdge extends D6LAbstractPackageEntity implements D6LEdgeIF {
 
-	/** Serial ID **/
-	private static final long serialVersionUID = -4376861182806887574L;
-	
-	@Id
-	@SequenceGenerator( name="D6LPackageEdgeSeq", sequenceName="seq_D6LPackageEdge", initialValue = 0, allocationSize=0)
-	private int id;
-	
-	private String label;
-	
 	@Enumerated
 	@Basic(optional=false)
-    private D6LPackageTypeEnum packageType;
-
 	private D6LLinkDirectionEnum linkDirection;
 	
-    private D6LPackageData data = new D6LPackageData( this );
-    
-	D6LPackageEdge() {
-		super();
+	public D6LPackageEdge( D6LPackageTypeEnum type, D6LPackageSubtypeEnum displayType ) {
+		super( type, displayType );
 	}
 
-    /**
-     * Constructor for lots
-     * @param type
-     * @param displayType
-     */
-	public D6LPackageEdge( D6LPackageTypeEnum packageType ) {
-		super();
-		this.packageType = packageType;
-		
-		// if lot dependency, set default link direction
-		switch ( this.packageType ) {
-			case BUSINESS_PKG_DEPENDENCY:
-			case TECHNICAL_PKG_DEPENDENCY: {
-				// default to not directed link
-				linkDirection = D6LLinkDirectionEnum.NotDirected;
-				break;
-			}
-			default: {
-				// null direction
-				linkDirection = null;
-			}
-		}
-		
+	public D6LPackageEdge( D6LPackageTypeEnum type ) {
+		super( type );
 	}
-	
-	@Override
-	public int getId() {
-		return id;
+
+	public D6LPackageEdge( int id, D6LPackageTypeEnum type, D6LPackageSubtypeEnum displayType ) {
+		super( id, type, displayType );
+	}
+
+	public D6LPackageEdge( int id, D6LPackageTypeEnum type ) {
+		super( id, type );
 	}
 
 	@Override
-	public String getLabel() {
-		return label;
-	}
-
-	@Override
-	public D6LPackageEntityIF getPackageEntity() {
-		throw new D6LError( "Not supported in this flavor" );
-	}
-	
-	@Override
-	public void setPackageEntity( D6LPackageEntityIF packageEntity ) {
-		throw new D6LError( "Not supported in this flavor" );
-	}
-
-	@Override
-	public D6LPackage getPackage() {
-		throw new D6LError( "Not supported in this flavor" );
-	}
-
-	@Override
-	public void setPackage( D6LPackage packkage ) {
-		throw new D6LError( "Not supported in this flavor" );
-	}
-
-	public void setLabel(String label) {
-		this.label = label;
-	}
-
-	@Override
-	public String getDisplay() {
-		return getLabel();
-	}
-
-	@Override
-	public D6LPackageData getData() {
-		return data;
+	public D6LEntityKindEnum getKind() {
+		return D6LEntityKindEnum.egde;
 	}
 
 	@Override
@@ -131,36 +60,6 @@ public class D6LPackageEdge extends DefaultEdge implements D6LPackageEntityIF, D
 
 	public void setLinkDirection(D6LLinkDirectionEnum linkDirection) {
 		this.linkDirection = linkDirection;
-	}
-
-	@Override
-	public String toString() {
-		return "D6LPackageEdge [getSource()=" + getSource() + ", getTarget()=" + getTarget() + "]";
-	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hash(id);
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		D6LPackageEdge other = (D6LPackageEdge) obj;
-		return id == other.id;
-	}
-	
-	@Override
-	public void save( Session session ) {
-		
-		// Save entity
-		session.merge( this );
-		
 	}
 
 

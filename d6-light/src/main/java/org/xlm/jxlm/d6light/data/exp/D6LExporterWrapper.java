@@ -36,28 +36,14 @@ public class D6LExporterWrapper<V extends D6LEntityIF, E> {
 	) throws D6LException {
 
 		GraphExporter<V,E> result = null;
-		//BaseEventDrivenExporter<D6LVertex, D6LEdge> intermediate = null;
 		
 		switch ( format ) {
 
 			case GML: {
 				
-				GmlExporter<V,E> gmlImp = new GmlExporter<>();
-				result = gmlImp;
-				/*
-				intermediate = gmlImp;
+				GmlExporter<V,E> gmlExp = new GmlExporter<>();
+				result = gmlExp;
 				
-				// Set vertex factory
-				gmlImp.setVertexFactory(
-					id -> {
-						D6LVertex v = new D6LVertex( id );
-						
-						// Persist
-						
-						return v;
-					}
-				);
-				*/
 				break;
 			}
 	
@@ -66,9 +52,9 @@ public class D6LExporterWrapper<V extends D6LEntityIF, E> {
 			}
 		}
 
-		/*
 		// Set label consumer
-		intermediate.addVertexAttributeConsumer( 
+		/*
+		result.addVertexAttributeConsumer( 
 				( pair_V_attrName, attribute ) -> {
 					
 					if ( "label".equals( pair_V_attrName.getSecond() ) ) {
@@ -82,8 +68,7 @@ public class D6LExporterWrapper<V extends D6LEntityIF, E> {
 					
 				}
 			);
-			
-		*/
+		*/	
 		return (GraphExporter<V,E>) result;
 
 	}

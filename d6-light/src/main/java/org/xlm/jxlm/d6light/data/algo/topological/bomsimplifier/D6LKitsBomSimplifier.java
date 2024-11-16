@@ -29,7 +29,7 @@ import org.xlm.jxlm.d6light.data.measures.D6LEntityDirectedLinkStats;
 import org.xlm.jxlm.d6light.data.measures.D6LHistogramEntry;
 import org.xlm.jxlm.d6light.data.measures.D6LHistogramEntry.HistoKeyEnum;
 import org.xlm.jxlm.d6light.data.model.D6LEntityIF;
-import org.xlm.jxlm.d6light.data.model.D6LPackage;
+import org.xlm.jxlm.d6light.data.model.D6LAbstractPackageEntity;
 import org.xlm.jxlm.d6light.data.model.D6LVertex;
 import org.xlm.jxlm.d6light.data.packkage.D6LPackageSubtypeEnum;
 
@@ -85,7 +85,7 @@ public class D6LKitsBomSimplifier extends D6LAbstractBomSimplifier
     	Session session,
     	D6LAlgoCommandIF algoCommand, 
     	D6LVertex entity, boolean matchWithoutNumbersResult, D6LEntityDirectedLinkStats stat, 
-    	D6LPackage singlePackage, List<D6LJobIF<D6LEntityIF>> postActions
+    	D6LAbstractPackageEntity singlePackage, List<D6LJobIF<D6LEntityIF>> postActions
     ) 
     	throws D6LException
     {

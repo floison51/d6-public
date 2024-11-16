@@ -20,6 +20,9 @@ package org.xlm.jxlm.d6light.data.model;
 
 import org.hibernate.Session;
 
+import jakarta.persistence.MappedSuperclass;
+
+@MappedSuperclass
 public abstract class D6LAbstractEntity implements D6LEntityIF {
 
 	protected String label;

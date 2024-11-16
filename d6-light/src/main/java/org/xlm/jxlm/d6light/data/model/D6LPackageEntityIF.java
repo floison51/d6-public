@@ -4,4 +4,6 @@ public interface D6LPackageEntityIF extends D6LEntityIF {
 
 	D6LPackageData getData();
 	
+	D6LEntityKindEnum getKind();
+	
 }

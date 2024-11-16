@@ -28,7 +28,6 @@ import jakarta.persistence.Basic;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
 
 @Entity
@@ -49,8 +48,9 @@ public class D6LEdge extends DefaultEdge implements D6LEntityIF, D6LEdgeIF {
 	@Basic(optional=false)
 	private D6LLinkDirectionEnum linkDirection;
 	
-	@ManyToOne( targetEntity = D6LPackageEntityIF.class )
-	protected D6LPackageEntityIF packageEntity = D6LPackage.UNALLOCATED;
+	//@ManyToOne( targetEntity = D6LAbstractPackageEntity.class )
+	//protected D6LPackageEntityIF packageEntity = D6LPackageVertex.UNALLOCATED;
+	protected int packageEntityId = D6LPackageVertex.UNALLOCATED.getId();
 
 	D6LEdge() {
 		super();
@@ -77,22 +77,24 @@ public class D6LEdge extends DefaultEdge implements D6LEntityIF, D6LEdgeIF {
 
 	@Override
 	public D6LPackageEntityIF getPackageEntity() {
-		return packageEntity;
+		//return packageEntity;
+		return null;
 	}
 
 	@Override
-	public D6LPackage getPackage() {
-		return (D6LPackage) packageEntity;
+	public D6LAbstractPackageEntity getPackage() {
+		//return (D6LAbstractPackageEntity) packageEntity;
+		return null;
 	}
 
 	@Override
 	public void setPackageEntity( D6LPackageEntityIF packageEntity ) {
-		this.packageEntity = packageEntity;
+		//this.packageEntity = packageEntity;
 	}
 
 	@Override
-	public void setPackage( D6LPackage packkage ) {
-		this.packageEntity = packkage;
+	public void setPackage( D6LAbstractPackageEntity packkage ) {
+		//this.packageEntity = packkage;
 	}
 
 	public void setLabel(String label) {

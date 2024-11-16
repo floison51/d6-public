@@ -56,8 +56,8 @@ import org.xlm.jxlm.d6light.data.exception.D6LException;
 import org.xlm.jxlm.d6light.data.exp.D6LExporterWrapper;
 import org.xlm.jxlm.d6light.data.imp.D6LImporterWrapper;
 import org.xlm.jxlm.d6light.data.model.D6LEdge;
-import org.xlm.jxlm.d6light.data.model.D6LPackage;
 import org.xlm.jxlm.d6light.data.model.D6LPackageEdge;
+import org.xlm.jxlm.d6light.data.model.D6LPackageVertex;
 import org.xlm.jxlm.d6light.data.model.D6LVertex;
 
 /**
@@ -184,12 +184,12 @@ public class D6LMain {
     	Graph<D6LVertex,D6LEdge> inGraph = new SimpleDirectedGraph<>( 
     		D6LEdge.class
     	);
-    	Graph<D6LPackage,D6LPackageEdge> outGraph = new SimpleDirectedGraph<>( 
+    	Graph<D6LPackageVertex,D6LPackageEdge> outGraph = new SimpleDirectedGraph<>( 
     		D6LPackageEdge.class
     	);
     	
     	// Import graph
-    	importGraph( inGraph );
+    	importInGraph( inGraph );
     	
     	// Freeze source graph
     	inGraph = new AsUnmodifiableGraph<>( inGraph );
@@ -204,7 +204,7 @@ public class D6LMain {
     	runAlgo( idAlgo );
     	
     	// Output
-    	outputGraph( D6LDb.getInstance().outGraph );
+    	exportOutputGraph( D6LDb.getInstance().outGraph );
     	
 	}
 
@@ -269,7 +269,7 @@ public class D6LMain {
 
 	}
 
-	protected void importGraph( Graph<D6LVertex, D6LEdge> graph ) throws D6LException {
+	protected void importInGraph( Graph<D6LVertex, D6LEdge> graph ) throws D6LException {
 		
 		// Importer wrapper
     	D6LImporterWrapper<D6LVertex, D6LEdge> importerWrapper = new D6LImporterWrapper<>(
@@ -285,13 +285,13 @@ public class D6LMain {
     	
 	}
 
-	private void outputGraph(Graph<D6LPackage,D6LPackageEdge> graph ) throws D6LException {
+	private void exportOutputGraph(Graph<D6LPackageVertex,D6LPackageEdge> graph ) throws D6LException {
 
 		// Exporter wrapper
-    	D6LExporterWrapper<D6LPackage,D6LPackageEdge> exporterWrapper = new D6LExporterWrapper<>();
+    	D6LExporterWrapper<D6LPackageVertex,D6LPackageEdge> exporterWrapper = new D6LExporterWrapper<>();
     	
     	// Get graph importer according to format
-    	GraphExporter<D6LPackage, D6LPackageEdge> exporter =  
+    	GraphExporter<D6LPackageVertex, D6LPackageEdge> exporter =  
     		exporterWrapper.getGraphExporterInstance( graphFormat );
     	
     	// Export graph

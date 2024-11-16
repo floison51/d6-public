@@ -26,7 +26,7 @@ import org.xlm.jxlm.d6light.data.command.D6LNotAllocatedException;
 import org.xlm.jxlm.d6light.data.command.Stats;
 import org.xlm.jxlm.d6light.data.conf.D6LightDataConf;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
-import org.xlm.jxlm.d6light.data.model.D6LPackage;
+import org.xlm.jxlm.d6light.data.model.D6LPackageVertex;
 import org.xlm.jxlm.d6light.data.util.D6LUtil;
 
 /**
@@ -178,8 +178,8 @@ public abstract class D6LAbstractAlgoCommand
 		stats.nbLinks   = db.inGraph.edgeSet().size();
 
 		// check allocation is OK
-		stats.nbEntityErrors        = (int) db.daoEntityRegistry.getVertices( session, D6LPackage.UNALLOCATED ).count();
-		stats.nbEntityLinkErrors    = (int) db.daoEntityRegistry.getEdges( session, D6LPackage.UNALLOCATED ).count();
+		stats.nbEntityErrors        = (int) db.daoEntityRegistry.getVertices( session, D6LPackageVertex.UNALLOCATED ).count();
+		stats.nbEntityLinkErrors    = (int) db.daoEntityRegistry.getEdges( session, D6LPackageVertex.UNALLOCATED ).count();
 		
 		if ( debugOnError && (stats.nbEntityErrors != 0) ) {
 			
@@ -223,7 +223,7 @@ public abstract class D6LAbstractAlgoCommand
 
     private void doCheckAfterDebugLinks( Session session )
     {
-    	db.daoEntityRegistry.getEdges( session, D6LPackage.UNALLOCATED )
+    	db.daoEntityRegistry.getEdges( session, D6LPackageVertex.UNALLOCATED )
     		.forEach(
     			link -> {
             		LOGGER.debug( "Link " + link.getId()
@@ -237,7 +237,7 @@ public abstract class D6LAbstractAlgoCommand
 
     private void doCheckAfterDebugObjects( Session session )
     {
-    	db.daoEntityRegistry.getVertices( session, D6LPackage.UNALLOCATED )
+    	db.daoEntityRegistry.getVertices( session, D6LPackageVertex.UNALLOCATED )
 		.forEach(
 			lot -> {
         		LOGGER.debug("Lot " + lot.getId()

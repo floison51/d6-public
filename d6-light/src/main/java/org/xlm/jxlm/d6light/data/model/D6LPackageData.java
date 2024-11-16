@@ -5,9 +5,14 @@ import org.xlm.jxlm.d6light.data.exception.D6LException;
 import org.xlm.jxlm.d6light.data.packkage.D6LPackageSubtypeEnum;
 import org.xlm.jxlm.d6light.data.packkage.D6LPackageTypeEnum;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+
+@Entity
 public class D6LPackageData {
 	
-	final D6LEntityIF entity;
+	@Id
+	final D6LAbstractPackageEntity pkgEntity;
 
     private Integer nbObjects = null;
     private Integer nbLinks = null;
@@ -21,9 +26,9 @@ public class D6LPackageData {
     /** When true, entities nbs cn't be modified **/
     private boolean isFrozenForNbs = false;
     
-   public D6LPackageData( D6LEntityIF entity ) {
+   public D6LPackageData( D6LAbstractPackageEntity pkgEntity ) {
 		super();
-		this.entity = entity;
+		this.pkgEntity = pkgEntity;
 	}
 
 /**
@@ -33,7 +38,7 @@ public class D6LPackageData {
      */
     public void incNbDirectedLinks( Integer incNbLinks_fromTo, Integer incNbLinks_toFrom ) {
         
-        if ( isFrozenForNbs || !( entity instanceof D6LPackageEdge ) ) {
+        if ( isFrozenForNbs || !( pkgEntity instanceof D6LPackageEdge ) ) {
             return;
         }
         
