@@ -1,7 +1,7 @@
 package org.xlm.jxlm.d6light.data.model;
 
-import org.hibernate.SessionFactory;
-import org.jgrapht.Graph;
+import org.hibernate.Session;
+import org.xlm.jxlm.d6light.data.db.D6LDb;
 import org.xlm.jxlm.d6light.data.packkage.D6LPackageSubtypeEnum;
 import org.xlm.jxlm.d6light.data.packkage.D6LPackageTypeEnum;
 
@@ -11,20 +11,20 @@ import jakarta.persistence.OneToOne;
 @Entity
 public class D6LPackageVertex extends D6LAbstractPackageEntity {
 
-	public static final D6LPackageVertex UNALLOCATED = new D6LPackageVertex( D6LPackageTypeEnum.TECHNICAL_PKG );
+	public static final D6LPackageVertex UNALLOCATED = new D6LPackageVertex( D6LPackageTypeEnum.TECHNICAL_PKG, "Unallocated" );
 
 	// Create a root target package
 	public static final D6LPackageVertex ROOT_BENCH_PACKAGE = 
 		new D6LPackageVertex( D6LPackageTypeEnum.BUSINESS_PKG );
 
-	public static void initDb( SessionFactory sessionFactory, Graph<D6LPackageVertex, D6LPackageEdge> outGraph ) {
+	public static void initDb( D6LDb db, Session session ) {
 		
 		// Create persisted objects
-		sessionFactory.inTransaction( 
-			session -> {
-				session.persist( UNALLOCATED );
-				session.persist( ROOT_BENCH_PACKAGE );
-			});
+		session.persist( UNALLOCATED );
+		session.persist( ROOT_BENCH_PACKAGE );
+		
+		db.outGraph.addVertex( UNALLOCATED );
+		db.outGraph.addVertex( ROOT_BENCH_PACKAGE );
 		
 	}
 
@@ -41,6 +41,11 @@ public class D6LPackageVertex extends D6LAbstractPackageEntity {
 
 	public D6LPackageVertex( D6LPackageTypeEnum type ) {
 		super( type );
+	}
+
+	public D6LPackageVertex( D6LPackageTypeEnum type, String label ) {
+		super( type );
+		this.label = label;
 	}
 
 	public D6LPackageVertex( int id, D6LPackageTypeEnum type, D6LPackageSubtypeEnum displayType ) {

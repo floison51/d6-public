@@ -26,8 +26,9 @@ import org.xlm.jxlm.d6light.data.model.D6LVertex;
 
 public class D6LDb {
 
-	public final Graph<D6LVertex, D6LEdge> inGraph;
-	public final Graph<D6LPackageVertex, D6LPackageEdge> outGraph;
+	/** Graphs hold on IDs, data is held by persistent objects**/
+	public Graph<D6LVertex, D6LEdge> inGraph;
+	public Graph<D6LPackageVertex, D6LPackageEdge> outGraph;
 
 	public final D6LEntityRegistry daoEntityRegistry = new D6LEntityRegistry( this );
 
@@ -39,43 +40,33 @@ public class D6LDb {
 
 	private static D6LDb me = null;
 	
-	public static synchronized D6LDb getInstance( 
-		Graph<D6LVertex, D6LEdge> inGraph,
-		Graph<D6LPackageVertex, D6LPackageEdge> outGraph
-	) {
-		
-		if ( me == null ) {
-			me = new D6LDb( inGraph, outGraph );
-		}
-		
-		return me;
-		
-	}
-	
 	public static synchronized D6LDb getInstance() throws D6LError {
 			
 		if ( me == null ) {
-			throw new D6LError( "Database not configured" );
+			me = new D6LDb();
 		}
 		
 		return me;
 			
 	}
 
-
-	private D6LDb(
+	public void setGraphes(
 		Graph<D6LVertex, D6LEdge> inGraph,
 		Graph<D6LPackageVertex, D6LPackageEdge> outGraph
 	) {
-		super();
+	
 		this.inGraph = inGraph;
 		this.outGraph = outGraph;
-		initDb();
+		
 	}
 	
-	private SessionFactory sessionFactory;
+	private D6LDb() {
+		super();
+	}
 	
-	private void initDb() {
+	private static SessionFactory sessionFactory;
+	
+	public static void initDb() {
 		
         sessionFactory = new Configuration()
         		
@@ -106,27 +97,9 @@ public class D6LDb {
         // export the inferred database schema
         sessionFactory.getSchemaManager().exportMappedObjects( true );
         
-        // Init packages
-        D6LPackageVertex.initDb( sessionFactory, outGraph );
-        
-        sessionFactory.inTransaction(
-        	session -> {
-        		
-		        // Save vertices
-		        for ( D6LVertex v : inGraph.vertexSet() ) {
-		        	session.persist( v );
-		        }
-		        // Save edges
-		        for ( D6LEdge e : inGraph.edgeSet() ) {
-		        	session.persist( e );
-		        }
-		        
-        	}
-        );
-        
     }
 	
-	public SessionFactory getSessionFactory() {
+	public static SessionFactory getSessionFactory() {
 		return sessionFactory;
 	}
 

@@ -109,7 +109,7 @@ public class D6LEntityRegistry {
 		
 	}
 
-	protected Stream<? extends D6LEntityIF> queryByClassAndPackage( Session session, Class<? extends D6LEntityIF> clazz, D6LPackageEntityIF pkgEntity ) {
+	public Stream<? extends D6LEntityIF> queryByClassAndPackage( Session session, Class<? extends D6LEntityIF> clazz, D6LPackageEntityIF pkgEntity ) {
 		
 		// from D6LVertice
 		StringBuilder sbQuery = new StringBuilder( "from " + clazz.getSimpleName() );
@@ -154,8 +154,8 @@ public class D6LEntityRegistry {
 	}
 
 	@SuppressWarnings("unchecked")
-	public Stream<D6LAbstractPackageEntity> getPackageEdges( Session session ) {
-		return (Stream<D6LAbstractPackageEntity>) queryByClassAndPackage( session, D6LAbstractPackageEntity.class, null );
+	public Stream<D6LPackageEdge> getPackageEdges( Session session ) {
+		return (Stream<D6LPackageEdge>) queryByClassAndPackage( session, D6LPackageEdge.class, null );
 	}
 
 }

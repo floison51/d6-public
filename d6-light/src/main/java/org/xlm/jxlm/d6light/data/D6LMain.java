@@ -37,9 +37,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.appender.FileAppender;
+import org.hibernate.Session;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.AsUnmodifiableGraph;
-import org.jgrapht.graph.SimpleDirectedGraph;
 import org.jgrapht.nio.GraphExporter;
 import org.jgrapht.nio.GraphImporter;
 import org.xlm.jxlm.d6light.data.algo.D6LAbstractAlgo;
@@ -59,6 +59,7 @@ import org.xlm.jxlm.d6light.data.model.D6LEdge;
 import org.xlm.jxlm.d6light.data.model.D6LPackageEdge;
 import org.xlm.jxlm.d6light.data.model.D6LPackageVertex;
 import org.xlm.jxlm.d6light.data.model.D6LVertex;
+import org.xlm.jxlm.d6light.data.model.graph.D6LGraphAdapter;
 import org.xlm.jxlm.d6light.data.resources.D6LPackageOntologyHelper;
 
 /**
@@ -184,34 +185,56 @@ public class D6LMain {
     	this.graphFormat = D6LGraphFormatEnum.valueOf( strGraphFormat );
     	
     	// Initialize empty graph
-    	Graph<D6LVertex,D6LEdge> inGraph = new SimpleDirectedGraph<>( 
-    		D6LEdge.class
-    	);
-    	Graph<D6LPackageVertex,D6LPackageEdge> outGraph = new SimpleDirectedGraph<>( 
-    		D6LPackageEdge.class
-    	);
+    	Graph<D6LVertex, D6LEdge> inGraph = 
+    		new D6LGraphAdapter<>( D6LVertex.class, D6LEdge.class );
     	
-    	// Import graph
-    	importInGraph( inGraph );
-    	
-    	// Freeze source graph
-    	inGraph = new AsUnmodifiableGraph<>( inGraph );
+    	Graph<D6LPackageVertex, D6LPackageEdge> outGraph = 
+    		new D6LGraphAdapter<>( D6LPackageVertex.class, D6LPackageEdge.class );
     	
     	// Init DB
-    	D6LDb.getInstance( inGraph, outGraph );
+    	D6LDb.initDb();
     	
-    	// Algo
-    	String idAlgo = cmd.getOptionValue( OPTION_ID_ALGO );
+    	final D6LDb db = D6LDb.getInstance();
     	
-    	// Go!
-    	runAlgo( idAlgo );
-    	
-    	// Output
-    	exportOutputGraph( D6LDb.getInstance().outGraph );
-    	
+		// Create DB transaction
+		D6LDb.getSessionFactory().inTransaction( 
+			session -> {
+
+				try {
+
+					// Set session to graphs
+					( ( D6LGraphAdapter ) inGraph  ).setSession( session );
+					( ( D6LGraphAdapter ) outGraph ).setSession( session );
+					
+					// Import graph
+			    	importInGraph( inGraph );
+			    	
+			    	// Freeze source graph
+			    	AsUnmodifiableGraph<D6LVertex,D6LEdge> inGraphFrozen = new AsUnmodifiableGraph<>( inGraph );
+			    	
+			    	// Set graphes
+			    	db.setGraphes( inGraphFrozen, outGraph );
+			    	
+			        // Init packages
+			        D6LPackageVertex.initDb( db, session );
+			        
+			    	// Algo
+			    	String idAlgo = cmd.getOptionValue( OPTION_ID_ALGO );
+			    	
+			    	// Go!
+			    	runAlgo( session, idAlgo );
+			    	
+			    	// Output
+			    	exportOutputGraph( D6LDb.getInstance().outGraph );
+			    	
+				} catch ( Exception e ) {
+					D6LError.handleThrowable( e );
+				}
+			}
+		);
 	}
 
-	private void runAlgo( String idAlgo ) throws D6LException {
+	private void runAlgo( Session session, String idAlgo ) throws D6LException, D6LNotAllocatedException {
 		
 		// Index algos
 		Map<String,AbstractAlgoType> indexAlgoConfById = new HashMap<>();
@@ -256,26 +279,15 @@ public class D6LMain {
 			this.d6lConf
 		);
 		
-		// Create DB transaction
-		D6LDb.getInstance().getSessionFactory().inTransaction( 
-			session -> {
-				try {
-					// Run algo
-					cmdAlgo.execute( session );
-				} catch ( D6LException e ) {
-					D6LError.handleThrowable( e );
-				} catch ( D6LNotAllocatedException e ) {
-					D6LError.handleThrowable( e );
-				}
-			}
-		);
+		// Run algo
+		cmdAlgo.execute( session );
 
 	}
 
-	protected void importInGraph( Graph<D6LVertex, D6LEdge> graph ) throws D6LException {
+	protected void importInGraph( Graph<D6LVertex,D6LEdge> graph ) throws D6LException {
 		
 		// Importer wrapper
-    	D6LImporterWrapper<D6LVertex, D6LEdge> importerWrapper = new D6LImporterWrapper<>(
+    	D6LImporterWrapper<D6LVertex,D6LEdge> importerWrapper = new D6LImporterWrapper<>(
     		id -> new D6LVertex( id )
     	);
     	
@@ -288,17 +300,34 @@ public class D6LMain {
     	
 	}
 
-	private void exportOutputGraph(Graph<D6LPackageVertex,D6LPackageEdge> graph ) throws D6LException {
+	private void exportOutputGraph( Graph<D6LPackageVertex, D6LPackageEdge> graph ) throws D6LException {
 
 		// Exporter wrapper
-    	D6LExporterWrapper<D6LPackageVertex,D6LPackageEdge> exporterWrapper = new D6LExporterWrapper<>();
+    	D6LExporterWrapper<D6LPackageVertex, D6LPackageEdge> exporterWrapper = new D6LExporterWrapper<>();
     	
-    	// Get graph importer according to format
-    	GraphExporter<D6LPackageVertex, D6LPackageEdge> exporter =  
-    		exporterWrapper.getGraphExporterInstance( graphFormat );
+    	// Create DB session
+		D6LDb.getInstance().getSessionFactory().inSession( 
+			session -> {
+			
+				try {
+					
+			    	// Get graph importer according to format
+			    	GraphExporter<D6LPackageVertex, D6LPackageEdge> exporter =  
+			    		exporterWrapper.getGraphExporterInstance( graphFormat );
+			    	
+					// Put session in thread local
+			    	exporterWrapper.tls.set( session );
+			    	
+			    	// Export graph
+			    	exporter.exportGraph( graph, graphOutFile );
+			    	
+				} catch ( Exception e ) {
+					D6LError.handleThrowable( e );
+				}
+				
+			}
+		);
     	
-    	// Export graph
-    	exporter.exportGraph( graph, graphOutFile );
 	}
 
 	private File getFileFromOption( CommandLine cmd, String option, boolean isCheck ) throws D6LException {

@@ -19,47 +19,40 @@
 package org.xlm.jxlm.d6light.data.model;
 
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hibernate.Session;
-import org.jgrapht.graph.DefaultEdge;
 
 import jakarta.persistence.Basic;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.SequenceGenerator;
 
 @Entity
-public class D6LEdge extends DefaultEdge implements D6LEntityIF, D6LEdgeIF {
+public class D6LEdge implements D6LEntityIF, D6LEdgeIF {
 
-	private static AtomicInteger seqIdEdge = new AtomicInteger();
-	
-	/** Serial ID **/
-	private static final long serialVersionUID = -4376861182806887574L;
-	
 	@Id
-	@SequenceGenerator( name="D6LEdgeSeq", sequenceName="seq_D6LEdge", initialValue = 0, allocationSize=0)
 	private int id;
 	
 	private String label;
 	
 	@Enumerated
 	@Basic(optional=false)
-	private D6LLinkDirectionEnum linkDirection;
+	private D6LLinkDirectionEnum linkDirection = D6LLinkDirectionEnum.NotDirected;
 	
 	@ManyToOne( targetEntity = D6LAbstractPackageEntity.class )
 	protected D6LPackageEntityIF packageEntity = D6LPackageVertex.UNALLOCATED;
 
 	D6LEdge() {
-
 		super();
-		// Make sure id is unique, unless Set<D6LEdge> will not work
-		this.id = seqIdEdge.getAndIncrement();
 		// Set to unallocated package
 		packageEntity = D6LPackageVertex.UNALLOCATED; 
+	}
 
+	// For graph import
+	public D6LEdge( int id ) {
+		this();
+		this.id = id;
 	}
 
 	@Override
@@ -98,11 +91,6 @@ public class D6LEdge extends DefaultEdge implements D6LEntityIF, D6LEdgeIF {
 
 	public void setLinkDirection(D6LLinkDirectionEnum linkDirection) {
 		this.linkDirection = linkDirection;
-	}
-
-	@Override
-	public String toString() {
-		return "D6LEdge [getSource()=" + getSource() + ", getTarget()=" + getTarget() + "]";
 	}
 
 	@Override

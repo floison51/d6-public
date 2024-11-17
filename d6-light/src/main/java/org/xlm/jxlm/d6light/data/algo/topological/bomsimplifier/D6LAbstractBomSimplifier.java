@@ -18,11 +18,10 @@
 
 package org.xlm.jxlm.d6light.data.algo.topological.bomsimplifier;
 
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import org.hibernate.Session;
-import org.jgrapht.Graph;
 import org.xlm.jxlm.d6light.data.algo.D6LAlgoCommandIF;
 import org.xlm.jxlm.d6light.data.conf.AbstractBomSimplifierType;
 import org.xlm.jxlm.d6light.data.db.D6LDb;
@@ -76,8 +75,6 @@ public abstract class D6LAbstractBomSimplifier
 
 	protected final D6LDb db = D6LDb.getInstance();
     
-	private final Graph<D6LVertex, D6LEdge> inGraph = db.inGraph;
-	
 	private final D6LPackageVertex benchLot = D6LPackageVertex.ROOT_BENCH_PACKAGE; 
 	
     private D6LAbstractBomSimplifier( 
@@ -263,6 +260,7 @@ public abstract class D6LAbstractBomSimplifier
 		
 		// Persist, add to graph
 		session.persist( outerSimplifiedLot );
+		
 		db.outGraph.addVertex( outerSimplifiedLot );
 		
 		return outerSimplifiedLot;
@@ -302,14 +300,13 @@ public abstract class D6LAbstractBomSimplifier
         public void doJob( D6LEntityIF notUsed )  throws D6LException {
             
             // Get kit children
-        	Set<D6LEdge> kitLinks = inGraph.outgoingEdgesOf( kit );
+        	Collection<D6LEdge> kitLinks = db.inGraph.outgoingEdgesOf( kit );
             
         	for ( D6LEdge kitLink : kitLinks ) {
                 
-                // Get to entity
-                D6LVertex child = inGraph.getEdgeTarget( kitLink );
-                
                 // Get stats
+        		D6LVertex child = db.inGraph.getEdgeTarget( kitLink );
+        				
                 D6LEntityDirectedLinkStats childStats = 
                 	db.daoEntityStats.getByEntity( session, child );
                 
@@ -328,6 +325,9 @@ public abstract class D6LAbstractBomSimplifier
                      ) {
 
                         child.setPackageEntity( singleLot );
+                        
+                        // Save
+                        session.merge( child );
                         
                     }
                     

@@ -23,20 +23,18 @@ import java.util.Objects;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.SequenceGenerator;
 
 @Entity
 public class D6LVertex extends D6LAbstractEntity {
 
 	@Id
-	@SequenceGenerator( name="D6LVertexSeq", sequenceName="seq_D6LVertex", initialValue = 0, allocationSize=0)
 	private int id;
 	
 	@ManyToOne( targetEntity = D6LAbstractPackageEntity.class )
 	protected D6LPackageEntityIF packageEntity = D6LPackageVertex.UNALLOCATED;
 	
 	// For persistence
-	public D6LVertex() {
+	D6LVertex() {
 		super();
 		// Set to unallocated package
 		packageEntity = D6LPackageVertex.UNALLOCATED; 

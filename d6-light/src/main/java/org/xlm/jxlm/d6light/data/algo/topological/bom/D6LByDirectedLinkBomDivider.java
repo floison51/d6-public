@@ -29,7 +29,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 import org.hibernate.Session;
-import org.jgrapht.Graph;
 import org.xlm.jxlm.d6light.data.algo.D6LAlgoCommandIF;
 import org.xlm.jxlm.d6light.data.algo.topological.D6LAbstractTopologicalDivider;
 import org.xlm.jxlm.d6light.data.conf.AbstractAlgoType;
@@ -54,8 +53,6 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
     public static final String PARAM_HANDLE_DIAMONDS = "handleDiamonds";
 
     private boolean isHandleDiamonds = true;
-    
-    private final Graph<D6LVertex, D6LEdge> inGraph = db.inGraph;
     
     /**
      * Constructor
@@ -241,11 +238,12 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
         setParentBoms.clear();
         
         // get parent objects
-    	Set<D6LEdge> bomHeadParentLinks = inGraph.incomingEdgesOf( bomHead );
+        
+    	Collection<D6LEdge> bomHeadParentLinks = db.inGraph.incomingEdgesOf( bomHead );
     	for ( D6LEdge link: bomHeadParentLinks ) {
     		
     		// get parent entity
-    		D6LVertex parentEntity = inGraph.getEdgeSource( link );
+    		D6LVertex parentEntity = db.inGraph.getEdgeSource( link );
     		// store bom ID if same bench
    			setParentBoms.add( (D6LPackageVertex) parentEntity.getPackageEntity() );
     		
@@ -374,7 +372,7 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 			}
 			
 			// Get links to avoid modification into cursor to avoid leaving too much openened cursors
-			Set<D6LEdge> childrenLinks = inGraph.outgoingEdgesOf( bomEntity );
+			Collection<D6LEdge> childrenLinks = db.inGraph.outgoingEdgesOf( bomEntity );
 			
 			// browse children
 			for ( D6LEdge link: childrenLinks ) {
@@ -383,7 +381,7 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 				link.setPackageEntity( bom );
 				session.merge( link );		
 				
-				D6LVertex child = inGraph.getEdgeTarget( link );
+				D6LVertex child = db.inGraph.getEdgeTarget( link );
 				
 				if ( 
 	                  // have we already browsed child?

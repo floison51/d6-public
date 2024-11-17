@@ -16,16 +16,14 @@
  *  along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html
 **/
 
-package org.xlm.jxlm.d6light.data.model;
+package org.xlm.jxlm.d6light.data.model.graph;
 
-import org.xlm.jxlm.d6light.data.model.graph.D6LGraphEntityIF;
-
-public interface D6LEntityIF extends D6LGraphEntityIF, D6LSaveableIF {
+public interface D6LGraphEntityIF {
 	
-	String getDisplay();
+	int getId();
 	
-	D6LPackageEntityIF getPackageEntity();
-
-	void setPackageEntity( D6LPackageEntityIF packkageEntity );
+	String getLabel();
+	
+	void setLabel( String label );
 
 }

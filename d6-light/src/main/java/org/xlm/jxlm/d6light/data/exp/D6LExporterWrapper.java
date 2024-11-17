@@ -22,6 +22,7 @@ import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.hibernate.Session;
 import org.jgrapht.nio.Attribute;
 import org.jgrapht.nio.DefaultAttribute;
 import org.jgrapht.nio.GraphExporter;
@@ -29,14 +30,18 @@ import org.jgrapht.nio.gml.GmlExporter;
 import org.jgrapht.nio.gml.GmlExporter.Parameter;
 import org.xlm.jxlm.d6light.data.D6LGraphFormatEnum;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
-import org.xlm.jxlm.d6light.data.model.D6LAbstractPackageEntity;
+import org.xlm.jxlm.d6light.data.model.D6LPackageVertex;
+import org.xlm.jxlm.d6light.data.model.graph.D6LGraphEdgeIF;
+import org.xlm.jxlm.d6light.data.model.graph.D6LGraphEntityIF;
 
 /**
  * Graph file importer
  */
-public class D6LExporterWrapper<V extends D6LAbstractPackageEntity, E extends D6LAbstractPackageEntity> {
+public class D6LExporterWrapper<V extends D6LGraphEntityIF, E extends D6LGraphEdgeIF> {
+	
+	public final ThreadLocal<Session> tls = new ThreadLocal<Session>();
 
-	public GraphExporter<V,E> getGraphExporterInstance( 
+	public GraphExporter<V,E> getGraphExporterInstance(
 		D6LGraphFormatEnum format
 	) throws D6LException {
 
@@ -55,8 +60,14 @@ public class D6LExporterWrapper<V extends D6LAbstractPackageEntity, E extends D6
 				
 				// Set vertext attributes provider
 				gmlExp.setVertexAttributeProvider(
-					( v ) -> {
+					( gv ) -> {
+
+						// Get session from thread local
+						Session session = tls.get();
 						
+						// Get actual package vertex
+						D6LPackageVertex v = session.get( D6LPackageVertex.class, gv.getId() ); 
+
 						Map<String,Attribute> map = new HashMap<>();
 						StringBuilder sbLabel = new StringBuilder();
 						

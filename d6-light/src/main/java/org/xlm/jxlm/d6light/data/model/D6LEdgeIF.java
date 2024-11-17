@@ -1,9 +1,7 @@
 package org.xlm.jxlm.d6light.data.model;
 
-public interface D6LEdgeIF extends D6LSaveableIF, D6LEntityIF {
+import org.xlm.jxlm.d6light.data.model.graph.D6LGraphEdgeIF;
 
-	D6LLinkDirectionEnum getLinkDirection();
-
-	void setLinkDirection( D6LLinkDirectionEnum linkDirection );
-
+public interface D6LEdgeIF extends D6LGraphEdgeIF, D6LSaveableIF {
+	
 }

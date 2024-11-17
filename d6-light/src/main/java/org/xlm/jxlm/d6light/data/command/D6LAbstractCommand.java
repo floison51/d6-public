@@ -19,9 +19,9 @@
 package org.xlm.jxlm.d6light.data.command;
 
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
@@ -201,83 +201,134 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
         // Link driven lot dependencies
 		LOGGER.info( "Process Lot Dependencies from entity links" );
 		
-		allocateLinksAndProcessLotDependenciesFromLinks( 
-			session, db.inGraph.edgeSet() 
+		db.inGraph.edgeSet().forEach(
+			link -> {
+
+				try {
+		        	// get roleA
+		        	D6LVertex entityA = db.inGraph.getEdgeSource( link );
+		        	// We need to refresh graph entities
+		        	entityA = session.get( D6LVertex.class, entityA.getId() );
+		        	
+		            // get roleB
+		        	D6LVertex entityB = db.inGraph.getEdgeTarget( link );
+		        	// We need to refresh graph entities
+		        	entityB = session.get( D6LVertex.class, entityB.getId() );
+		            
+		        	// check if we have a lot dependency
+		        	long entityA_lotId = entityA.getPackageEntity().getId();
+		        	long entityB_lotId = entityB.getPackageEntity().getId();
+		        	
+		        	// check they are allocated
+		        	if ( entityA_lotId == D6LPackageVertex.UNALLOCATED.getId() ) {
+		        		throw new D6LNotAllocatedException( 
+		        			"Entity " + entityA.getDisplay() + " is not allocated", D6LPackageVertex.UNALLOCATED
+		        		);
+		        	}
+		        	if ( entityB_lotId == D6LPackageVertex.UNALLOCATED.getId() ) {
+		        		throw new D6LNotAllocatedException( 
+		        			"Entity " + entityB.getDisplay() + " is not allocated", D6LPackageVertex.UNALLOCATED
+		        		);
+		        	}
+
+		        	if ( entityA_lotId == entityB_lotId ) {
+		        		
+		        		// Assign package A or B to link
+		       			link.setPackageEntity( entityA.getPackageEntity() );
+		       			
+		        	} else {
+		        		
+		        		// We have a lot dependency
+		        		
+		        		// get packages
+		        		D6LPackageEdge lotDependency = getOrCreatePackageDependency(
+		        			session,
+		        			link, 
+		        			( D6LPackageVertex ) entityA.getPackageEntity(), 
+		        			( D6LPackageVertex ) entityB.getPackageEntity()
+		        		);
+
+		    			// set link lot to lot dependency
+		    			link.setPackageEntity( lotDependency.getPackageEntity() );
+		        			
+		        	}
+
+		        	// save link
+		        	session.merge( link );
+				
+				} catch ( Exception e ) {
+					D6LError.handleThrowable( e );
+				}
+				
+			}
 		);
 		
 	}
-
-    private void allocateLinksAndProcessLotDependenciesFromLinks( 
-        Session session,
-        Set<D6LEdge> entityLinks 
-    )
-        throws D6LException, D6LNotAllocatedException
-    {
-
-    	for ( D6LEdge link : entityLinks ) {
-            
-        	// get roleA
-        	D6LVertex entityA = db.inGraph.getEdgeSource( link );
-        	// We need to refresh graph entities
-        	entityA = session.get( D6LVertex.class, entityA.getId() );
-        	
-            // get roleB
-        	D6LVertex entityB = db.inGraph.getEdgeTarget( link );
-        	// We need to refresh graph entities
-        	entityB = session.get( D6LVertex.class, entityB.getId() );
-            
-        	// check if we have a lot dependency
-        	long entityA_lotId = entityA.getPackageEntity().getId();
-        	long entityB_lotId = entityB.getPackageEntity().getId();
-        	
-        	// check they are allocated
-        	if ( entityA_lotId == D6LPackageVertex.UNALLOCATED.getId() ) {
-        		throw new D6LNotAllocatedException( 
-        			"Entity " + entityA.getDisplay() + " is not allocated", D6LPackageVertex.UNALLOCATED
-        		);
-        	}
-        	if ( entityB_lotId == D6LPackageVertex.UNALLOCATED.getId() ) {
-        		throw new D6LNotAllocatedException( 
-        			"Entity " + entityB.getDisplay() + " is not allocated", D6LPackageVertex.UNALLOCATED
-        		);
-        	}
-
-        	if ( entityA_lotId == entityB_lotId ) {
-        		
-        		// Assign package A or B to link
-       			link.setPackageEntity( entityA.getPackageEntity() );
-       			
-        	} else {
-        		
-        		// We have a lot dependency
-        		
-        		// get packages
-        		D6LPackageEdge lotDependency = getOrCreatePackageDependency(
-        			session,
-        			link, 
-        			( D6LPackageVertex ) entityA.getPackageEntity(), 
-        			( D6LPackageVertex ) entityB.getPackageEntity()
-        		);
-
-    			// set link lot to lot dependency
-    			link.setPackageEntity( lotDependency.getPackageEntity() );
-        			
-        	}
-
-        	// save link
-        	session.merge( link );
-        	
-        }
-        
-    }
 
     private boolean buildBusinessLotDependencies( Session session, boolean finished )
         throws D6LException
     {
         
-        boolean newFinished = finished;
+        MutableBoolean newFinished = new MutableBoolean( finished );
         
     	// browse lot dependencies
+		db.outGraph.edgeSet().forEach(
+			lotDependencyEdge -> {
+
+				try {
+					
+		    		// it is a dependency implying a Business Lot dependency?
+		    		D6LPackageVertex lotDependencyA = db.outGraph.getEdgeSource( lotDependencyEdge );
+		    		long idBusinessLotA = lotDependencyA.getId();
+
+		    		D6LPackageVertex lotDependencyB = db.outGraph.getEdgeTarget( lotDependencyEdge );
+		    		
+		    		/*
+		    		long idBusinessLotB = lotDependencyB.getIdLot();
+		    		if ( ( idBusinessLotB == D6LPackage.ID_NO_LOT ) && ( level != 1 ) ) {
+		    			throw new D6LException(
+		    				"No business parent lot for lot dependency "
+		    					+ lotDependencyB.getId() + " ( "
+		    					+ lotDependencyB.getType( db ) + " )");
+		    		}
+					*/
+		    		/*
+		    		if ( ( idBusinessLotA != D6LPackage.ID_NO_LOT ) && ( idBusinessLotB != D6LPackage.ID_NO_LOT ) && ( idBusinessLotA != idBusinessLotB ) ) {
+		    			// we have a business lot dependency
+		    			newFinished = processBusinessLotDependency( 
+		    			    session, newFinished, 
+		    			    lotDependency, 
+		    			    lotDependencyA, idBusinessLotA, lotDependencyB, idBusinessLotB 
+		    			);
+
+		    		}
+					*/
+
+		    		//
+		    	    // private boolean processBusinessPackageDependency( 
+		    	    //        Session session, boolean finished, 
+		    	    //        D6LPackageEdge lotDependency, 
+		    	    //        D6LAbstractPackageEntity lotDependencyA, D6LPackageVertex lot_A, 
+		    	    //        D6LAbstractPackageEntity lotDependencyB, D6LPackageVertex lot_B 
+		    	    //    )
+
+		    		boolean new_newFinished = processBusinessPackageDependency( 
+					    session, newFinished.booleanValue(), 
+					    lotDependencyEdge, 
+					    lotDependencyA, ( D6LPackageVertex) lotDependencyA, 
+					    lotDependencyB, ( D6LPackageVertex) lotDependencyB 
+					);
+
+		    		newFinished.setValue( new_newFinished );
+		    		
+				} catch ( Exception e ) {
+					D6LError.handleThrowable( e );
+				}
+				
+			}
+		);
+
+        /*
     	for ( D6LPackageEdge lotDependencyEdge : db.outGraph.edgeSet() ) {
     		
     		// it is a dependency implying a Business Lot dependency?
@@ -286,7 +337,7 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
 
     		D6LPackageVertex lotDependencyB = db.outGraph.getEdgeTarget( lotDependencyEdge );
     		
-    		/*
+    		*
     		long idBusinessLotB = lotDependencyB.getIdLot();
     		if ( ( idBusinessLotB == D6LPackage.ID_NO_LOT ) && ( level != 1 ) ) {
     			throw new D6LException(
@@ -305,7 +356,7 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
     			);
 
     		}
-			*/
+			*
     		
 			newFinished = processBusinessPackageDependency( 
 			    session, newFinished, 
@@ -314,14 +365,15 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
 			);
 			
         }
-    	
-        return newFinished;
+    	*/
+        return newFinished.booleanValue();
     }
 
     private boolean processBusinessPackageDependency( 
         Session session, boolean finished, 
-        D6LPackageEdge lotDependency, D6LPackageVertex lotDependencyA,
-        D6LPackageVertex lot_A, D6LAbstractPackageEntity lotDependencyB, D6LPackageVertex lot_B 
+        D6LPackageEdge lotDependency, 
+        D6LAbstractPackageEntity lotDependencyA, D6LPackageVertex lot_A, 
+        D6LAbstractPackageEntity lotDependencyB, D6LPackageVertex lot_B 
     )
         throws D6LException
     {

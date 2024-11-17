@@ -19,6 +19,7 @@
 package org.xlm.jxlm.d6light.data.algo.topological;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -36,6 +37,7 @@ import org.xlm.jxlm.d6light.data.algo.topological.bomsimplifier.D6LAbstractBomSi
 import org.xlm.jxlm.d6light.data.conf.AbstractAlgoType;
 import org.xlm.jxlm.d6light.data.conf.D6LightDataConf;
 import org.xlm.jxlm.d6light.data.conf.TopologicalDividerType;
+import org.xlm.jxlm.d6light.data.exception.D6LError;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
 import org.xlm.jxlm.d6light.data.job.D6LJobIF;
 import org.xlm.jxlm.d6light.data.measures.D6LEntityDirectedLinkStats;
@@ -166,16 +168,18 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
         }
 	
 		// find single lot for current bench
-        D6LAbstractPackageEntity singleLot = null;
+        D6LAbstractPackageEntity _singleLot = null;
 		
 		if ( allocateSingles ) {		
 			
 		    // Use a thread safe method to get single lot
 		    // Because some threads may creating another single lot in the mean while...
-		    singleLot = db.daoEntityRegistry.getOrCreateSingleLot( 
+		    _singleLot = db.daoEntityRegistry.getOrCreateSingleLot( 
 	    		session, dividerAlgo.getProducesLotType() 
 	    	);
 		}
+		
+		final D6LAbstractPackageEntity singleLot = _singleLot;
 		
 		// allocate single and component objects
 		
@@ -184,22 +188,27 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 	
 		// browse vertices belonging to bench
         LOGGER.info( "  vertices" );
-		for ( D6LVertex v : db.inGraph.vertexSet() ) {
-			
-			// select only unallocated objects
-			if ( v.getPackageEntity() != D6LPackageVertex.UNALLOCATED ) {
-				continue;
-			}
-			
-			// Do allocation and get post actions
-			List<D6LJobIF<D6LEntityIF>> curPostActions = allocateSingleAndBomSimplificationAndTopOfBom( 
-				session,
-				v, mapBomSimplificationLots, singleLot, idEntitiesProcessed
-			);
-			
-			postActions.addAll( curPostActions );
-			
-		}
+        
+        db.daoEntityRegistry.getVertices( session ).forEach(
+        	v -> {
+        		try {
+	    			// select only unallocated objects
+	    			if ( v.getPackageEntity().getId() != D6LPackageVertex.UNALLOCATED.getId() ) {
+	    				return;
+	    			}
+	    			
+	    			// Do allocation and get post actions
+	    			List<D6LJobIF<D6LEntityIF>> curPostActions = allocateSingleAndBomSimplificationAndTopOfBom( 
+	    				session,
+	    				v, mapBomSimplificationLots, singleLot, idEntitiesProcessed
+	    			);
+	    			
+	    			postActions.addAll( curPostActions );
+        		} catch ( Exception e ) {
+        			D6LError.handleThrowable( e );
+        		}
+        	}
+        );
 		
 		// Flush DB
 		session.flush();
@@ -211,53 +220,58 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
             
 		// allocate links to component lot, if both roles are in component lot
         LOGGER.info( "  edges" );
-		for ( D6LEdge link: db.inGraph.edgeSet() ) {
-			
-			// select only unallocated links
-			if ( link.getPackageEntity().getId() != D6LPackageVertex.UNALLOCATED.getId() ) {
-				continue;
-			}
-			
-			D6LVertex roleA_entity = db.inGraph.getEdgeSource( link );
-			D6LVertex roleB_entity = db.inGraph.getEdgeTarget( link );
-
-            // remove components from benches
-            for ( D6LAbstractPackageEntity bomSimplificationLot : mapBomSimplificationLots.values() ) {
-            
-                // role B in component lot?
-                if ( 
-                    ( roleB_entity.getPackageEntity() == bomSimplificationLot ) 
-                 ) {
-                    
-                    // link is in a lot dependency
-                    
-                    link.setPackageEntity( bomSimplificationLot );
-                    
-                    // We de-allocated link from bench, that means that link stats for objectA and objectB have changed
-                    // Rework stats
-                    reworkStatsAndSingleLotForDirectedLinkToComponent( 
-                    	session,
-                    	singleLot, roleA_entity, roleB_entity 
-                    );
-                    
-                }
-
-            }
-            
-            // role A entity
-            allocateSingleAndBomSimplificationAndTopOfBom(
-            	session,
-				roleA_entity, mapBomSimplificationLots, singleLot, idEntitiesProcessed
-			);
-			
-            // role B entity
-			allocateSingleAndBomSimplificationAndTopOfBom( 
-            	session,
-				roleB_entity, mapBomSimplificationLots, singleLot, idEntitiesProcessed
-			);
-			
-        }
-
+        db.daoEntityRegistry.getEdges( session ).forEach(
+        	link -> {
+        		
+        		try {
+	    			// select only unallocated links
+	    			if ( link.getPackageEntity().getId() != D6LPackageVertex.UNALLOCATED.getId() ) {
+	    				return;
+	    			}
+	    			
+	    			D6LVertex roleA_entity = db.inGraph.getEdgeSource( link );
+	    			D6LVertex roleB_entity = db.inGraph.getEdgeTarget( link );
+	
+	                // remove components from benches
+	                for ( D6LAbstractPackageEntity bomSimplificationLot : mapBomSimplificationLots.values() ) {
+	                
+	                    // role B in component lot?
+	                    if ( 
+	                        ( roleB_entity.getPackageEntity() == bomSimplificationLot ) 
+	                     ) {
+	                        
+	                        // link is in a lot dependency
+	                        
+	                        link.setPackageEntity( bomSimplificationLot );
+	                        
+	                        // We de-allocated link from bench, that means that link stats for objectA and objectB have changed
+	                        // Rework stats
+	                        reworkStatsAndSingleLotForDirectedLinkToComponent( 
+	                        	session,
+	                        	singleLot, roleA_entity, roleB_entity 
+	                        );
+	                        
+	                    }
+	
+	                }
+	                
+	                // role A entity
+	                allocateSingleAndBomSimplificationAndTopOfBom(
+	                	session,
+	    				roleA_entity, mapBomSimplificationLots, singleLot, idEntitiesProcessed
+	    			);
+	    			
+	                // role B entity
+	    			allocateSingleAndBomSimplificationAndTopOfBom( 
+	                	session,
+	    				roleB_entity, mapBomSimplificationLots, singleLot, idEntitiesProcessed
+	    			);
+            	} catch ( Exception e ) {
+            		D6LError.handleThrowable( e );
+            	}
+        	}
+    	);
+        
 	}
 
 	/**
@@ -417,7 +431,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
         List<D6LJobIF<D6LEntityIF>> postActions = new ArrayList<>();
         
         // check only unallocated objects
-		if ( entity.getPackageEntity() != D6LPackageVertex.UNALLOCATED ) {
+		if ( entity.getPackageEntity().getId() != D6LPackageVertex.UNALLOCATED.getId() ) {
 			// already processed
 			return postActions;
 		}
@@ -429,7 +443,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 		}
 		
 		// find links from this entity
-    	Set<D6LEdge> directedLinksFromEntity = db.inGraph.outgoingEdgesOf( entity );
+    	Collection<D6LEdge> directedLinksFromEntity = db.inGraph.outgoingEdgesOf( entity );
     	// count directed links from entity
     	int nbDirectedLinksFromEntity = directedLinksFromEntity.size();
     	// Graph is directed by constraint
@@ -437,7 +451,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
     	
     	// count directed links to entity
 		// find links from this entity
-    	Set<D6LEdge> directedLinksToEntity = db.inGraph.incomingEdgesOf( entity );
+    	Collection<D6LEdge> directedLinksToEntity = db.inGraph.incomingEdgesOf( entity );
     	int nbDirectedLinksToEntity = directedLinksToEntity.size();
 
     	// count links to entity

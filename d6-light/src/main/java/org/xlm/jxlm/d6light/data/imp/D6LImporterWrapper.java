@@ -30,14 +30,14 @@ import org.jgrapht.nio.GraphImporter;
 import org.jgrapht.nio.gml.GmlImporter;
 import org.xlm.jxlm.d6light.data.D6LGraphFormatEnum;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
-import org.xlm.jxlm.d6light.data.model.D6LEdgeIF;
-import org.xlm.jxlm.d6light.data.model.D6LEntityIF;
 import org.xlm.jxlm.d6light.data.model.D6LLinkDirectionEnum;
+import org.xlm.jxlm.d6light.data.model.graph.D6LGraphEdgeIF;
+import org.xlm.jxlm.d6light.data.model.graph.D6LGraphEntityIF;
 
 /**
  * Graph file importer
  */
-public class D6LImporterWrapper<V extends D6LEntityIF, E extends D6LEdgeIF> {
+public class D6LImporterWrapper<V extends D6LGraphEntityIF, E extends D6LGraphEdgeIF> {
 	
 	private Function<Integer, V> vertexFactory;
 	
