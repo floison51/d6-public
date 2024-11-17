@@ -5,6 +5,9 @@ import org.jgrapht.Graph;
 import org.xlm.jxlm.d6light.data.packkage.D6LPackageSubtypeEnum;
 import org.xlm.jxlm.d6light.data.packkage.D6LPackageTypeEnum;
 
+import jakarta.persistence.Entity;
+
+@Entity
 public class D6LPackageVertex extends D6LAbstractPackageEntity {
 
 	public static final D6LPackageVertex UNALLOCATED = new D6LPackageVertex( D6LPackageTypeEnum.TECHNICAL_PKG );

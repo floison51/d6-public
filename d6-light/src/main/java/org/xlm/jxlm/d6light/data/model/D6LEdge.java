@@ -28,6 +28,7 @@ import jakarta.persistence.Basic;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
 
 @Entity
@@ -48,9 +49,8 @@ public class D6LEdge extends DefaultEdge implements D6LEntityIF, D6LEdgeIF {
 	@Basic(optional=false)
 	private D6LLinkDirectionEnum linkDirection;
 	
-	//@ManyToOne( targetEntity = D6LAbstractPackageEntity.class )
-	//protected D6LPackageEntityIF packageEntity = D6LPackageVertex.UNALLOCATED;
-	protected int packageEntityId = D6LPackageVertex.UNALLOCATED.getId();
+	@ManyToOne( targetEntity = D6LAbstractPackageEntity.class )
+	protected D6LPackageEntityIF packageEntity = D6LPackageVertex.UNALLOCATED;
 
 	D6LEdge() {
 		super();
@@ -58,13 +58,6 @@ public class D6LEdge extends DefaultEdge implements D6LEntityIF, D6LEdgeIF {
 		this.id = seqIdEdge.getAndIncrement();
 	}
 
-	/*
-	D6LEdge( int id ) {
-		this();
-		this.id = id;
-	}
-	*/
-	
 	@Override
 	public int getId() {
 		return id;

@@ -173,13 +173,6 @@ public class D6LPackageData {
                 nbLinks_fromTo += 1;
                 break;
             }
-            case DirectedToFrom : {
-                if ( nbLinks_toFrom == null ) {
-                    nbLinks_toFrom = 0;
-                }
-                nbLinks_toFrom += 1;
-                break;
-            }
             default : {
                 throw new D6LError( "Link direction '" + linkDirection + "' is not supported"  );
             }

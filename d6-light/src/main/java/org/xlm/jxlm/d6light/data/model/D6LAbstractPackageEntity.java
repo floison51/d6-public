@@ -25,13 +25,15 @@ import org.xlm.jxlm.d6light.data.packkage.D6LPackageSubtypeEnum;
 import org.xlm.jxlm.d6light.data.packkage.D6LPackageTypeEnum;
 
 import jakarta.persistence.Basic;
+import jakarta.persistence.Entity;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.OneToOne;
 
-@MappedSuperclass
+@Entity
 public abstract class D6LAbstractPackageEntity extends D6LAbstractEntity implements D6LPackageEntityIF {
 
 	/** Lot containing single objects **/
@@ -53,12 +55,12 @@ public abstract class D6LAbstractPackageEntity extends D6LAbstractEntity impleme
 	
 	private String name;
 	
-    //@OneToOne( fetch=FetchType.LAZY )
-    //private D6LPackageData data;
+    @OneToOne( fetch=FetchType.LAZY )
+    private D6LPackageData data;
 
 	public D6LAbstractPackageEntity() {
 		super();
-		//this.data = new D6LPackageData( this );
+		this.data = new D6LPackageData( this );
 	}
 
 	public D6LAbstractPackageEntity( int id, D6LPackageTypeEnum type, D6LPackageSubtypeEnum displayType ) {

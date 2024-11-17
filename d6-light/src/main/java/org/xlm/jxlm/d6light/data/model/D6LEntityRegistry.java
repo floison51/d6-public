@@ -91,7 +91,7 @@ public class D6LEntityRegistry {
 		
 		SelectionQuery<D6LAbstractPackageEntity> query = 
 			session
-				.createSelectionQuery( "from D6LPackageEntity where packageSubtype=?1 and kind=?2", D6LAbstractPackageEntity.class )
+				.createSelectionQuery( "from D6LAbstractPackageEntity where packageSubtype=?1 and kind=?2", D6LAbstractPackageEntity.class )
 				.setParameter( 1, D6LPackageSubtypeEnum.SINGLE_LOT )
 				.setParameter( 2, D6LEntityKindEnum.vertex );
 		

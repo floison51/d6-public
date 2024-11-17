@@ -22,6 +22,7 @@ import java.util.Objects;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
 
 @Entity
@@ -31,9 +32,8 @@ public class D6LVertex extends D6LAbstractEntity {
 	@SequenceGenerator( name="D6LVertexSeq", sequenceName="seq_D6LVertex", initialValue = 0, allocationSize=0)
 	private int id;
 	
-	//@ManyToOne( targetEntity = D6LAbstractPackageEntity.class )
-	//protected D6LPackageEntityIF packageEntity = D6LPackageVertex.UNALLOCATED;
-	protected int packageEntityId = D6LPackageVertex.UNALLOCATED.getId();
+	@ManyToOne( targetEntity = D6LAbstractPackageEntity.class )
+	protected D6LPackageEntityIF packageEntity = D6LPackageVertex.UNALLOCATED;
 	
 	// For persistence
 	public D6LVertex() {
@@ -54,18 +54,17 @@ public class D6LVertex extends D6LAbstractEntity {
 
 	@Override
 	public D6LAbstractPackageEntity getPackage() {
-		return null;
-		//return ( D6LAbstractPackageEntity ) packageEntity;
+		return ( D6LAbstractPackageEntity ) packageEntity;
 	}
 
 	@Override
 	public void setPackageEntity( D6LPackageEntityIF packageEntity ) {
-		//this.packageEntity = packageEntity;
+		this.packageEntity = packageEntity;
 	}
 	
 	@Override
 	public void setPackage( D6LAbstractPackageEntity packkage ) {
-		//this.packageEntity = packkage;
+		this.packageEntity = packkage;
 	}
 	
 	@Override
@@ -91,7 +90,7 @@ public class D6LVertex extends D6LAbstractEntity {
 
 	@Override
 	public String toString() {
-		return "D6LVertex [id=" + id + ", idPackage=" + packageEntityId + "]";
+		return "D6LVertex [id=" + id + ", idPackage=" + packageEntity.getId() + "]";
 	}
 
 
