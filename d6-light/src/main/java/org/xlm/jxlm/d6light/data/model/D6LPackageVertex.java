@@ -6,6 +6,7 @@ import org.xlm.jxlm.d6light.data.packkage.D6LPackageSubtypeEnum;
 import org.xlm.jxlm.d6light.data.packkage.D6LPackageTypeEnum;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.OneToOne;
 
 @Entity
 public class D6LPackageVertex extends D6LAbstractPackageEntity {
@@ -26,6 +27,9 @@ public class D6LPackageVertex extends D6LAbstractPackageEntity {
 			});
 		
 	}
+
+	@OneToOne
+	private D6LVertex primaryVertex = null;
 	
 	public D6LPackageVertex() {
 		super();
@@ -50,6 +54,10 @@ public class D6LPackageVertex extends D6LAbstractPackageEntity {
 	@Override
 	public D6LEntityKindEnum getKind() {
 		return D6LEntityKindEnum.vertex;
+	}
+
+	public void setPrimaryTarget( D6LVertex primaryVertex ) {
+		this.primaryVertex  = primaryVertex;
 	}
 
 }

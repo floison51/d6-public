@@ -33,7 +33,6 @@ import org.xlm.jxlm.d6light.data.model.D6LAbstractPackageEntity;
 import org.xlm.jxlm.d6light.data.model.D6LEdge;
 import org.xlm.jxlm.d6light.data.model.D6LEntityRegistry;
 import org.xlm.jxlm.d6light.data.model.D6LLinkDirectionEnum;
-import org.xlm.jxlm.d6light.data.model.D6LPackageData;
 import org.xlm.jxlm.d6light.data.model.D6LPackageEdge;
 import org.xlm.jxlm.d6light.data.model.D6LPackageVertex;
 import org.xlm.jxlm.d6light.data.model.D6LVertex;
@@ -379,7 +378,7 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
 		if ( lotDependency == null) {
 			
 			// create it
-			D6LPackageTypeEnum depType = D6LPackageData.getAssociatedLotDependencyType(
+			D6LPackageTypeEnum depType = D6LAbstractPackageEntity.getAssociatedLotDependencyType(
 					pck_A.getPackageType(), pck_A.getPackageSubtype(),
 					pck_B.getPackageType(), pck_B.getPackageSubtype(), 
 					false
@@ -402,7 +401,7 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
 			
             // Reset directed lot links
             // Count forward link
-            lotDependency.getData().setNbDirectedLinks( 1, 0 );
+            lotDependency.setNbDirectedLinks( 1, 0 );
 	        
 			// save it
 			session.merge( lotDependency );
@@ -443,7 +442,7 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
             // Directed links
             if ( isCountDirectedLotLinks ) {
                 // Count directed link
-                lotLink.getData().incNbDirectedLinks( 1, 0 );
+                lotLink.incNbDirectedLinks( 1, 0 );
                 // save it
                 session.merge( lotLink );
             }
@@ -459,7 +458,7 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
             // Directed links
             if ( isCountDirectedLotLinks ) {
                 // Count directed link
-                lotLink.getData().incNbDirectedLinks( 0, 1 );
+                lotLink.incNbDirectedLinks( 0, 1 );
             }
             
 			// save it
@@ -543,15 +542,14 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
             db.daoEntityRegistry.getPackages( session )
             	.forEach(
             		pkg -> {
-    	                D6LPackageData data = pkg.getData();
-            			if ( !data.isFrozenForNbs() ) {
+            			if ( !pkg.isFrozenForNbs() ) {
     	                	
     	                    // Nb objects
     	                    long nbObjects = db.daoEntityRegistry.getVertices( session, pkg ).count();
     	                    long nbLinks   = db.daoEntityRegistry.getEdges( session, pkg ).count();
     	    
-    	                    data.setNbObjects( (int) nbObjects );
-    	                    data.setNbLinks( (int) nbLinks );
+    	                    pkg.setNbObjects( (int) nbObjects );
+    	                    pkg.setNbLinks( (int) nbLinks );
     	                    
     	                    
     	                    // update lot
@@ -566,15 +564,14 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
             db.daoEntityRegistry.getPackageEdges( session )
 	        	.forEach(
 	        		pkgEdge -> {
-		                D6LPackageData data = pkgEdge.getData();
-	        			if ( !data.isFrozenForNbs() ) {
+	        			if ( !pkgEdge.isFrozenForNbs() ) {
 		                	
 		                    // Nb objects
 		                    long nbObjects = db.daoEntityRegistry.getVertices( session, pkgEdge ).count();
 		                    long nbLinks   = db.daoEntityRegistry.getEdges( session, pkgEdge ).count();
 		    
-		                    data.setNbObjects( (int) nbObjects );
-		                    data.setNbLinks( (int) nbLinks );
+		                    pkgEdge.setNbObjects( (int) nbObjects );
+		                    pkgEdge.setNbLinks( (int) nbLinks );
 		                    
 		                    
 		                    // update lot

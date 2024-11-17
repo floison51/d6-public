@@ -78,14 +78,18 @@ public class D6LImporterWrapper<V extends D6LEntityIF, E extends D6LEdgeIF> {
 				
 				// Set label consumer
 				gmlImp.addVertexAttributeConsumer( 
+
 					( pair_V_attrName, attribute ) -> {
 						
+						// Get vertex
+						V v = pair_V_attrName.getFirst();
+
 						if ( "label".equals( pair_V_attrName.getSecond() ) ) {
 							
 							// Get label 
 							String label = attribute.getValue();
 							// Set to vertex
-							pair_V_attrName.getFirst().setLabel( label );
+							v.setLabel( label );
 							
 						}
 						

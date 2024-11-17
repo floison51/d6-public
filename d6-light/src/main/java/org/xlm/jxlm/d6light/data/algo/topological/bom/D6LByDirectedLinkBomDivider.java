@@ -166,7 +166,7 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 		for ( D6LVertex bomHeadObject: bomHeadEntities ) {
 			
 			// Create BOM lot
-			D6LAbstractPackageEntity bomHeadLot = getNewBom( session );
+			D6LPackageVertex bomHeadLot = getNewBom( session );
 			
 			// set BOM head entity as primary lot target
 			bomHeadLot.setPrimaryTarget( bomHeadObject );
@@ -179,7 +179,7 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 		}
 	}
 
-	private D6LAbstractPackageEntity getNewBom( Session session ) throws D6LException {
+	private D6LPackageVertex getNewBom( Session session ) throws D6LException {
 	    
 		D6LPackageVertex bom = new D6LPackageVertex( producesLotType, D6LPackageSubtypeEnum.BOM );
 		

@@ -19,7 +19,6 @@ import org.xlm.jxlm.d6light.data.model.D6LEdge;
 import org.xlm.jxlm.d6light.data.model.D6LEntityDirectedLinkStatsAccessor;
 import org.xlm.jxlm.d6light.data.model.D6LEntityRegistry;
 import org.xlm.jxlm.d6light.data.model.D6LHistogramAccessor;
-import org.xlm.jxlm.d6light.data.model.D6LPackageData;
 import org.xlm.jxlm.d6light.data.model.D6LPackageEdge;
 import org.xlm.jxlm.d6light.data.model.D6LPackageVertex;
 import org.xlm.jxlm.d6light.data.model.D6LVertex;
@@ -87,7 +86,6 @@ public class D6LDb {
                 .addAnnotatedClass( D6LEntityDirectedLinkStats.class )
 
                 .addAnnotatedClass( D6LAbstractPackageEntity.class )
-                .addAnnotatedClass( D6LPackageData.class )
                 .addAnnotatedClass( D6LPackageVertex.class )
                 .addAnnotatedClass( D6LPackageEdge.class )
 

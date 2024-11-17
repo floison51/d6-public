@@ -38,18 +38,20 @@ public class D6LVertex extends D6LAbstractEntity {
 	// For persistence
 	public D6LVertex() {
 		super();
+		// Set to unallocated package
+		packageEntity = D6LPackageVertex.UNALLOCATED; 
+
 	}
 	
 	// For graph import
 	public D6LVertex( int id ) {
-		super();
+		this();
 		this.id = id;
 	}
 
 	@Override
 	public D6LPackageEntityIF getPackageEntity() {
-		return null;
-		//return packageEntity;
+		return packageEntity;
 	}
 
 	@Override

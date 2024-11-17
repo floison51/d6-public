@@ -53,9 +53,13 @@ public class D6LEdge extends DefaultEdge implements D6LEntityIF, D6LEdgeIF {
 	protected D6LPackageEntityIF packageEntity = D6LPackageVertex.UNALLOCATED;
 
 	D6LEdge() {
+
 		super();
 		// Make sure id is unique, unless Set<D6LEdge> will not work
 		this.id = seqIdEdge.getAndIncrement();
+		// Set to unallocated package
+		packageEntity = D6LPackageVertex.UNALLOCATED; 
+
 	}
 
 	@Override
@@ -70,24 +74,22 @@ public class D6LEdge extends DefaultEdge implements D6LEntityIF, D6LEdgeIF {
 
 	@Override
 	public D6LPackageEntityIF getPackageEntity() {
-		//return packageEntity;
-		return null;
+		return packageEntity;
 	}
 
 	@Override
 	public D6LAbstractPackageEntity getPackage() {
-		//return (D6LAbstractPackageEntity) packageEntity;
-		return null;
+		return (D6LAbstractPackageEntity) packageEntity;
 	}
 
 	@Override
 	public void setPackageEntity( D6LPackageEntityIF packageEntity ) {
-		//this.packageEntity = packageEntity;
+		this.packageEntity = packageEntity;
 	}
 
 	@Override
 	public void setPackage( D6LAbstractPackageEntity packkage ) {
-		//this.packageEntity = packkage;
+		this.packageEntity = packkage;
 	}
 
 	public void setLabel(String label) {
