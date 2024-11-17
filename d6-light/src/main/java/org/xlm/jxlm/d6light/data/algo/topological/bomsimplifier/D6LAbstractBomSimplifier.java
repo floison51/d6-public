@@ -327,7 +327,7 @@ public abstract class D6LAbstractBomSimplifier
                     	( childStats.getNbLinksFromForBench() == 0 ) && ( childStats.getNbLinksToForBench() == 0 ) 
                      ) {
 
-                        child.setPackage( singleLot );
+                        child.setPackageEntity( singleLot );
                         
                     }
                     

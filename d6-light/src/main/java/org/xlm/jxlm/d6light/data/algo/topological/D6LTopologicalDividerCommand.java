@@ -187,7 +187,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 		for ( D6LVertex v : db.inGraph.vertexSet() ) {
 			
 			// select only unallocated objects
-			if ( v.getPackage() != D6LPackageVertex.UNALLOCATED ) {
+			if ( v.getPackageEntity() != D6LPackageVertex.UNALLOCATED ) {
 				continue;
 			}
 			
@@ -226,12 +226,12 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
             
                 // role B in component lot?
                 if ( 
-                    ( roleB_entity.getPackage() == bomSimplificationLot ) 
+                    ( roleB_entity.getPackageEntity() == bomSimplificationLot ) 
                  ) {
                     
                     // link is in a lot dependency
                     
-                    link.setPackage( bomSimplificationLot );
+                    link.setPackageEntity( bomSimplificationLot );
                     
                     // We de-allocated link from bench, that means that link stats for objectA and objectB have changed
                     // Rework stats
@@ -367,7 +367,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
             ) {
                 
                 // role A is single, move it to single lot
-                roleA.setPackage( singleLot );
+                roleA.setPackageEntity( singleLot );
 
             }
         }
@@ -397,7 +397,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
             ) {
     
                 // role B is single, move it to single lot
-                roleB.setPackage( singleLot );
+                roleB.setPackageEntity( singleLot );
                 
             }
         }
@@ -417,7 +417,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
         List<D6LJobIF<D6LEntityIF>> postActions = new ArrayList<>();
         
         // check only unallocated objects
-		if ( entity.getPackage() != D6LPackageVertex.UNALLOCATED ) {
+		if ( entity.getPackageEntity() != D6LPackageVertex.UNALLOCATED ) {
 			// already processed
 			return postActions;
 		}
@@ -460,7 +460,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
 			( singleLot != null ) && ( nbLinksFromEntity == 0 ) && ( nbLinksToEntity == 0 ) 
 		) {
 
-		    entity.setPackage( singleLot );
+		    entity.setPackageEntity( singleLot );
 			
 		} else {
 			
@@ -520,7 +520,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
    			        	*/
    			        	
 	    			    // put to component lot
-	    				entity.setPackage( bomSimplifierLot );
+	    				entity.setPackageEntity( bomSimplifierLot );
 	    				
 	    	            // Do we need a new simplifier lot?
 	    	            if ( !bomSimplifier.isSingleExtractorLot() ) {

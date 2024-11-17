@@ -32,10 +32,4 @@ public interface D6LEntityIF extends D6LSaveableIF {
 
 	void setLabel( String label );
 
-	/** Only for vertices **/
-	D6LAbstractPackageEntity getPackage();
-
-	/** Only for vertices **/
-	void setPackage( D6LAbstractPackageEntity packkage );
-
 }

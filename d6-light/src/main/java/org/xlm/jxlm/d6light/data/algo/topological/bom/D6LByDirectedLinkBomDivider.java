@@ -173,7 +173,7 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 			session.merge( bomHeadLot );
 			
 			// allocate bom head to lot
-			bomHeadObject.setPackage( bomHeadLot );
+			bomHeadObject.setPackageEntity( bomHeadLot );
 			session.merge( bomHeadObject );
 			
 		}
@@ -247,7 +247,7 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
     		// get parent entity
     		D6LVertex parentEntity = inGraph.getEdgeSource( link );
     		// store bom ID if same bench
-   			setParentBoms.add( parentEntity.getPackage() );
+   			setParentBoms.add( (D6LPackageVertex) parentEntity.getPackageEntity() );
     		
     	}
         
@@ -256,7 +256,7 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
         	// get unique id
         	D6LAbstractPackageEntity parentBom = setParentBoms.iterator().next();
         	// different from current bomID
-        	if ( parentBom != bomHead.getPackage() ) {
+        	if ( parentBom != bomHead.getPackageEntity() ) {
         		
         		// yes, a repair is needed
         	    new_aFixHasBeenDone = true;
@@ -281,18 +281,18 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 		
 		// Vertices
 		try (
-			Stream<D6LVertex> sVertices = db.daoEntityRegistry.getVertices( session, currentBomHead.getPackage() );
+			Stream<D6LVertex> sVertices = db.daoEntityRegistry.getVertices( session, currentBomHead.getPackageEntity() );
 		) {
 			sVertices.forEach(
 				v -> {
-					v.setPackage( toBomId );
+					v.setPackageEntity( toBomId );
 					session.merge( toBomId );
 				}
 			);
 		}
 		
 		// change bom head
-		currentBomHead.setPackage( toBomId );
+		currentBomHead.setPackageEntity( toBomId );
 		session.merge( currentBomHead );
 		
 	}
@@ -366,10 +366,10 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 			
 			// set bom ID to current object
 			
-			if ( bomEntity.getPackage().getId() == D6LPackageVertex.UNALLOCATED.getId() ) {
+			if ( bomEntity.getPackageEntity().getId() == D6LPackageVertex.UNALLOCATED.getId() ) {
 					
 				// not allocated yet
-				bomEntity.setPackage( bom );
+				bomEntity.setPackageEntity( bom );
 				session.merge( bomEntity );		
 			}
 			
@@ -380,7 +380,7 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 			for ( D6LEdge link: childrenLinks ) {
 				
 				// set bom to link
-				link.setPackage( bom );
+				link.setPackageEntity( bom );
 				session.merge( link );		
 				
 				D6LVertex child = inGraph.getEdgeTarget( link );
@@ -390,7 +390,7 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 				      ( bomEntityContent.contains( child.getId() ) )
 				      ||
 				      // already allocated?
-				      ( child.getPackage().getId() != D6LPackageVertex.UNALLOCATED.getId() )
+				      ( child.getPackageEntity().getId() != D6LPackageVertex.UNALLOCATED.getId() )
 				){
 					// yes, next child
 					continue;

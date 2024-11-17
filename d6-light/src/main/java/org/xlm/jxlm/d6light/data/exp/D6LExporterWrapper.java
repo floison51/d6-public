@@ -19,17 +19,22 @@
 package org.xlm.jxlm.d6light.data.exp;
 
 import java.text.MessageFormat;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.jgrapht.nio.Attribute;
+import org.jgrapht.nio.DefaultAttribute;
 import org.jgrapht.nio.GraphExporter;
 import org.jgrapht.nio.gml.GmlExporter;
+import org.jgrapht.nio.gml.GmlExporter.Parameter;
 import org.xlm.jxlm.d6light.data.D6LGraphFormatEnum;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
-import org.xlm.jxlm.d6light.data.model.D6LEntityIF;
+import org.xlm.jxlm.d6light.data.model.D6LAbstractPackageEntity;
 
 /**
  * Graph file importer
  */
-public class D6LExporterWrapper<V extends D6LEntityIF, E> {
+public class D6LExporterWrapper<V extends D6LAbstractPackageEntity, E extends D6LAbstractPackageEntity> {
 
 	public GraphExporter<V,E> getGraphExporterInstance( 
 		D6LGraphFormatEnum format
@@ -42,7 +47,35 @@ public class D6LExporterWrapper<V extends D6LEntityIF, E> {
 			case GML: {
 				
 				GmlExporter<V,E> gmlExp = new GmlExporter<>();
+
+				gmlExp.setParameter( Parameter.EXPORT_VERTEX_LABELS, true );
+				gmlExp.setParameter( Parameter.EXPORT_EDGE_LABELS, true );
+				
 				result = gmlExp;
+				
+				// Set vertext attributes provider
+				gmlExp.setVertexAttributeProvider(
+					( v ) -> {
+						
+						Map<String,Attribute> map = new HashMap<>();
+						StringBuilder sbLabel = new StringBuilder();
+						
+						sbLabel.append( v.getId() ).append( "\n" );
+						
+						if ( v.getLabel() != null ) {
+							sbLabel.append( v.getLabel() ).append( "\n" );
+						}
+						
+						sbLabel.append( v.getPackageType().getDisplayName() ).append( "\n" );
+						sbLabel.append( v.getPackageSubtype().getDisplayName() ).append( "\n" );
+						sbLabel.append( v.getNbEntities() );
+						
+						Attribute attrLabel = DefaultAttribute.createAttribute( sbLabel.toString() );
+						map.put ( "label", attrLabel );
+						
+						return map;
+					}
+				);
 				
 				break;
 			}

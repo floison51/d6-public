@@ -100,10 +100,12 @@ public abstract class D6LAbstractPackageEntity extends D6LAbstractEntity impleme
 		this.packageType = packageType;
 	}
 
+	@Override
 	public D6LPackageSubtypeEnum getPackageSubtype() {
 		return packageSubtype;
 	}
 
+	@Override
 	public void setPackageSubtype(D6LPackageSubtypeEnum packageSubType) {
 		this.packageSubtype = packageSubType;
 	}
@@ -128,16 +130,6 @@ public abstract class D6LAbstractPackageEntity extends D6LAbstractEntity impleme
 	
 	@Override
 	public void setPackageEntity( D6LPackageEntityIF packageEntity ) {
-		throw new D6LError( "Not supported in this flavor" );
-	}
-
-	@Override
-	public D6LAbstractPackageEntity getPackage() {
-		throw new D6LError( "Not supported in this flavor" );
-	}
-
-	@Override
-	public void setPackage( D6LAbstractPackageEntity packkage ) {
 		throw new D6LError( "Not supported in this flavor" );
 	}
 

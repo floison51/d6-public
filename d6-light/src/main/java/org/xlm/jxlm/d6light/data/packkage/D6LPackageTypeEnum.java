@@ -44,11 +44,11 @@ public enum D6LPackageTypeEnum {
 	}
 	
     public String getDisplayName() {
-        return D6LPackageOntologyHelper.getLabel( "lotType.type." + name() ) ;
+        return D6LPackageOntologyHelper.getLabel( "pkgType.type." + name() ) ;
     }
 
     public String getShortName() {
-        return D6LPackageOntologyHelper.getLabel( "lotType.type.short." + name() );
+        return D6LPackageOntologyHelper.getLabel( "pkgType.type.short." + name() );
 	}
 
 	public String getKind() {

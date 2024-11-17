@@ -59,6 +59,7 @@ import org.xlm.jxlm.d6light.data.model.D6LEdge;
 import org.xlm.jxlm.d6light.data.model.D6LPackageEdge;
 import org.xlm.jxlm.d6light.data.model.D6LPackageVertex;
 import org.xlm.jxlm.d6light.data.model.D6LVertex;
+import org.xlm.jxlm.d6light.data.resources.D6LPackageOntologyHelper;
 
 /**
  * Main class for D6-light
@@ -129,6 +130,8 @@ public class D6LMain {
             
         }
 
+        // Set ontology to default
+        D6LPackageOntologyHelper.setOntology( "" );
         // Prepare options
         Options options = prepareOptions();
         

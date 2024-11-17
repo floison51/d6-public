@@ -78,18 +78,8 @@ public class D6LEdge extends DefaultEdge implements D6LEntityIF, D6LEdgeIF {
 	}
 
 	@Override
-	public D6LAbstractPackageEntity getPackage() {
-		return (D6LAbstractPackageEntity) packageEntity;
-	}
-
-	@Override
 	public void setPackageEntity( D6LPackageEntityIF packageEntity ) {
 		this.packageEntity = packageEntity;
-	}
-
-	@Override
-	public void setPackage( D6LAbstractPackageEntity packkage ) {
-		this.packageEntity = packkage;
 	}
 
 	public void setLabel(String label) {

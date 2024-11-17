@@ -201,30 +201,30 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
         // Link driven lot dependencies
 		LOGGER.info( "Process Lot Dependencies from entity links" );
 		
-		// Special package for new links between existing objects
-		D6LAbstractPackageEntity newExistingLinkLot = null;
-		
-		newExistingLinkLot = allocateLinksAndProcessLotDependenciesFromLinks( 
-			session, newExistingLinkLot, db.inGraph.edgeSet() 
+		allocateLinksAndProcessLotDependenciesFromLinks( 
+			session, db.inGraph.edgeSet() 
 		);
 		
 	}
 
-    private D6LAbstractPackageEntity allocateLinksAndProcessLotDependenciesFromLinks( 
-        Session session, D6LAbstractPackageEntity existingLinkLot,
+    private void allocateLinksAndProcessLotDependenciesFromLinks( 
+        Session session,
         Set<D6LEdge> entityLinks 
     )
         throws D6LException, D6LNotAllocatedException
     {
-        D6LAbstractPackageEntity newExistingLinkLot = existingLinkLot;
-        
-        for ( D6LEdge link : entityLinks ) {
+
+    	for ( D6LEdge link : entityLinks ) {
             
         	// get roleA
         	D6LVertex entityA = db.inGraph.getEdgeSource( link );
+        	// We need to refresh graph entities
+        	entityA = session.get( D6LVertex.class, entityA.getId() );
+        	
             // get roleB
         	D6LVertex entityB = db.inGraph.getEdgeTarget( link );
-            
+        	// We need to refresh graph entities
+        	entityB = session.get( D6LVertex.class, entityB.getId() );
             
         	// check if we have a lot dependency
         	long entityA_lotId = entityA.getPackageEntity().getId();
@@ -268,8 +268,6 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
         	session.merge( link );
         	
         }
-        
-        return newExistingLinkLot;
         
     }
 
