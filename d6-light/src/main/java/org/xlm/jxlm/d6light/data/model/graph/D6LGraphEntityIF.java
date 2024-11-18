@@ -18,7 +18,9 @@
 
 package org.xlm.jxlm.d6light.data.model.graph;
 
-public interface D6LGraphEntityIF {
+import org.xlm.jxlm.d6light.data.model.D6LPersistableIF;
+
+public interface D6LGraphEntityIF extends D6LPersistableIF {
 	
 	int getId();
 	

@@ -30,7 +30,7 @@ public class D6LPackageEdge extends D6LAbstractPackageEntity implements D6LEdgeI
 
 	@Enumerated
 	@Basic(optional=false)
-	private D6LLinkDirectionEnum linkDirection;
+	private D6LLinkDirectionEnum linkDirection = D6LLinkDirectionEnum.NotDirected;
 	
 	public D6LPackageEdge( D6LPackageTypeEnum type, D6LPackageSubtypeEnum displayType ) {
 		super( type, displayType );
@@ -49,18 +49,18 @@ public class D6LPackageEdge extends D6LAbstractPackageEntity implements D6LEdgeI
 	}
 
 	@Override
-	public D6LEntityKindEnum getKind() {
-		return D6LEntityKindEnum.egde;
-	}
-
-	@Override
 	public D6LLinkDirectionEnum getLinkDirection() {
 		return linkDirection;
 	}
 
+	@Override
 	public void setLinkDirection(D6LLinkDirectionEnum linkDirection) {
 		this.linkDirection = linkDirection;
 	}
 
+	@Override
+	public D6LEntityKindEnum getKind() {
+		return D6LEntityKindEnum.egde;
+	}
 
 }

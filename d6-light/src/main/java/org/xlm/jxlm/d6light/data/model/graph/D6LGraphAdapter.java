@@ -55,6 +55,9 @@ public class D6LGraphAdapter<V extends D6LGraphEntityIF, E extends D6LGraphEdgeI
 		// From graph key
 		boolean result = gKeys.addEdge( sourceVertex.getId(), targetVertex.getId(), e.getId() );
 		
+		// Persist it
+		e.create( session );
+		
 		return result;
 		
 	}
@@ -69,6 +72,9 @@ public class D6LGraphAdapter<V extends D6LGraphEntityIF, E extends D6LGraphEdgeI
 
 		// From graph key
 		boolean result = gKeys.addVertex( v.getId() );
+		
+		// Persist it
+		v.create( session );
 		
 		return result;
 	}
@@ -93,8 +99,8 @@ public class D6LGraphAdapter<V extends D6LGraphEntityIF, E extends D6LGraphEdgeI
 		
 			E e = cEdge.newInstance( edgeKey );
 			
-			// Persist
-			session.persist( e );
+			// Persist it
+			e.create( session );
 			
 			return e;
 			

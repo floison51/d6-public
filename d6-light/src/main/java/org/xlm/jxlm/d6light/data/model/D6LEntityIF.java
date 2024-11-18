@@ -20,7 +20,7 @@ package org.xlm.jxlm.d6light.data.model;
 
 import org.xlm.jxlm.d6light.data.model.graph.D6LGraphEntityIF;
 
-public interface D6LEntityIF extends D6LGraphEntityIF, D6LSaveableIF {
+public interface D6LEntityIF extends D6LGraphEntityIF {
 	
 	String getDisplay();
 	

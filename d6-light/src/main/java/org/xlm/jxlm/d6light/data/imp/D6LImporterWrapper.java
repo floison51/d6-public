@@ -144,13 +144,17 @@ public class D6LImporterWrapper<V extends D6LGraphEntityIF, E extends D6LGraphEd
 						
 					}
 				);
+				
+				gmlImp.addImportEventConsumer(null);
 
 
 				break;
 			}
 	
 			default: {
-				throw new D6LException(MessageFormat.format( "Unknown import format ''{0}''.", format.name() ) );
+				throw new D6LException(
+					MessageFormat.format( "Unknown import format ''{0}''.", format.name() ) 
+				);
 			}
 		}
 

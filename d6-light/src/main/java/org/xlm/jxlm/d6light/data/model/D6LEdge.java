@@ -20,29 +20,21 @@ package org.xlm.jxlm.d6light.data.model;
 
 import java.util.Objects;
 
-import org.hibernate.Session;
-
 import jakarta.persistence.Basic;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
 
 @Entity
-public class D6LEdge implements D6LEntityIF, D6LEdgeIF {
+public class D6LEdge extends D6LAbstractEntity implements D6LEdgeIF {
 
 	@Id
 	private int id;
-	
-	private String label;
 	
 	@Enumerated
 	@Basic(optional=false)
 	private D6LLinkDirectionEnum linkDirection = D6LLinkDirectionEnum.NotDirected;
 	
-	@ManyToOne( targetEntity = D6LAbstractPackageEntity.class )
-	protected D6LPackageEntityIF packageEntity = D6LPackageVertex.UNALLOCATED;
-
 	D6LEdge() {
 		super();
 		// Set to unallocated package
@@ -61,34 +53,11 @@ public class D6LEdge implements D6LEntityIF, D6LEdgeIF {
 	}
 
 	@Override
-	public String getLabel() {
-		return label;
-	}
-
-	@Override
-	public D6LPackageEntityIF getPackageEntity() {
-		return packageEntity;
-	}
-
-	@Override
-	public void setPackageEntity( D6LPackageEntityIF packageEntity ) {
-		this.packageEntity = packageEntity;
-	}
-
-	public void setLabel(String label) {
-		this.label = label;
-	}
-
-	@Override
-	public String getDisplay() {
-		return getLabel();
-	}
-
-	@Override
 	public D6LLinkDirectionEnum getLinkDirection() {
 		return linkDirection;
 	}
 
+	@Override
 	public void setLinkDirection(D6LLinkDirectionEnum linkDirection) {
 		this.linkDirection = linkDirection;
 	}
@@ -108,14 +77,6 @@ public class D6LEdge implements D6LEntityIF, D6LEdgeIF {
 			return false;
 		D6LEdge other = (D6LEdge) obj;
 		return id == other.id;
-	}
-
-	@Override
-	public void save( Session session ) {
-		
-		// Save entity
-		session.merge( this );
-		
 	}
 
 }

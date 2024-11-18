@@ -47,16 +47,15 @@ public class D6LVertex extends D6LAbstractEntity {
 		this.id = id;
 	}
 
-	@Override
-	public D6LPackageEntityIF getPackageEntity() {
-		return packageEntity;
+	public int getId() {
+		return id;
 	}
 
 	@Override
-	public void setPackageEntity( D6LPackageEntityIF packageEntity ) {
-		this.packageEntity = packageEntity;
+	public String toString() {
+		return "D6LVertex [id=" + id + ", idPackage=" + packageEntity.getId() + "]";
 	}
-	
+
 	@Override
 	public int hashCode() {
 		return Objects.hash(id);
@@ -72,15 +71,6 @@ public class D6LVertex extends D6LAbstractEntity {
 			return false;
 		D6LVertex other = (D6LVertex) obj;
 		return id == other.id;
-	}
-
-	public int getId() {
-		return id;
-	}
-
-	@Override
-	public String toString() {
-		return "D6LVertex [id=" + id + ", idPackage=" + packageEntity.getId() + "]";
 	}
 
 

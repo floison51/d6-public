@@ -207,7 +207,7 @@ public class D6LMain {
 					( ( D6LGraphAdapter ) outGraph ).setSession( session );
 					
 					// Import graph
-			    	importInGraph( inGraph );
+			    	importInGraph( session, inGraph );
 			    	
 			    	// Freeze source graph
 			    	AsUnmodifiableGraph<D6LVertex,D6LEdge> inGraphFrozen = new AsUnmodifiableGraph<>( inGraph );
@@ -284,7 +284,7 @@ public class D6LMain {
 
 	}
 
-	protected void importInGraph( Graph<D6LVertex,D6LEdge> graph ) throws D6LException {
+	protected void importInGraph( Session session, Graph<D6LVertex,D6LEdge> graph ) throws D6LException {
 		
 		// Importer wrapper
     	D6LImporterWrapper<D6LVertex,D6LEdge> importerWrapper = new D6LImporterWrapper<>(
@@ -297,6 +297,16 @@ public class D6LMain {
     	
     	// Import graph
     	importer.importGraph( graph, graphInFile );
+    	
+    	// Finalize graph
+    	for ( D6LVertex v : graph.vertexSet() ) {
+    		v.save( session );
+    	}
+    	
+    	for ( D6LEdge e : graph.edgeSet() ) {
+    		e.save( session );
+    	}
+
     	
 	}
 
