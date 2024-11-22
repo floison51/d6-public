@@ -186,10 +186,10 @@ public class D6LMain {
     	
     	// Initialize empty graph
     	Graph<D6LVertex, D6LEdge> inGraph = 
-    		new D6LGraphAdapter<>( D6LVertex.class, D6LEdge.class );
+    		new D6LGraphAdapter<>( D6LVertex.class, D6LEdge.class, true );
     	
     	Graph<D6LPackageVertex, D6LPackageEdge> outGraph = 
-    		new D6LGraphAdapter<>( D6LPackageVertex.class, D6LPackageEdge.class );
+    		new D6LGraphAdapter<>( D6LPackageVertex.class, D6LPackageEdge.class, false );
     	
     	// Init DB
     	D6LDb.initDb();
@@ -208,6 +208,9 @@ public class D6LMain {
 					
 					// Import graph
 			    	importInGraph( session, inGraph );
+			    	
+			    	// Check persistence errors
+			    	session.flush();
 			    	
 			    	// Freeze source graph
 			    	AsUnmodifiableGraph<D6LVertex,D6LEdge> inGraphFrozen = new AsUnmodifiableGraph<>( inGraph );

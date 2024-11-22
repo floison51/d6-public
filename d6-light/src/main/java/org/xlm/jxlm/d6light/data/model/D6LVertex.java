@@ -20,18 +20,17 @@ package org.xlm.jxlm.d6light.data.model;
 
 import java.util.Objects;
 
+import org.hibernate.Session;
+import org.xlm.jxlm.d6light.data.exception.D6LError;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
 
 @Entity
 public class D6LVertex extends D6LAbstractEntity {
 
 	@Id
 	private int id;
-	
-	@ManyToOne( targetEntity = D6LAbstractPackageEntity.class )
-	protected D6LPackageEntityIF packageEntity = D6LPackageVertex.UNALLOCATED;
 	
 	// For persistence
 	D6LVertex() {
@@ -73,5 +72,9 @@ public class D6LVertex extends D6LAbstractEntity {
 		return id == other.id;
 	}
 
+	@Override
+	public final void delete(Session session) {
+		throw new D6LError( "Delete is not supported for " + this.getClass().getName() );
+	}
 
 }

@@ -20,13 +20,11 @@ package org.xlm.jxlm.d6light.data.measures;
 
 import java.util.Objects;
 
-import org.xlm.jxlm.d6light.data.model.D6LVertex;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+
 
 /**
  * Directed links per bench stats per entity
@@ -44,8 +42,7 @@ import jakarta.persistence.Table;
 public class D6LEntityDirectedLinkStats {
 
 	@Id
-	@OneToOne
-    private D6LVertex vertex;
+    private int idVertex;
     
     /** Nb directed links from for entity bench **/
 	private long nbDirectedLinksFromForBench = -1;
@@ -71,13 +68,13 @@ public class D6LEntityDirectedLinkStats {
      * @param idEntity idEntity
      * @param idBench idBench
      */
-	public D6LEntityDirectedLinkStats( D6LVertex vertex ) {
+	public D6LEntityDirectedLinkStats( int idVertex ) {
 		this();
-		this.vertex = vertex;
+		this.idVertex = idVertex;
 	}
 
-	public D6LVertex getVertex() {
-		return vertex;
+	public int getIdVertex() {
+		return idVertex;
 	}
 
 	public long getNbDirectedLinksFromForBench() {
@@ -156,7 +153,7 @@ public class D6LEntityDirectedLinkStats {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(vertex);
+		return Objects.hash(idVertex);
 	}
 
 	@Override
@@ -168,12 +165,12 @@ public class D6LEntityDirectedLinkStats {
 		if (getClass() != obj.getClass())
 			return false;
 		D6LEntityDirectedLinkStats other = (D6LEntityDirectedLinkStats) obj;
-		return Objects.equals(vertex, other.vertex);
+		return Objects.equals(idVertex, other.idVertex);
 	}
 
 	@Override
 	public String toString() {
-		return "D6LEntityDirectedLinkStats [vertex=" + vertex + ", nbDirectedLinksFromForBench="
+		return "D6LEntityDirectedLinkStats [idVertex=" + idVertex + ", nbDirectedLinksFromForBench="
 				+ nbDirectedLinksFromForBench + ", nbLinksFromForBench=" + nbLinksFromForBench
 				+ ", nbDirectedLinksToForBench=" + nbDirectedLinksToForBench + ", nbLinksToForBench="
 				+ nbLinksToForBench + ", isBomHeadForBench=" + isBomHeadForBench + "]";

@@ -20,6 +20,7 @@ package org.xlm.jxlm.d6light.data.model;
 
 import org.hibernate.Session;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MappedSuperclass;
 
@@ -28,8 +29,11 @@ public abstract class D6LAbstractEntity implements D6LEntityIF {
 
 	protected String label;
 
-	@ManyToOne( targetEntity = D6LAbstractPackageEntity.class )
-	protected D6LPackageEntityIF packageEntity = D6LPackageVertex.UNALLOCATED;
+	@ManyToOne( 
+		targetEntity = D6LAbstractPackageEntity.class,
+		cascade = CascadeType.ALL
+	)
+	protected D6LPackageEntityIF packageEntity = null;
 
 	protected D6LAbstractEntity() {
 		super();

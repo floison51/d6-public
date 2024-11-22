@@ -13,7 +13,9 @@ import org.hibernate.Session;
 import org.jgrapht.Graph;
 import org.jgrapht.GraphType;
 import org.jgrapht.graph.AbstractGraph;
+import org.jgrapht.graph.SimpleDirectedGraph;
 import org.jgrapht.graph.SimpleGraph;
+import org.xlm.jxlm.d6light.data.exception.D6LError;
 
 /**
  * A base abstract implementation for the graph adapter class using Guava's {@link Graph}. This is a
@@ -43,21 +45,16 @@ public abstract class D6LAbstractGraphAdapter<V extends D6LGraphEntityIF, E exte
     private static final AtomicInteger SEQ_EDGE_KEY = new AtomicInteger( 0 );
     
     /** Graph of keys **/
-    protected Graph<Integer,Integer> gKeys = 
-    	new SimpleGraph<>( 
-    		null, 
-    		() -> SEQ_EDGE_KEY.getAndIncrement(), 
-    		false
-    	);
+    protected final Graph<Integer,Integer> gKeys;
     
     /**
      * Create a new adapter.
      * 
      * @param graph the graph
      */
-    public D6LAbstractGraphAdapter( Class<V> vertexClass, Class<E> edgeClass )
+    public D6LAbstractGraphAdapter( Class<V> vertexClass, Class<E> edgeClass, boolean isDirected )
     {
-        this( vertexClass, edgeClass, null, null );
+        this( vertexClass, edgeClass, isDirected, null, null );
     }
 
     /**
@@ -70,7 +67,7 @@ public abstract class D6LAbstractGraphAdapter<V extends D6LGraphEntityIF, E exte
      *        is required in order to make edge source/targets be consistent.
      */
     public D6LAbstractGraphAdapter(
-    	Class<V> vertexClass, Class<E> edgeClass,
+    	Class<V> vertexClass, Class<E> edgeClass, boolean isDirected,
         Supplier<V> vertexSupplier, Supplier<E> edgeSupplier
     )
     {
@@ -78,6 +75,26 @@ public abstract class D6LAbstractGraphAdapter<V extends D6LGraphEntityIF, E exte
         this.edgeClass = edgeClass;
     	this.vertexSupplier = vertexSupplier;
         this.edgeSupplier = edgeSupplier;
+        
+        // init underlying graph
+        if ( isDirected ) {
+        	
+        	 gKeys = new SimpleDirectedGraph<>( 
+	    		null, 
+	    		() -> SEQ_EDGE_KEY.getAndIncrement(), 
+	    		false
+	    	);
+        		    
+        } else {
+        	
+       	 	gKeys = new SimpleGraph<>( 
+	    		null, 
+	    		() -> SEQ_EDGE_KEY.getAndIncrement(), 
+	    		false
+	    	);
+       		    
+        }
+        
     }
 
     @Override
@@ -166,6 +183,13 @@ public abstract class D6LAbstractGraphAdapter<V extends D6LGraphEntityIF, E exte
     	List<Integer> listKeys = new ArrayList<>( keys );
     	
     	List<E> listEdges = session.byMultipleIds( edgeClass ).multiLoad( listKeys );
+    	
+    	// Check not null
+    	for ( E e : listEdges ) {
+    		if ( e == null ) {
+    			throw new D6LError( "Null edge" );
+    		}
+    	}
 
     	return Collections.unmodifiableSet( new HashSet<>( listEdges ) );
     	

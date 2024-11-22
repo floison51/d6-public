@@ -15,9 +15,9 @@ public class D6LGraphAdapter<V extends D6LGraphEntityIF, E extends D6LGraphEdgeI
      * 
      * @param graph the graph
      */
-    public D6LGraphAdapter( Class<V> vertexClass, Class<E> edgeClass )
+    public D6LGraphAdapter( Class<V> vertexClass, Class<E> edgeClass, boolean isDirected )
     {
-        this( vertexClass, edgeClass, null, null );
+        this( vertexClass, edgeClass, isDirected, null, null );
     }
 
     /**
@@ -30,11 +30,11 @@ public class D6LGraphAdapter<V extends D6LGraphEntityIF, E extends D6LGraphEdgeI
      *        is required in order to make edge source/targets be consistent.
      */
     public D6LGraphAdapter(
-    	Class<V> vertexClass, Class<E> edgeClass,
+    	Class<V> vertexClass, Class<E> edgeClass, boolean isDirected,
         Supplier<V> vertexSupplier, Supplier<E> edgeSupplier
     )
     {
-        super( vertexClass, edgeClass, vertexSupplier, edgeSupplier );
+        super( vertexClass, edgeClass, isDirected, vertexSupplier, edgeSupplier );
     }
     
     /**
@@ -52,11 +52,11 @@ public class D6LGraphAdapter<V extends D6LGraphEntityIF, E extends D6LGraphEdgeI
 	@Override
 	public boolean addEdge( V sourceVertex, V targetVertex, E e ) {
 		
+		// Persist it to get edge id
+		e.create( session );
+		
 		// From graph key
 		boolean result = gKeys.addEdge( sourceVertex.getId(), targetVertex.getId(), e.getId() );
-		
-		// Persist it
-		e.create( session );
 		
 		return result;
 		

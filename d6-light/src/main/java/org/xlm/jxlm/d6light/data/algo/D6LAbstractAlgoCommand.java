@@ -154,7 +154,7 @@ public abstract class D6LAbstractAlgoCommand
  			
 			// finalize lots: count nb objects and links
 			// delete empty lots, check children lots
-            finalizePackages( session );
+            finalizePackages( session, true );
 
     		Stats allStats = new Stats();
 	    	doCheckAfter( session, LOGGER.isDebugEnabled(), allStats );

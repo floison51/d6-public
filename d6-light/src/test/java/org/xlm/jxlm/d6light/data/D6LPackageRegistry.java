@@ -31,7 +31,7 @@ public class D6LPackageRegistry {
 		// Import graph
 		D6LImporterWrapper<D6LAbstractPackageEntity, D6LEdge> importWrapper = 
 			new D6LImporterWrapper<>(
-				id -> new D6LPackageVertex( id, D6LPackageTypeEnum.TECHNICAL_PKG )
+				id -> new D6LPackageVertex( id, D6LPackageTypeEnum.TECHNICAL_PKG, null )
 			);
 		
 		GraphImporter<D6LAbstractPackageEntity, D6LEdge> importer = importWrapper.getGraphImporterInstance( gFormat ); 
@@ -41,7 +41,6 @@ public class D6LPackageRegistry {
 		indexPackagesAndLinks( gPackages );
 		
 	}
-	
 	
 	private void indexPackagesAndLinks( Graph<D6LAbstractPackageEntity, D6LEdge> gPackages ) throws D6LException {
 		

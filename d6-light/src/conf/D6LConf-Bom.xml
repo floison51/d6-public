@@ -9,6 +9,17 @@
     <TopologicalDivider key="BillOfMaterial" id="simple-BOM-facto">
     </TopologicalDivider>
     
+    <TopologicalDivider key="BillOfMaterial" id="technicalDivider-Bom-2">
+
+		<BomSimplifiers>
+			<Components>
+				<!-- Component links trigger -->
+				<LinksTrigger>2</LinksTrigger>
+			</Components>
+		</BomSimplifiers>
+
+	</TopologicalDivider>
+    
   </Algos>
 	
 </D6LightDataConf>

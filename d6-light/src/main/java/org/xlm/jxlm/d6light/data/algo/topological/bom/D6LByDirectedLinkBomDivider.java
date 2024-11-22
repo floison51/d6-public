@@ -167,11 +167,11 @@ public class D6LByDirectedLinkBomDivider extends D6LAbstractTopologicalDivider {
 			
 			// set BOM head entity as primary lot target
 			bomHeadLot.setPrimaryTarget( bomHeadObject );
-			session.merge( bomHeadLot );
+			bomHeadLot.save( session );
 			
 			// allocate bom head to lot
 			bomHeadObject.setPackageEntity( bomHeadLot );
-			session.merge( bomHeadObject );
+			bomHeadObject.save( session );
 			
 		}
 	}

@@ -249,7 +249,7 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
 		        		);
 
 		    			// set link lot to lot dependency
-		    			link.setPackageEntity( lotDependency.getPackageEntity() );
+		    			link.setPackageEntity( lotDependency );
 		        			
 		        	}
 
@@ -278,7 +278,8 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
 				try {
 					
 		    		// it is a dependency implying a Business Lot dependency?
-		    		D6LPackageVertex lotDependencyA = db.outGraph.getEdgeSource( lotDependencyEdge );
+		    		D6LPackageVertex lotDependencyA = 
+		    			db.outGraph.getEdgeSource( lotDependencyEdge );
 		    		long idBusinessLotA = lotDependencyA.getId();
 
 		    		D6LPackageVertex lotDependencyB = db.outGraph.getEdgeTarget( lotDependencyEdge );
@@ -520,7 +521,7 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
 	}
 
 	protected void finalizePackages( 
-		Session session
+		Session session, boolean deleteEmptyLots
 	) throws D6LException {
 		
         LOGGER.info( "********** Start finalize lots" );
@@ -530,27 +531,74 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
 		// only for last finalization because it is very costly
 		
 	    LOGGER.info( "Cummulative sums - may be long" );
-	    /*
+	    
 		// all lots - non cummulative sums
-        LOGGER.info( "Last finalization - sum entities per lots" );
-        SumEntitiesRunnable sumEntitiesRunnable_0 = 
-            new SumEntitiesRunnable( db, txn, true, cmdRuntimeConfig.isSeparateFromToLotLinks );
+        LOGGER.info( "Last finalization - sum entities per packages" );
+        SumEntities sumEntitiesRunnable_0 = 
+            new SumEntities( session, true );
         
-        startThread( sumEntitiesRunnable_0 );
+        sumEntitiesRunnable_0.run();
   		
-        LOGGER.info( "Last finalization - sum entities per lot links" );  
-        SumEntitiesRunnable sumEntitiesRunnable_1 = 
-            new SumEntitiesRunnable( db, txn, false, cmdRuntimeConfig.isSeparateFromToLotLinks );
+        LOGGER.info( "Last finalization - sum entities per package dependencies" );  
+        SumEntities sumEntitiesRunnable_1 = 
+            new SumEntities( session, false );
         
-        startThread( sumEntitiesRunnable_1 );
-         */
-		// all lots - cummulate sums
-        LOGGER.info( "Cummulative sums" );
+        sumEntitiesRunnable_1.run();
         
-        LOGGER.info( "Levels for lots" );
+        // Check persistence is OK
+        session.flush();
+         
+		// delete empty lots
+		if ( deleteEmptyLots ) {
+			
+            LOGGER.info( "Last finalization - delete empty lots" );
+    			
+			// 1) package links
+			deleteEmptyLinkLots( session );
+			// 2) packagess
+			deleteEmptyLots( session );
+    			
+		}
         		
         LOGGER.info( "********** End finalize lots" );
-        
+
+        // Check persistence is OK
+        session.flush();
+         
+	}
+
+	private void deleteEmptyLinkLots( Session session ) 
+	    throws D6LException 
+	{
+		db.daoEntityRegistry.getPackageEdges( session  )
+			.filter(
+				// Not implemented
+				// D6LotLink.isReserved( lotLink.getId() ) || lotLink.isKeepEvenIfEmpty()
+				// Empty lot
+				e -> e.getNbEntities() == 0
+			)
+			.forEach(
+				e -> e.delete( session )
+			);
+	}
+
+	private void deleteEmptyLots( Session session ) 
+	    throws D6LException 
+	{
+		db.daoEntityRegistry.getPackages( session  )
+			.filter(
+				// Not implemented
+				// D6LotLink.isReserved( lotLink.getId() ) || lotLink.isKeepEvenIfEmpty()
+				// Empty lot
+				v -> {
+					return ( v.getNbEntities() == 0 );
+				}
+			)
+			.forEach(
+				v -> {					
+					v.delete( session );
+				}
+			);
 	}
 
 	/**
@@ -565,15 +613,12 @@ public abstract class D6LAbstractCommand implements D6LCommandIF {
 	
 	    private boolean isLot;
 	    
-	    private boolean isSeparateFromToLinks;
-	
 	    public SumEntities( 
-	    	Session session, boolean isLot, boolean isSeparateFromToLotLinks
+	    	Session session, boolean isLot
 	    ) {
 	        super();
 	        this.session = session;
 	        this.isLot = isLot;
-	        this.isSeparateFromToLinks = isSeparateFromToLotLinks;
 	    }
 	
 	    public void run() throws D6LException

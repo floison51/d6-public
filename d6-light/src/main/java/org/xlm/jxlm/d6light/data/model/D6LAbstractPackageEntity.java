@@ -31,8 +31,11 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
 
 @Entity
+@Inheritance( strategy = InheritanceType.TABLE_PER_CLASS )
 public abstract class D6LAbstractPackageEntity extends D6LAbstractEntity implements D6LPackageEntityIF {
 
 	/** Lot containing single objects **/
@@ -65,10 +68,6 @@ public abstract class D6LAbstractPackageEntity extends D6LAbstractEntity impleme
 		this.packageSubtype = displayType;
 	}
 
-	public D6LAbstractPackageEntity( int id, D6LPackageTypeEnum type ) {
-		this( id, type, null );
-	}
-
 	public D6LAbstractPackageEntity( D6LPackageTypeEnum type, D6LPackageSubtypeEnum displayType ) {
 		this();
 		this.packageType = type;
@@ -79,11 +78,16 @@ public abstract class D6LAbstractPackageEntity extends D6LAbstractEntity impleme
 		this( type, null );
 	}
 
-	@Override
-	public String toString() {
-		return "D6LPkg [id=" + id + ", label=" + label + "]";
+	public D6LAbstractPackageEntity(D6LPackageTypeEnum type, D6LPackageSubtypeEnum displayType, String name ) {
+		this( type, displayType );
+		this.name = name;
 	}
 
+	@Override
+	public int getId() {
+		return id;
+	}
+	
 	public String getDisplayType() {
 		return displayType;
 	}
@@ -119,11 +123,6 @@ public abstract class D6LAbstractPackageEntity extends D6LAbstractEntity impleme
 	}
 
 	@Override
-	public int getId() {
-		return id;
-	}
-	
-	@Override
 	public D6LPackageEntityIF getPackageEntity() {
 		throw new D6LError( "Not supported in this flavor" );
 	}
@@ -135,7 +134,7 @@ public abstract class D6LAbstractPackageEntity extends D6LAbstractEntity impleme
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(id);
+		return Objects.hash( id );
 	}
 
 	@Override
@@ -421,6 +420,12 @@ public abstract class D6LAbstractPackageEntity extends D6LAbstractEntity impleme
 
 	public void setFrozenForNbs(boolean isFrozenForNbs) {
 		this.isFrozenForNbs = isFrozenForNbs;
+	}
+
+	@Override
+	public String toString() {
+		return getClass().getSimpleName() + " [id=" + id + ", packageType=" + packageType + ", packageSubtype="
+				+ packageSubtype + ", name=" + name + "]";
 	}
 
 }

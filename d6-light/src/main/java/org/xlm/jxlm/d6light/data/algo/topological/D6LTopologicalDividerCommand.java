@@ -459,7 +459,7 @@ public class D6LTopologicalDividerCommand extends D6LAbstractDividerAlgoCommand 
     	int nbLinksToEntity = nbDirectedLinksToEntity;
 
     	// Save numbers is a stat object
-    	D6LEntityDirectedLinkStats stat = new D6LEntityDirectedLinkStats( entity );
+    	D6LEntityDirectedLinkStats stat = new D6LEntityDirectedLinkStats( entity.getId() );
     	stat.setNbDirectedLinksFromForBench( nbDirectedLinksFromEntity );
     	stat.setNbLinksFromForBench( nbLinksFromEntity );
     	stat.setNbDirectedLinksToForBench( nbDirectedLinksToEntity );

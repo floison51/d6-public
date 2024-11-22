@@ -30,14 +30,15 @@ import org.jgrapht.nio.gml.GmlExporter;
 import org.jgrapht.nio.gml.GmlExporter.Parameter;
 import org.xlm.jxlm.d6light.data.D6LGraphFormatEnum;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
+import org.xlm.jxlm.d6light.data.model.D6LPackageEdge;
 import org.xlm.jxlm.d6light.data.model.D6LPackageVertex;
-import org.xlm.jxlm.d6light.data.model.graph.D6LGraphEdgeIF;
-import org.xlm.jxlm.d6light.data.model.graph.D6LGraphEntityIF;
+import org.xlm.jxlm.d6light.data.packkage.D6LPackageSubtypeEnum;
+import org.xlm.jxlm.d6light.data.packkage.D6LPackageTypeEnum;
 
 /**
  * Graph file importer
  */
-public class D6LExporterWrapper<V extends D6LGraphEntityIF, E extends D6LGraphEdgeIF> {
+public class D6LExporterWrapper<V extends D6LPackageVertex, E extends D6LPackageEdge> {
 	
 	public final ThreadLocal<Session> tls = new ThreadLocal<Session>();
 
@@ -60,14 +61,11 @@ public class D6LExporterWrapper<V extends D6LGraphEntityIF, E extends D6LGraphEd
 				
 				// Set vertext attributes provider
 				gmlExp.setVertexAttributeProvider(
-					( gv ) -> {
+					( v ) -> {
 
 						// Get session from thread local
 						Session session = tls.get();
 						
-						// Get actual package vertex
-						D6LPackageVertex v = session.get( D6LPackageVertex.class, gv.getId() ); 
-
 						Map<String,Attribute> map = new HashMap<>();
 						StringBuilder sbLabel = new StringBuilder();
 						
@@ -77,8 +75,16 @@ public class D6LExporterWrapper<V extends D6LGraphEntityIF, E extends D6LGraphEd
 							sbLabel.append( v.getLabel() ).append( "\n" );
 						}
 						
-						sbLabel.append( v.getPackageType().getDisplayName() ).append( "\n" );
-						sbLabel.append( v.getPackageSubtype().getDisplayName() ).append( "\n" );
+						D6LPackageTypeEnum pckType = v.getPackageType();
+						if ( pckType != null ) {
+							sbLabel.append( pckType.getDisplayName() ).append( "\n" );
+						}
+						
+						D6LPackageSubtypeEnum pckSubtype = v.getPackageSubtype();
+						if ( pckSubtype != null ) {
+							sbLabel.append( pckSubtype.getDisplayName() ).append( "\n" );
+						}
+						
 						sbLabel.append( v.getNbEntities() );
 						
 						Attribute attrLabel = DefaultAttribute.createAttribute( sbLabel.toString() );

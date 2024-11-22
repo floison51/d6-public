@@ -20,6 +20,9 @@ package org.xlm.jxlm.d6light.data.model;
 
 import java.util.Objects;
 
+import org.hibernate.Session;
+import org.xlm.jxlm.d6light.data.exception.D6LError;
+
 import jakarta.persistence.Basic;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Enumerated;
@@ -77,6 +80,11 @@ public class D6LEdge extends D6LAbstractEntity implements D6LEdgeIF {
 			return false;
 		D6LEdge other = (D6LEdge) obj;
 		return id == other.id;
+	}
+
+	@Override
+	public final void delete(Session session) {
+		throw new D6LError( "Delete is not supported for " + this.getClass().getName() );
 	}
 
 }

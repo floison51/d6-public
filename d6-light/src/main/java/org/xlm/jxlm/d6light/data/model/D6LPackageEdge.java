@@ -18,34 +18,32 @@
 
 package org.xlm.jxlm.d6light.data.model;
 
+import org.hibernate.Session;
+import org.jgrapht.Graph;
+import org.xlm.jxlm.d6light.data.db.D6LDb;
 import org.xlm.jxlm.d6light.data.packkage.D6LPackageSubtypeEnum;
 import org.xlm.jxlm.d6light.data.packkage.D6LPackageTypeEnum;
 
 import jakarta.persistence.Basic;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
 
 @Entity
+@Inheritance( strategy = InheritanceType.TABLE_PER_CLASS )
 public class D6LPackageEdge extends D6LAbstractPackageEntity implements D6LEdgeIF {
 
 	@Enumerated
 	@Basic(optional=false)
 	private D6LLinkDirectionEnum linkDirection = D6LLinkDirectionEnum.NotDirected;
 	
-	public D6LPackageEdge( D6LPackageTypeEnum type, D6LPackageSubtypeEnum displayType ) {
-		super( type, displayType );
-	}
-
 	public D6LPackageEdge( D6LPackageTypeEnum type ) {
 		super( type );
 	}
 
-	public D6LPackageEdge( int id, D6LPackageTypeEnum type, D6LPackageSubtypeEnum displayType ) {
-		super( id, type, displayType );
-	}
-
-	public D6LPackageEdge( int id, D6LPackageTypeEnum type ) {
-		super( id, type );
+	public D6LPackageEdge( D6LPackageTypeEnum type, D6LPackageSubtypeEnum displayType ) {
+		super( type, displayType );
 	}
 
 	@Override
@@ -63,4 +61,16 @@ public class D6LPackageEdge extends D6LAbstractPackageEntity implements D6LEdgeI
 		return D6LEntityKindEnum.egde;
 	}
 
+	@Override
+	public void delete(Session session) {
+		
+		// Delete from outGraph
+		Graph<D6LPackageVertex, D6LPackageEdge> outGraph = D6LDb.getInstance().outGraph;
+		outGraph.removeEdge( this );
+		
+		// Remove from session
+		super.delete(session);
+		
+	}
+	
 }

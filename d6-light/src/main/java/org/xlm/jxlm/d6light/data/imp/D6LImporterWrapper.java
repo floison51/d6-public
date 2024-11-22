@@ -29,6 +29,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.jgrapht.nio.GraphImporter;
 import org.jgrapht.nio.gml.GmlImporter;
 import org.xlm.jxlm.d6light.data.D6LGraphFormatEnum;
+import org.xlm.jxlm.d6light.data.exception.D6LError;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
 import org.xlm.jxlm.d6light.data.model.D6LLinkDirectionEnum;
 import org.xlm.jxlm.d6light.data.model.graph.D6LGraphEdgeIF;
@@ -49,7 +50,7 @@ public class D6LImporterWrapper<V extends D6LGraphEntityIF, E extends D6LGraphEd
 		
 		map.put( Pair.of( "standard", "standard" ), D6LLinkDirectionEnum.DirectedBoth );
 		map.put( Pair.of( ""        , "standard" ), D6LLinkDirectionEnum.DirectedFromTo );
-		map.put( Pair.of( "xx"      , "xx" ), D6LLinkDirectionEnum.NotDirected );
+		map.put( Pair.of( ""        , ""         ), D6LLinkDirectionEnum.NotDirected );
 		
 		MAP_GMF_EDGE_DIRECTION = Collections.unmodifiableMap( map );
 		
@@ -127,8 +128,14 @@ public class D6LImporterWrapper<V extends D6LGraphEntityIF, E extends D6LGraphEd
 							// Get link direction
 							D6LLinkDirectionEnum direction = MAP_GMF_EDGE_DIRECTION.get( Pair.of( sourceArrowValue, targetArrowValue ) );
 							
-							// Set to edge
-							edge.setLinkDirection( direction );
+							if ( direction == null ) {
+								throw new D6LError( "null edge direction from graphics='" + graphics + "'" );
+							}
+							
+							// Set to edge if possible
+							if ( edge != null ) {
+								edge.setLinkDirection( direction );
+							}
 							
 						}
 						
@@ -136,18 +143,16 @@ public class D6LImporterWrapper<V extends D6LGraphEntityIF, E extends D6LGraphEd
 							
 							// Get label 
 							String label = attribute.getValue();
-							// Set to edge
-							edge.setLabel( label );
 							
+							// Set to edge if possible
+							if ( edge != null ) {
+								edge.setLabel( label );
+							}
 						}
 
-						
 					}
 				);
 				
-				gmlImp.addImportEventConsumer(null);
-
-
 				break;
 			}
 	

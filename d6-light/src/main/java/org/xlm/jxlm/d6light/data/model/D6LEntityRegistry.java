@@ -149,8 +149,8 @@ public class D6LEntityRegistry {
 	}
 
 	@SuppressWarnings("unchecked")
-	public Stream<D6LAbstractPackageEntity> getPackages( Session session ) {
-		return (Stream<D6LAbstractPackageEntity>) queryByClassAndPackage( session, D6LAbstractPackageEntity.class, null );
+	public Stream<D6LPackageVertex> getPackages( Session session ) {
+		return (Stream<D6LPackageVertex>) queryByClassAndPackage( session, D6LPackageVertex.class, null );
 	}
 
 	@SuppressWarnings("unchecked")

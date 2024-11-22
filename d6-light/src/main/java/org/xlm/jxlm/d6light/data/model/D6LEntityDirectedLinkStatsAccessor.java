@@ -18,11 +18,11 @@ import org.xlm.jxlm.d6light.data.measures.D6LEntityDirectedLinkStats;
  */
 public class D6LEntityDirectedLinkStatsAccessor
 {
-
+	
 	public D6LEntityDirectedLinkStats getByEntity( Session session, D6LVertex vertex ) {
 		
 		D6LEntityDirectedLinkStats result = 
-			session.byNaturalId( D6LEntityDirectedLinkStats.class ).load();
+			session.get( D6LEntityDirectedLinkStats.class, vertex.getId() );
 		
 		return result;
 	}
@@ -50,7 +50,9 @@ public class D6LEntityDirectedLinkStatsAccessor
         
     	for ( D6LEntityDirectedLinkStats stat : statsBomHead ) {
     		
-    		result.add( stat.getVertex() );
+    		int idVertex = stat.getIdVertex();
+    		D6LVertex vertex = session.get( D6LVertex.class, idVertex );
+    		result.add( vertex );
     	}
     	
     	return Collections.unmodifiableSet( result );
