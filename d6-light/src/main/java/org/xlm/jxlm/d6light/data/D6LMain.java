@@ -54,12 +54,13 @@ import org.xlm.jxlm.d6light.data.db.D6LDb;
 import org.xlm.jxlm.d6light.data.exception.D6LError;
 import org.xlm.jxlm.d6light.data.exception.D6LException;
 import org.xlm.jxlm.d6light.data.exp.D6LExporterWrapper;
+import org.xlm.jxlm.d6light.data.graph.adapter.D6LGraphAdapter;
+import org.xlm.jxlm.d6light.data.graph.exporter.D6LGraphmlExporter;
 import org.xlm.jxlm.d6light.data.imp.D6LImporterWrapper;
 import org.xlm.jxlm.d6light.data.model.D6LEdge;
 import org.xlm.jxlm.d6light.data.model.D6LPackageEdge;
 import org.xlm.jxlm.d6light.data.model.D6LPackageVertex;
 import org.xlm.jxlm.d6light.data.model.D6LVertex;
-import org.xlm.jxlm.d6light.data.model.graph.D6LGraphAdapter;
 import org.xlm.jxlm.d6light.data.resources.D6LPackageOntologyHelper;
 
 /**
@@ -228,7 +229,10 @@ public class D6LMain {
 			    	runAlgo( session, idAlgo );
 			    	
 			    	// Output
-			    	exportOutputGraph( D6LDb.getInstance().outGraph );
+			    	exportOutputGraph( db.outGraph );
+			    	
+			    	// Output in graph with packages
+			    	exportInGraphWithPackages( inGraphFrozen, db.outGraph );
 			    	
 				} catch ( Exception e ) {
 					D6LError.handleThrowable( e );
@@ -341,6 +345,21 @@ public class D6LMain {
 			}
 		);
     	
+	}
+	
+	private void exportInGraphWithPackages( 
+		Graph<D6LVertex, D6LEdge> inGraph, 
+		Graph<D6LPackageVertex, D6LPackageEdge> gPackages
+	) throws D6LException {
+		
+		File fOut = new File( graphOutFile.getParentFile(), "ObjectsWithPackages.graphml" );
+		
+		D6LGraphmlExporter<D6LVertex, D6LEdge,D6LPackageVertex, D6LPackageEdge> exporter = 
+			new D6LGraphmlExporter<>();
+		
+		exporter.setPackageGraph( gPackages );
+		
+		exporter.exportGraph( inGraph, fOut );
 	}
 
 	private File getFileFromOption( CommandLine cmd, String option, boolean isCheck ) throws D6LException {

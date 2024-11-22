@@ -1,9 +1,11 @@
-package org.xlm.jxlm.d6light.data.model.graph;
+package org.xlm.jxlm.d6light.data.graph.adapter;
 
 import java.lang.reflect.Constructor;
 import java.util.function.Supplier;
 
 import org.xlm.jxlm.d6light.data.exception.D6LError;
+import org.xlm.jxlm.d6light.data.model.graph.D6LGraphEdgeIF;
+import org.xlm.jxlm.d6light.data.model.graph.D6LGraphEntityIF;
 
 public class D6LGraphAdapter<V extends D6LGraphEntityIF, E extends D6LGraphEdgeIF> 
 	extends D6LAbstractGraphAdapter<V, E> {

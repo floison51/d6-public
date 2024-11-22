@@ -1,4 +1,4 @@
-package org.xlm.jxlm.d6light.data.model.graph;
+package org.xlm.jxlm.d6light.data.graph.adapter;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -16,6 +16,8 @@ import org.jgrapht.graph.AbstractGraph;
 import org.jgrapht.graph.SimpleDirectedGraph;
 import org.jgrapht.graph.SimpleGraph;
 import org.xlm.jxlm.d6light.data.exception.D6LError;
+import org.xlm.jxlm.d6light.data.model.graph.D6LGraphEdgeIF;
+import org.xlm.jxlm.d6light.data.model.graph.D6LGraphEntityIF;
 
 /**
  * A base abstract implementation for the graph adapter class using Guava's {@link Graph}. This is a
